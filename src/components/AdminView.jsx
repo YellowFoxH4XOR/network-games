@@ -126,8 +126,12 @@ export default function AdminView({ onLogout }) {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    const token = sessionStorage.getItem('sns_admin_token') || '';
     try {
-      const res = await fetch('/api/leaderboard');
+      const res = await fetch('/api/leaderboard', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 401) { onLogout(); return; }
       const json = await res.json();
       setData(json);
       setLast(new Date());

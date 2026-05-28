@@ -122,15 +122,18 @@ function AlreadyPlayed({ reason }) {
 
 export default function WelcomeScreen({ onContinue }) {
   const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
   const [ip, setIp]             = useState('');
   const [fingerprint, setFp]    = useState('');
   const [error, setError]       = useState('');
   const [ipLoading, setIpLoad]  = useState(true);
-  const [checking, setChecking] = useState(true);   // checking device on mount
+  const [checking, setChecking] = useState(true);
   const [submitting, setSubmit] = useState(false);
-  const [blocked, setBlocked]   = useState(null);   // null | 'device_registered' | 'email_taken'
+  const [blocked, setBlocked]   = useState(null);
   const [booted, setBooted]     = useState(false);
   const [showScan, setShowScan] = useState(true);
+
+  const isAdmin = email.trim().toLowerCase() === ADMIN_EMAIL;
 
   useEffect(() => {
     const t1 = setTimeout(() => setShowScan(false), 2600);
@@ -183,8 +186,19 @@ export default function WelcomeScreen({ onContinue }) {
     setSubmit(true);
     setError('');
 
-    // Admin skips registration — go straight through
-    if (email === ADMIN_EMAIL) {
+    // Admin: verify password against server before granting access
+    if (isAdmin) {
+      if (!password.trim()) { setError('Admin password required'); setSubmit(false); return; }
+      try {
+        const res = await fetch('/api/leaderboard', {
+          headers: { Authorization: `Bearer ${password}` },
+        });
+        if (res.status === 401) { setError('Incorrect admin password'); setSubmit(false); return; }
+        if (!res.ok) { setError('Server error — try again'); setSubmit(false); return; }
+      } catch {
+        setError('Could not reach server'); setSubmit(false); return;
+      }
+      sessionStorage.setItem('sns_admin_token', password);
       localStorage.setItem('sns_user_email', email);
       onContinue(email);
       return;
@@ -296,6 +310,30 @@ export default function WelcomeScreen({ onContinue }) {
             </div>
           )}
         </div>
+
+        {/* Password field — only visible for admin email */}
+        {isAdmin && (
+          <div style={{ animation: 'scaleIn 0.25s var(--ease-spring)' }}>
+            <label className="label" style={{ display: 'block', marginBottom: 10 }}>
+              Admin password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => { setPassword(e.target.value); setError(''); }}
+              placeholder="••••••••"
+              autoFocus
+              style={{
+                width: '100%', padding: '16px 18px',
+                background: 'var(--s1)', border: '1px solid rgba(168,85,247,0.3)',
+                borderRadius: 14, fontSize: 16, color: 'var(--text)',
+                fontFamily: "'JetBrains Mono', monospace",
+                transition: 'border-color 0.3s, box-shadow 0.3s',
+              }}
+            />
+          </div>
+        )}
+
         <MagneticBtn type="submit" loading={submitting}>
           Connect to Network
         </MagneticBtn>

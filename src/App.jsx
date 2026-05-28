@@ -35,6 +35,7 @@ export default function App() {
   const handleLogout = useCallback(() => {
     localStorage.removeItem('sns_user_email');
     localStorage.removeItem('sns_user_ip');
+    sessionStorage.removeItem('sns_admin_token');
     setEmail('');
     nav('welcome');
   }, [nav]);
