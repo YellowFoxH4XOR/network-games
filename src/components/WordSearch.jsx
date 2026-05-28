@@ -3,7 +3,7 @@ import { NETWORK_KEYWORDS } from '../data.js';
 import TopBar from './TopBar.jsx';
 import { saveScore } from '../lib/saveScore.js';
 
-const GRID_SIZE  = 12;
+const GRID_SIZE  = 10;
 const WORD_COUNT = 10;
 const GAME_TIME  = 300;
 
@@ -19,16 +19,21 @@ const DIRS = [
 
 function genPuzzle() {
   const grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
-  const kw   = [...NETWORK_KEYWORDS].sort(() => Math.random() - 0.5).filter(w => w.length <= GRID_SIZE);
-  kw.sort((a, b) => b.length - a.length);
-  const placed = [];
 
-  for (const word of kw) {
+  // 1) Filter to length-eligible words   2) Shuffle   3) Take small candidate pool
+  // 4) Sort that pool by length descending for efficient placement
+  const valid = NETWORK_KEYWORDS.filter(w => w.length <= GRID_SIZE);
+  const shuffled = [...valid].sort(() => Math.random() - 0.5);
+  const candidates = shuffled.slice(0, Math.min(WORD_COUNT * 2, shuffled.length));
+  candidates.sort((a, b) => b.length - a.length);
+
+  const placed = [];
+  for (const word of candidates) {
     if (placed.length >= WORD_COUNT) break;
     let ok = false;
     const sd = [...DIRS].sort(() => Math.random() - 0.5);
-    for (let t = 0; t < 100 && !ok; t++) {
-      const d = sd[t % 8];
+    for (let t = 0; t < 120 && !ok; t++) {
+      const d  = sd[t % 8];
       const sr = Math.floor(Math.random() * GRID_SIZE);
       const sc = Math.floor(Math.random() * GRID_SIZE);
       let fit = true;
@@ -63,7 +68,7 @@ function selCells(s, e) {
   const sn = Math.round(a / (Math.PI / 4)) * (Math.PI / 4);
   const sr = Math.round(Math.sin(sn)), sc = Math.round(Math.cos(sn));
   const dist = Math.max(Math.abs(dr), Math.abs(dc));
-  const out  = [];
+  const out = [];
   for (let i = 0; i <= dist; i++) {
     const r = s.r + i * sr, c = s.c + i * sc;
     if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) out.push({ r, c });
@@ -72,13 +77,79 @@ function selCells(s, e) {
   return out;
 }
 
+/* ── Smooth count-up animation for score ── */
+function useCountUp(target, duration = 400) {
+  const [value, setValue] = useState(target);
+  const startRef = useRef(target);
+  const startTimeRef = useRef(null);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    cancelAnimationFrame(rafRef.current);
+    if (target === value) return;
+    startRef.current = value;
+    startTimeRef.current = performance.now();
+    const tick = (now) => {
+      const t = Math.min((now - startTimeRef.current) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const v = Math.round(startRef.current + (target - startRef.current) * eased);
+      setValue(v);
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [target]);
+
+  return value;
+}
+
+/* ── Confetti burst component (CSS only) ── */
+function Confetti() {
+  const pieces = useMemo(() => Array.from({ length: 24 }, (_, i) => ({
+    id: i,
+    color: WORD_COLORS[i % WORD_COLORS.length],
+    angle: (Math.random() * 360),
+    distance: 120 + Math.random() * 180,
+    delay: Math.random() * 0.15,
+    size: 6 + Math.random() * 6,
+    rotation: Math.random() * 720 - 360,
+  })), []);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, pointerEvents: 'none',
+      zIndex: 9998, overflow: 'hidden',
+    }}>
+      {pieces.map(p => (
+        <div
+          key={p.id}
+          style={{
+            position: 'absolute',
+            left: '50%', top: '40%',
+            width: p.size, height: p.size,
+            background: p.color,
+            borderRadius: p.id % 3 === 0 ? '50%' : '2px',
+            boxShadow: `0 0 8px ${p.color}80`,
+            animation: `confettiBurst 1.4s cubic-bezier(0.16, 1, 0.3, 1) ${p.delay}s forwards`,
+            ['--angle']: `${p.angle}deg`,
+            ['--dist']: `${p.distance}px`,
+            ['--rot']: `${p.rotation}deg`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 const W = {
   page: { display: 'flex', flexDirection: 'column', gap: 14, minHeight: '100dvh', paddingBottom: 36 },
   backFull: {
-    width: '100%', padding: '16px', background: 'var(--s2)',
-    border: '1px solid var(--b1)', borderRadius: 16,
+    width: '100%', padding: '15px', background: 'var(--bg2)',
+    border: '1px solid var(--b1)', borderRadius: 14,
     color: 'var(--text2)', fontSize: 14, fontWeight: 600,
     fontFamily: 'inherit', textAlign: 'center', cursor: 'pointer',
+    boxShadow: 'var(--shadow-sm)',
+    transition: 'all 0.2s var(--ease-out)',
   },
 };
 
@@ -92,6 +163,7 @@ export default function WordSearch({ username, onBack }) {
 
   const [pz, setPz]         = useState(null);
   const [found, setFound]   = useState({});
+  // fCells stores { color, order, foundAt } per cell so we can stagger reveal animations
   const [fCells, setFCells] = useState({});
   const [ds, setDs]         = useState(null);
   const [de, setDe]         = useState(null);
@@ -102,7 +174,10 @@ export default function WordSearch({ username, onBack }) {
   const [shake, setShake]   = useState(false);
   const [flash, setFlash]   = useState(null);
   const [celebrate, setCelebrate] = useState(false);
+  const [lastFoundWord, setLastFoundWord] = useState(null);
   const tRef = useRef(null);
+
+  const animScore = useCountUp(score, 500);
 
   useEffect(() => {
     const s = localStorage.getItem(key);
@@ -137,8 +212,11 @@ export default function WordSearch({ username, onBack }) {
     if (Object.keys(found).length === pz.words.length && pz.words.length > 0) {
       clearInterval(tRef.current);
       setScore(s => s + Math.floor(time / 10));
-      setGState('finished');
-      setCelebrate(true);
+      setTimeout(() => {
+        setGState('finished');
+        setCelebrate(true);
+        setTimeout(() => setCelebrate(false), 1800);
+      }, 800);
     }
   }, [found, pz]);
 
@@ -176,12 +254,17 @@ export default function WordSearch({ username, onBack }) {
     if (m) {
       const ci  = Object.keys(found).length;
       const col = WORD_COLORS[ci % WORD_COLORS.length];
+      const orderedCells = w === m ? cells : [...cells].reverse();
       setFound(f => ({ ...f, [m]: col }));
       const nc = { ...fCells };
-      cells.forEach(c => { nc[`${c.r},${c.c}`] = col; });
+      const now = performance.now();
+      orderedCells.forEach((c, i) => { nc[`${c.r},${c.c}`] = { color: col, order: i, foundAt: now }; });
       setFCells(nc);
       setScore(s => s + 10);
-      setFlash(col); setTimeout(() => setFlash(null), 600);
+      setFlash(col);
+      setLastFoundWord(m);
+      setTimeout(() => setFlash(null), 700);
+      setTimeout(() => setLastFoundWord(null), 1000);
     } else if (cells.length > 1) {
       setShake(true); setTimeout(() => setShake(false), 420);
     }
@@ -205,33 +288,33 @@ export default function WordSearch({ username, onBack }) {
     return (
       <div style={W.page}>
         <TopBar onBack={onBack} title="Word Search" />
-        <div style={{ padding: '0 24px', animation: 'fadeUp 0.5s var(--ease-out)' }}>
-          <div className="glass" style={{ padding: '44px 28px', textAlign: 'center' }}>
+        <div style={{ padding: '0 22px', animation: 'fadeUp 0.5s var(--ease-out)' }}>
+          <div className="glass" style={{ padding: '40px 24px', textAlign: 'center' }}>
             <div style={{
-              width: 72, height: 72, borderRadius: 22, background: 'var(--s2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 20px', border: '1px solid var(--b2)',
+              width: 64, height: 64, borderRadius: 20, background: 'var(--bg2)',
+              border: '1px solid var(--b2)', boxShadow: 'var(--shadow-sm)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
             }}>
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <rect x="6" y="14" width="20" height="14" rx="4" stroke="var(--text3)" strokeWidth="1.5"/>
-                <path d="M10 14v-4a6 6 0 0112 0v4" stroke="var(--text3)" strokeWidth="1.5" strokeLinecap="round"/>
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <rect x="5" y="12" width="18" height="13" rx="3" stroke="var(--text3)" strokeWidth="1.5"/>
+                <path d="M9 12V9a5 5 0 0110 0v3" stroke="var(--text3)" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text2)', marginBottom: 6, letterSpacing: '-0.02em' }}>Already Completed</div>
-            <div className="label" style={{ marginBottom: 32 }}>One attempt per player — your score is final</div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-              <div style={{ background: 'var(--green-glow)', borderRadius: 20, padding: '18px 28px', border: '1px solid rgba(0,255,135,0.15)', textAlign: 'center' }}>
-                <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: 'var(--green)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevScore}</div>
-                <div className="label" style={{ color: 'var(--green)', opacity: 0.8, marginTop: 6 }}>Points</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 4, letterSpacing: '-0.02em' }}>Already Completed</div>
+            <div className="label" style={{ marginBottom: 28 }}>One attempt per player — your score is final</div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <div style={{ background: 'var(--green-glow)', borderRadius: 18, padding: '16px 26px', border: '1px solid rgba(0,178,92,0.18)', textAlign: 'center' }}>
+                <div className="mono" style={{ fontSize: 36, fontWeight: 800, color: 'var(--green-dim)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevScore}</div>
+                <div className="label" style={{ color: 'var(--green-dim)', opacity: 0.8, marginTop: 6 }}>Points</div>
               </div>
-              <div style={{ background: 'var(--cyan-glow)', borderRadius: 20, padding: '18px 28px', border: '1px solid rgba(0,212,255,0.15)', textAlign: 'center' }}>
-                <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: 'var(--cyan)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevFound}/{prevTotal}</div>
+              <div style={{ background: 'var(--cyan-glow)', borderRadius: 18, padding: '16px 26px', border: '1px solid rgba(0,158,187,0.18)', textAlign: 'center' }}>
+                <div className="mono" style={{ fontSize: 36, fontWeight: 800, color: 'var(--cyan)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevFound}/{prevTotal}</div>
                 <div className="label" style={{ color: 'var(--cyan)', opacity: 0.8, marginTop: 6 }}>Found</div>
               </div>
             </div>
           </div>
         </div>
-        <div style={{ padding: '0 24px' }}>
+        <div style={{ padding: '0 22px' }}>
           <button onClick={onBack} style={W.backFull}>← Back to Dashboard</button>
         </div>
       </div>
@@ -249,64 +332,70 @@ export default function WordSearch({ username, onBack }) {
   /* ── Results ── */
   if (gState === 'finished') {
     return (
-      <div style={W.page}>
-        <TopBar onBack={onBack} title="Results" />
-        <div style={{ padding: '0 24px', animation: 'scaleIn 0.45s var(--ease-out)' }}>
+      <>
+        {celebrate && <Confetti />}
+        <div style={W.page}>
+          <TopBar onBack={onBack} title="Results" />
+          <div style={{ padding: '0 22px', animation: 'scaleIn 0.45s var(--ease-out)' }}>
+            <div className="grad-border" style={{ marginBottom: 16 }}>
+              <div style={{ background: 'var(--bg2)', borderRadius: 18.5, padding: '26px 22px', textAlign: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 18 }}>
+                  {pz.words.map((w, i) => (
+                    <div key={i} style={{
+                      width: 30, height: 30, borderRadius: 8,
+                      background: found[w] ? `${found[w]}15` : 'rgba(232,69,69,0.08)',
+                      border: `1px solid ${found[w] ? `${found[w]}45` : 'rgba(232,69,69,0.25)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, fontWeight: 700, color: found[w] || 'var(--red)',
+                      animation: `popIn 0.4s var(--ease-spring) ${i * 0.04}s both`,
+                    }}>
+                      {found[w] ? '✓' : '✗'}
+                    </div>
+                  ))}
+                </div>
 
-          <div className="grad-border" style={{ marginBottom: 16 }}>
-            <div style={{ background: 'var(--bg2)', borderRadius: 19, padding: '28px 24px', textAlign: 'center' }}>
-              {/* Word result dots */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 20 }}>
-                {pz.words.map((w, i) => (
-                  <div key={i} style={{
-                    width: 32, height: 32, borderRadius: 8,
-                    background: found[w] ? `${found[w]}18` : 'rgba(255,71,71,0.08)',
-                    border: `1px solid ${found[w] ? `${found[w]}35` : 'rgba(255,71,71,0.2)'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12, color: found[w] || 'var(--red)',
-                  }}>
-                    {found[w] ? '✓' : '✗'}
+                <div style={{
+                  fontSize: 22, fontWeight: 800, color: allF ? 'var(--green-dim)' : 'var(--amber)',
+                  marginBottom: 20, letterSpacing: '-0.02em',
+                  animation: 'popIn 0.5s var(--ease-spring) 0.2s both',
+                }}>
+                  {allF ? '🎯 All Words Found!' : "⏱ Time's Up!"}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+                  <div style={{ background: 'var(--green-glow)', borderRadius: 16, padding: '16px 28px', border: '1px solid rgba(0,178,92,0.18)', animation: 'popIn 0.5s var(--ease-spring) 0.3s both' }}>
+                    <div className="mono" style={{ fontSize: 38, fontWeight: 800, color: 'var(--green-dim)', lineHeight: 1, letterSpacing: '-0.04em' }}>{animScore}</div>
+                    <div className="label" style={{ color: 'var(--green-dim)', opacity: 0.8, marginTop: 6 }}>Points</div>
                   </div>
-                ))}
-              </div>
-
-              <div style={{ fontSize: 24, fontWeight: 800, color: allF ? 'var(--green)' : 'var(--amber)', marginBottom: 20, letterSpacing: '-0.02em' }}>
-                {allF ? '🎯 All Words Found!' : "⏱ Time's Up!"}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
-                <div style={{ background: 'var(--green-glow)', borderRadius: 16, padding: '18px 32px', border: '1px solid rgba(0,255,135,0.15)' }}>
-                  <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: 'var(--green)', lineHeight: 1, letterSpacing: '-0.04em' }}>{score}</div>
-                  <div className="label" style={{ color: 'var(--green)', opacity: 0.8, marginTop: 6 }}>Points</div>
-                </div>
-                <div style={{ background: 'var(--cyan-glow)', borderRadius: 16, padding: '18px 32px', border: '1px solid rgba(0,212,255,0.15)' }}>
-                  <div className="mono" style={{ fontSize: 40, fontWeight: 700, color: 'var(--cyan)', lineHeight: 1, letterSpacing: '-0.04em' }}>{fc}</div>
-                  <div className="label" style={{ color: 'var(--cyan)', opacity: 0.8, marginTop: 6 }}>Found</div>
+                  <div style={{ background: 'var(--cyan-glow)', borderRadius: 16, padding: '16px 28px', border: '1px solid rgba(0,158,187,0.18)', animation: 'popIn 0.5s var(--ease-spring) 0.4s both' }}>
+                    <div className="mono" style={{ fontSize: 38, fontWeight: 800, color: 'var(--cyan)', lineHeight: 1, letterSpacing: '-0.04em' }}>{fc}</div>
+                    <div className="label" style={{ color: 'var(--cyan)', opacity: 0.8, marginTop: 6 }}>Found</div>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {pz.words.length - fc > 0 && (
+              <div style={{ marginBottom: 8, animation: 'fadeUp 0.5s var(--ease-out) 0.5s both' }}>
+                <div className="label" style={{ marginBottom: 10 }}>Missed Words</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {pz.words.filter(w => !found[w]).map((w, i) => (
+                    <span key={w} className="mono tag" style={{
+                      background: 'rgba(232,69,69,0.06)',
+                      border: '1px solid rgba(232,69,69,0.18)',
+                      color: 'var(--red)', fontSize: 11, padding: '5px 10px',
+                      animation: `popIn 0.35s var(--ease-spring) ${0.5 + i * 0.04}s both`,
+                    }}>{w}</span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Missed words */}
-          {pz.words.length - fc > 0 && (
-            <div style={{ marginBottom: 8 }}>
-              <div className="label" style={{ marginBottom: 10 }}>Missed Words</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {pz.words.filter(w => !found[w]).map(w => (
-                  <span key={w} className="mono tag" style={{
-                    background: 'rgba(255,71,71,0.06)',
-                    border: '1px solid rgba(255,71,71,0.15)',
-                    color: 'var(--red)', fontSize: 11, padding: '5px 10px',
-                  }}>{w}</span>
-                ))}
-              </div>
-            </div>
-          )}
+          <div style={{ padding: '0 22px' }}>
+            <button onClick={onBack} style={W.backFull}>← Back to Dashboard</button>
+          </div>
         </div>
-        <div style={{ padding: '0 24px' }}>
-          <button onClick={onBack} style={W.backFull}>← Back to Dashboard</button>
-        </div>
-      </div>
+      </>
     );
   }
 
@@ -319,35 +408,35 @@ export default function WordSearch({ username, onBack }) {
         right={
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="label">SCORE</span>
-            <span className="mono" style={{ fontSize: 16, fontWeight: 700, color: 'var(--cyan)', letterSpacing: '-0.02em' }}>{score}</span>
+            <span className="mono" style={{ fontSize: 16, fontWeight: 800, color: 'var(--cyan)', letterSpacing: '-0.02em' }}>{animScore}</span>
           </div>
         }
       />
 
       {/* Timer */}
-      <div style={{ padding: '0 24px' }}>
+      <div style={{ padding: '0 22px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-          <div style={{ flex: 1, height: 5, background: 'var(--s3)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{ flex: 1, height: 6, background: 'var(--s2)', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{
               height: '100%', width: `${pct}%`,
               background: tC, borderRadius: 3,
               transition: 'width 1s linear, background 0.5s',
-              boxShadow: `0 0 16px ${tC === 'var(--red)' ? 'var(--red-glow)' : tC === 'var(--amber)' ? 'var(--amber-glow)' : 'var(--green-glow)'}`,
+              boxShadow: `0 0 14px ${tC === 'var(--red)' ? 'var(--red-glow)' : tC === 'var(--amber)' ? 'var(--amber-glow)' : 'var(--green-glow)'}`,
             }} />
           </div>
-          <span className="mono" style={{ fontSize: 16, color: tC, fontWeight: 700, minWidth: 52, textAlign: 'right', letterSpacing: '0.02em', textShadow: `0 0 10px ${tC}` }}>
+          <span className="mono" style={{ fontSize: 16, color: tC, fontWeight: 800, minWidth: 52, textAlign: 'right', letterSpacing: '0.02em' }}>
             {fmt(time)}
           </span>
         </div>
 
-        {/* Word progress dots */}
+        {/* Word progress segments */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
           {pz.words.map((w, i) => (
             <div key={i} style={{
-              width: found[w] ? 20 : 6, height: 6,
+              width: found[w] ? 22 : 6, height: 6,
               borderRadius: 3,
               background: found[w] ? found[w] : 'var(--text4)',
-              boxShadow: found[w] ? `0 0 8px ${found[w]}50` : 'none',
+              boxShadow: found[w] ? `0 2px 6px ${found[w]}50` : 'none',
               transition: 'all 0.4s var(--ease-spring)',
             }} />
           ))}
@@ -359,23 +448,23 @@ export default function WordSearch({ username, onBack }) {
 
       {/* Grid */}
       <div
-        style={{ padding: '0 8px', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
+        style={{ padding: '0 12px', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
         onMouseMove={onMove}
         onTouchMove={onMove}
       >
         <div style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-          gap: 1.5,
-          width: '100%', maxWidth: 440, margin: '0 auto',
-          background: flash ? `${flash}12` : 'var(--bg2)',
-          border: `1.5px solid ${flash ? flash + '50' : 'var(--b1)'}`,
-          borderRadius: 18, padding: 6,
+          gap: 3,
+          width: '100%', maxWidth: 420, margin: '0 auto',
+          background: flash ? `${flash}10` : 'var(--bg2)',
+          border: `2px solid ${flash ? flash : 'var(--b1)'}`,
+          borderRadius: 18, padding: 8,
           boxShadow: flash
-            ? `0 0 40px ${flash}30, var(--shadow)`
+            ? `0 0 40px ${flash}40, 0 16px 40px rgba(15,20,38,0.10)`
             : 'var(--shadow)',
           transition: 'border-color 0.4s, box-shadow 0.4s, background 0.4s',
-          animation: shake ? 'shakeX 0.42s' : 'none',
+          animation: shake ? 'shakeX 0.42s' : celebrate ? 'glowPulse 1.2s ease' : 'none',
         }}>
           {pz.grid.map((row, r) => row.map((ch, c) => {
             const k      = `${r},${c}`;
@@ -390,19 +479,23 @@ export default function WordSearch({ username, onBack }) {
                 onTouchStart={e => onDown(r, c, e)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  aspectRatio: '1', borderRadius: 6,
-                  fontSize: 'clamp(10px, 2.3vw, 14px)',
+                  aspectRatio: '1', borderRadius: 8,
+                  fontSize: 'clamp(13px, 3vw, 18px)',
                   fontFamily: "'JetBrains Mono', monospace",
                   fontWeight: f || active ? 800 : 600,
-                  color: f ? f : active ? 'var(--green-dim)' : 'var(--text2)',
+                  color: f ? f.color : active ? 'var(--green-dim)' : 'var(--text)',
                   background: f
-                    ? `${f}18`
-                    : active ? 'rgba(0,178,92,0.16)' : 'transparent',
-                  border: `1px solid ${active ? 'rgba(0,178,92,0.4)' : f ? `${f}40` : 'transparent'}`,
-                  transform: active ? 'scale(1.14)' : 'scale(1)',
-                  transition: 'transform 0.08s var(--ease-out), background 0.12s, color 0.12s',
+                    ? `${f.color}18`
+                    : active ? 'rgba(0,178,92,0.18)' : 'var(--bg2)',
+                  border: `1.5px solid ${active ? 'rgba(0,178,92,0.5)' : f ? `${f.color}55` : 'transparent'}`,
+                  transform: active ? 'scale(1.18)' : 'scale(1)',
+                  transition: 'transform 0.12s var(--ease-out), background 0.15s, color 0.15s, border-color 0.15s',
                   cursor: 'crosshair', lineHeight: 1,
-                  boxShadow: active ? `0 2px 8px rgba(0,178,92,0.25)` : 'none',
+                  boxShadow: active
+                    ? `0 3px 12px rgba(0,178,92,0.32)`
+                    : f ? `0 1px 3px ${f.color}25`
+                    : 'none',
+                  animation: f ? `cellReveal 0.5s var(--ease-spring) ${f.order * 0.07}s both` : 'none',
                 }}
               >
                 {ch}
@@ -412,25 +505,53 @@ export default function WordSearch({ username, onBack }) {
         </div>
       </div>
 
+      {/* Last found word toast */}
+      {lastFoundWord && (
+        <div style={{
+          position: 'fixed', top: '20%', left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '12px 24px', borderRadius: 16,
+          background: 'var(--bg2)', border: `2px solid ${WORD_COLORS[(Object.keys(found).length - 1) % WORD_COLORS.length]}`,
+          boxShadow: 'var(--shadow-lg)',
+          fontSize: 18, fontWeight: 800, letterSpacing: '0.05em',
+          color: WORD_COLORS[(Object.keys(found).length - 1) % WORD_COLORS.length],
+          fontFamily: "'JetBrains Mono', monospace",
+          animation: 'toastPop 1s var(--ease-spring)',
+          pointerEvents: 'none',
+          zIndex: 100,
+        }}>
+          ✓ {lastFoundWord}
+        </div>
+      )}
+
       {/* Word list */}
-      <div style={{ padding: '0 24px' }}>
-        <div className="label" style={{ marginBottom: 12 }}>Target Words</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+      <div style={{ padding: '0 22px' }}>
+        <div className="label" style={{ marginBottom: 10 }}>Target Words</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {pz.words.map((w, i) => {
             const isF = !!found[w];
             const col = WORD_COLORS[i % WORD_COLORS.length];
             return (
               <span key={w} className="mono" style={{
-                padding: '6px 12px', borderRadius: 10, fontSize: 11, fontWeight: 700,
-                background: isF ? `${col}12` : 'var(--s2)',
-                border: `1px solid ${isF ? `${col}30` : 'var(--b1)'}`,
-                color: isF ? col : 'var(--text3)',
+                padding: '6px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                background: isF ? `${col}14` : 'var(--bg2)',
+                border: `1.5px solid ${isF ? `${col}40` : 'var(--b1)'}`,
+                color: isF ? col : 'var(--text2)',
                 textDecoration: isF ? 'line-through' : 'none',
-                opacity: isF ? 0.6 : 1,
-                transition: 'all 0.35s var(--ease-out)',
+                opacity: isF ? 0.8 : 1,
+                transition: 'all 0.4s var(--ease-out)',
                 letterSpacing: '0.04em',
-                textShadow: isF ? `0 0 12px ${col}50` : 'none',
+                boxShadow: isF ? `0 2px 8px ${col}25` : 'var(--shadow-sm)',
+                animation: isF ? 'wordFound 0.6s var(--ease-spring)' : 'none',
+                display: 'inline-flex', alignItems: 'center', gap: 5,
               }}>
+                {isF && (
+                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                    <path d="M2 5.5L4.5 8L9 3" stroke={col} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                      strokeDasharray="12" strokeDashoffset="12"
+                      style={{ animation: 'drawCheck 0.4s var(--ease-out) 0.1s forwards' }}/>
+                  </svg>
+                )}
                 {w}
               </span>
             );
