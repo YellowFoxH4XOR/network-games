@@ -1,12 +1,16 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import Background, { CursorGlow } from './components/Background.jsx';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
+import HomePage from './components/HomePage.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import Quiz from './components/Quiz.jsx';
 import WordSearch from './components/WordSearch.jsx';
 import Leaderboard from './components/Leaderboard.jsx';
 import AdminView from './components/AdminView.jsx';
 import { syncUser, clearLocalSession } from './lib/syncUser.js';
+
+// three.js is heavy; only load it when the player opens Visualize.
+const Visualize = lazy(() => import('./components/Visualize.jsx'));
 
 const ADMIN_USERNAME = 'admin';
 
@@ -57,11 +61,11 @@ export default function App() {
         setScreen('admin');
       } else if (result.kind === 'registered') {
         setUser(result.username);
-        setScreen('landing');
+        setScreen('home');
       } else if (result.kind === 'offline' && result.username) {
         // API unreachable — best-effort fallback to local data
         setUser(result.username);
-        setScreen(result.username === ADMIN_USERNAME ? 'admin' : 'landing');
+        setScreen(result.username === ADMIN_USERNAME ? 'admin' : 'home');
       } else {
         setUser('');
         setScreen('welcome');
@@ -80,7 +84,7 @@ export default function App() {
     if (u === ADMIN_USERNAME) {
       nav('admin');
     } else {
-      nav('landing');
+      nav('home');
     }
   }, [nav]);
 
@@ -97,10 +101,16 @@ export default function App() {
       <div style={{ animation: `${fade} 0.4s var(--ease-out)`, minHeight: '100dvh' }}>
         {screen === 'booting'    && <BootingScreen />}
         {screen === 'welcome'    && <WelcomeScreen onContinue={handleLogin} />}
-        {screen === 'landing'    && <LandingPage username={user} onSelectGame={g => nav(g)} />}
+        {screen === 'home'       && <HomePage username={user} onSelect={dest => nav(dest)} />}
+        {screen === 'landing'    && <LandingPage username={user} onBack={() => nav('home')} onSelectGame={g => nav(g)} />}
         {screen === 'quiz'       && <Quiz username={user} onBack={() => nav('landing')} />}
         {screen === 'wordsearch' && <WordSearch username={user} onBack={() => nav('landing')} />}
-        {screen === 'leaderboard' && <Leaderboard username={user} onBack={() => nav('landing')} />}
+        {screen === 'visualize'  && (
+          <Suspense fallback={<BootingScreen />}>
+            <Visualize onBack={() => nav('home')} />
+          </Suspense>
+        )}
+        {screen === 'leaderboard' && <Leaderboard username={user} onBack={() => nav('home')} />}
         {screen === 'admin'      && <AdminView onLogout={handleLogout} />}
       </div>
     </>

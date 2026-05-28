@@ -43,7 +43,7 @@ function ScoreBadge({ score, color }) {
   );
 }
 
-export default function LandingPage({ username, onSelectGame }) {
+export default function LandingPage({ username, onBack, onSelectGame }) {
   const quizKey  = 'sns_' + username + '_quiz';
   const wsKey    = 'sns_' + username + '_ws';
   const quizData = localStorage.getItem(quizKey) ? JSON.parse(localStorage.getItem(quizKey)) : null;
@@ -59,13 +59,31 @@ export default function LandingPage({ username, onSelectGame }) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         animation: 'fadeDown 0.5s var(--ease-out)',
       }}>
-        <div>
-          <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-            <span className="grad-text">Network</span>{' '}
-            <span style={{ color: 'var(--text)' }}>Games</span>
-          </div>
-          <div className="mono" style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4, letterSpacing: '0.04em' }}>
-            @{username}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={onBack}
+            aria-label="Back"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 36, height: 36, borderRadius: 10, cursor: 'pointer', flexShrink: 0,
+              background: 'var(--bg2)', border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
+              color: 'var(--text2)', transition: 'all 0.2s var(--ease-out)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg2)'; e.currentTarget.style.color = 'var(--text2)'; }}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+              <span className="grad-text">Network</span>{' '}
+              <span style={{ color: 'var(--text)' }}>Games</span>
+            </div>
+            <div className="mono" style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4, letterSpacing: '0.04em' }}>
+              @{username}
+            </div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
