@@ -1,61 +1,83 @@
+const FINGERPRINT_KEY = 'sns_fp';
+const LEGACY_FINGERPRINT_KEY = 'sns_fp_legacy';
+const MODERN_PREFIX = 'fp2_';
+
+function readStorage(key) {
+  try {
+    return globalThis.localStorage?.getItem(key) || '';
+  } catch {
+    return '';
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    globalThis.localStorage?.setItem(key, value);
+  } catch {
+    // Some private browsing modes reject localStorage writes.
+  }
+}
+
+function removeStorage(key) {
+  try {
+    globalThis.localStorage?.removeItem(key);
+  } catch {
+    // Nothing to clean up if storage is unavailable.
+  }
+}
+
+function toHex(bytes) {
+  return Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function randomBytes(size) {
+  const bytes = new Uint8Array(size);
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+    return bytes;
+  }
+  for (let i = 0; i < bytes.length; i += 1) {
+    bytes[i] = Math.floor(Math.random() * 256);
+  }
+  return bytes;
+}
+
+function isModernFingerprint(value) {
+  return typeof value === 'string' && value.startsWith(MODERN_PREFIX);
+}
+
+function rememberLegacyFingerprint(value) {
+  if (!value || isModernFingerprint(value)) return;
+  writeStorage(LEGACY_FINGERPRINT_KEY, value);
+}
+
 /**
- * Generates a device fingerprint that is stable ACROSS BROWSERS on the same
- * physical device. We deliberately avoid:
- *   - navigator.userAgent  (literally different per browser)
- *   - canvas / WebGL hash  (different font stack + GL driver per browser)
- *   - navigator.language   (can differ across browsers)
+ * Returns a per-browser-install identifier.
  *
- * Inputs are hardware-level signals that are identical regardless of which
- * browser the user opens us in. This is critical for the "one device = one
- * play" guarantee: switching from Safari to Chrome must produce the SAME hash.
- *
- * Tradeoff: two phones of the same model in the same timezone produce
- * identical fingerprints. We rely on the UNIQUE(ip) DB constraint and the
- * fingerprint UNIQUE constraint to catch the realistic cases.
+ * The previous implementation used deterministic hardware signals. Same-model
+ * phones on the same network could produce the same value, so `/api/me` could
+ * incorrectly restore another player's username. A stored random ID makes the
+ * identity unique to this browser install instead.
  */
 export async function getFingerprint() {
-  try {
-    const parts = [
-      // Screen — stable per physical device
-      `${screen.width}x${screen.height}`,
-      `${screen.availWidth}x${screen.availHeight}`,
-      String(screen.colorDepth || 0),
-      String(screen.pixelDepth || 0),
-      String(window.devicePixelRatio || 1),
+  const stored = readStorage(FINGERPRINT_KEY);
+  if (isModernFingerprint(stored)) return stored;
 
-      // Hardware capabilities
-      String(navigator.hardwareConcurrency || 0),
-      String(navigator.deviceMemory || 0),
-      String(navigator.maxTouchPoints || 0),
+  rememberLegacyFingerprint(stored);
 
-      // Locale (timezone is stable per device unless user travels)
-      Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+  const fingerprint = `${MODERN_PREFIX}${toHex(randomBytes(16))}`;
+  writeStorage(FINGERPRINT_KEY, fingerprint);
+  return fingerprint;
+}
 
-      // Platform (deprecated but stable per OS install)
-      navigator.platform || '',
+export function getLegacyFingerprint() {
+  const stored = readStorage(FINGERPRINT_KEY);
+  if (stored && !isModernFingerprint(stored)) return stored;
+  return readStorage(LEGACY_FINGERPRINT_KEY);
+}
 
-      // OS-level data when available (UA Client Hints API)
-      navigator.userAgentData?.platform || '',
-      String(navigator.userAgentData?.mobile ?? ''),
-    ];
-
-    const raw = parts.join('||');
-    const encoded = new TextEncoder().encode(raw);
-    const hashBuf = await crypto.subtle.digest('SHA-256', encoded);
-    const hex = Array.from(new Uint8Array(hashBuf))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    return hex.slice(0, 24);
-  } catch {
-    // Fallback: random per-install token (defeats cross-browser stability,
-    // but only triggers if SubtleCrypto fails — very rare)
-    const key = 'sns_device_fp';
-    const stored = localStorage.getItem(key);
-    if (stored) return stored;
-    const fallback = Array.from(crypto.getRandomValues(new Uint8Array(12)))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    localStorage.setItem(key, fallback);
-    return fallback;
-  }
+export function clearLegacyFingerprint() {
+  removeStorage(LEGACY_FINGERPRINT_KEY);
 }

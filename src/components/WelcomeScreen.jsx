@@ -167,15 +167,7 @@ export default function WelcomeScreen({ onContinue }) {
   // /api/register call.
   useEffect(() => {
     const t = setTimeout(() => setShowScan(false), 2400);
-    const stored = localStorage.getItem('sns_fp');
-    if (stored) {
-      setFp(stored);
-    } else {
-      getFingerprint().then(fp => {
-        setFp(fp);
-        localStorage.setItem('sns_fp', fp);
-      });
-    }
+    getFingerprint().then(setFp);
     return () => clearTimeout(t);
   }, []);
 
@@ -184,6 +176,7 @@ export default function WelcomeScreen({ onContinue }) {
     const trimmedUser = username.trim().toLowerCase();
     if (!trimmedUser) { setError('Username required'); return; }
     if (!USERNAME_RE.test(trimmedUser)) { setError('3–20 chars: letters, digits, _ . -'); return; }
+    if (!isAdmin && !fingerprint) { setError('Device check still loading — try again'); return; }
 
     setSubmit(true);
     setError('');
@@ -225,12 +218,13 @@ export default function WelcomeScreen({ onContinue }) {
           setBlocked(data.field === 'ip' ? 'ip_registered' : 'device_registered');
           return;
         }
+        setError('Could not register — try again');
+        return;
       }
       localStorage.setItem('sns_user', trimmedUser);
       onContinue(trimmedUser);
     } catch {
-      localStorage.setItem('sns_user', trimmedUser);
-      onContinue(trimmedUser);
+      setError('Could not reach server');
     } finally {
       setSubmit(false);
     }

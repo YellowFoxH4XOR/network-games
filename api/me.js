@@ -16,9 +16,15 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST')    return res.status(405).json({ error: 'Method not allowed' });
 
-  const { fingerprint } = req.body ?? {};
+  const { fingerprint, previousFingerprint } = req.body ?? {};
   if (!fingerprint || typeof fingerprint !== 'string' || fingerprint.length > 64) {
     return res.status(400).json({ error: 'Invalid fingerprint' });
+  }
+  if (
+    previousFingerprint &&
+    (typeof previousFingerprint !== 'string' || previousFingerprint.length > 64)
+  ) {
+    return res.status(400).json({ error: 'Invalid previous fingerprint' });
   }
 
   try {
@@ -27,26 +33,53 @@ export default async function handler(req, res) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    const { data: player } = await supabase
+    let migrated = false;
+
+    const { data: existingPlayer, error: existingError } = await supabase
       .from('players')
       .select('id, username')
       .eq('fingerprint', fingerprint)
       .maybeSingle();
+    if (existingError) throw existingError;
+
+    let player = existingPlayer;
+
+    if (!player && previousFingerprint && previousFingerprint !== fingerprint) {
+      const { data: legacyPlayer, error: legacyError } = await supabase
+        .from('players')
+        .select('id, username')
+        .eq('fingerprint', previousFingerprint)
+        .maybeSingle();
+      if (legacyError) throw legacyError;
+
+      if (legacyPlayer) {
+        const { error: updateError } = await supabase
+          .from('players')
+          .update({ fingerprint })
+          .eq('id', legacyPlayer.id);
+        if (updateError) throw updateError;
+
+        player = legacyPlayer;
+        migrated = true;
+      }
+    }
 
     if (!player) {
       return res.json({ registered: false });
     }
 
-    const { data: scores } = await supabase
+    const { data: scores, error: scoresError } = await supabase
       .from('scores')
       .select('game, score')
       .eq('username', player.username);
+    if (scoresError) throw scoresError;
 
     const out = {
       registered: true,
       username:   player.username,
       quiz:       null,
       wordsearch: null,
+      migrated,
     };
     for (const s of (scores ?? [])) {
       if (s.game === 'quiz' || s.game === 'wordsearch') {

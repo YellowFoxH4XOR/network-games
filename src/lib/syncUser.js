@@ -1,4 +1,8 @@
-import { getFingerprint } from './fingerprint.js';
+import {
+  clearLegacyFingerprint,
+  getFingerprint,
+  getLegacyFingerprint,
+} from './fingerprint.js';
 
 const ADMIN_USERNAME = 'admin';
 
@@ -40,15 +44,20 @@ export async function syncUser() {
 
   // Player path: fingerprint → /api/me
   const fp = await getFingerprint();
+  const previousFingerprint = getLegacyFingerprint();
   localStorage.setItem('sns_fp', fp);
 
   let data;
   try {
+    const body = { fingerprint: fp };
+    if (previousFingerprint && previousFingerprint !== fp) {
+      body.previousFingerprint = previousFingerprint;
+    }
     const res = await fetch('/api/me', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       cache: 'no-store',
-      body: JSON.stringify({ fingerprint: fp }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`status ${res.status}`);
     data = await res.json();
@@ -67,6 +76,7 @@ export async function syncUser() {
   // Sync: localStorage mirrors what the DB knows
   const u = data.username;
   localStorage.setItem('sns_user', u);
+  clearLegacyFingerprint();
 
   if (data.quiz) {
     localStorage.setItem(`sns_${u}_quiz`, JSON.stringify({

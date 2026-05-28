@@ -17,45 +17,89 @@ const DIRS = [
   { dr: 1, dc: 1 }, { dr: 1, dc: -1 }, { dr: -1, dc: 1 }, { dr: -1, dc: -1 },
 ];
 
+/**
+ * Generate a word search grid.
+ *  - Picks a random subset so word selection differs every run
+ *  - Tries multiple placements per word and prefers ones that OVERLAP existing
+ *    letters (crossings make it visibly harder than separated words)
+ *  - Fills empty cells with letters weighted toward the alphabet that appears
+ *    in the placed words, so filler doesn't stand out as obviously fake
+ */
 function genPuzzle() {
   const grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
 
-  // 1) Filter to length-eligible words   2) Shuffle   3) Take small candidate pool
-  // 4) Sort that pool by length descending for efficient placement
+  // Random subset → different words every game.
   const valid = NETWORK_KEYWORDS.filter(w => w.length <= GRID_SIZE);
   const shuffled = [...valid].sort(() => Math.random() - 0.5);
-  const candidates = shuffled.slice(0, Math.min(WORD_COUNT * 2, shuffled.length));
+  const candidates = shuffled.slice(0, Math.min(WORD_COUNT * 3, shuffled.length));
+  // Place longest first — they're hardest to fit, so they need first pick.
   candidates.sort((a, b) => b.length - a.length);
 
   const placed = [];
+
   for (const word of candidates) {
     if (placed.length >= WORD_COUNT) break;
-    let ok = false;
-    const sd = [...DIRS].sort(() => Math.random() - 0.5);
-    for (let t = 0; t < 120 && !ok; t++) {
-      const d  = sd[t % 8];
+
+    // Score every legal placement by overlap count, then pick the best.
+    // For the FIRST few words there's nothing to overlap, so we fall back
+    // to a random legal position.
+    let bestCells = null;
+    let bestOverlap = -1;
+    const tryCount = 220;
+
+    for (let t = 0; t < tryCount; t++) {
+      const d  = DIRS[Math.floor(Math.random() * DIRS.length)];
       const sr = Math.floor(Math.random() * GRID_SIZE);
       const sc = Math.floor(Math.random() * GRID_SIZE);
+
       let fit = true;
+      let overlap = 0;
       const cells = [];
       for (let i = 0; i < word.length; i++) {
         const r = sr + i * d.dr, c = sc + i * d.dc;
         if (r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE) { fit = false; break; }
-        if (grid[r][c] !== null && grid[r][c] !== word[i]) { fit = false; break; }
+        const existing = grid[r][c];
+        if (existing !== null) {
+          if (existing !== word[i]) { fit = false; break; }
+          overlap++;
+        }
         cells.push({ r, c });
       }
-      if (fit) {
-        cells.forEach((p, i) => { grid[p.r][p.c] = word[i]; });
-        placed.push(word);
-        ok = true;
+      if (!fit) continue;
+
+      if (overlap > bestOverlap) {
+        bestOverlap = overlap;
+        bestCells = cells;
+        // Excellent placement — two or more crossings is great, take it.
+        if (overlap >= 2) break;
       }
+    }
+
+    if (bestCells) {
+      bestCells.forEach((p, i) => { grid[p.r][p.c] = word[i]; });
+      placed.push(word);
     }
   }
 
-  const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  for (let r = 0; r < GRID_SIZE; r++)
-    for (let c = 0; c < GRID_SIZE; c++)
-      if (!grid[r][c]) grid[r][c] = L[Math.floor(Math.random() * 26)];
+  // Weighted filler: bias toward letters that already appear in placed words.
+  // This makes the filler blend in, so the eye can't quickly dismiss "fake"
+  // letters and has to actually scan for words.
+  const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const freq = Object.fromEntries([...ALPHA].map(c => [c, 1]));
+  for (const word of placed) {
+    for (const ch of word) freq[ch] += 3;
+  }
+  const pool = [];
+  for (const ch of ALPHA) {
+    const n = freq[ch];
+    for (let i = 0; i < n; i++) pool.push(ch);
+  }
+
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      if (!grid[r][c]) grid[r][c] = pool[Math.floor(Math.random() * pool.length)];
+    }
+  }
 
   return { grid, words: placed };
 }
