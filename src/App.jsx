@@ -4,6 +4,7 @@ import WelcomeScreen from './components/WelcomeScreen.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import Quiz from './components/Quiz.jsx';
 import WordSearch from './components/WordSearch.jsx';
+import Leaderboard from './components/Leaderboard.jsx';
 import AdminView from './components/AdminView.jsx';
 import { syncUser, clearLocalSession } from './lib/syncUser.js';
 
@@ -99,6 +100,7 @@ export default function App() {
         {screen === 'landing'    && <LandingPage username={user} onSelectGame={g => nav(g)} />}
         {screen === 'quiz'       && <Quiz username={user} onBack={() => nav('landing')} />}
         {screen === 'wordsearch' && <WordSearch username={user} onBack={() => nav('landing')} />}
+        {screen === 'leaderboard' && <Leaderboard username={user} onBack={() => nav('landing')} />}
         {screen === 'admin'      && <AdminView onLogout={handleLogout} />}
       </div>
     </>

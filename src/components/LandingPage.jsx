@@ -68,14 +68,35 @@ export default function LandingPage({ username, onSelectGame }) {
             @{username}
           </div>
         </div>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 7,
-          padding: '6px 12px', borderRadius: 100,
-          background: 'var(--bg2)', border: '1px solid var(--b1)',
-          boxShadow: 'var(--shadow-sm)',
-        }}>
-          <span className="dot dot-g" style={{ width: 6, height: 6 }}></span>
-          <span className="mono" style={{ fontSize: 9, color: 'var(--green-dim)', fontWeight: 700, letterSpacing: '0.1em' }}>ONLINE</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => onSelectGame('leaderboard')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 13px', borderRadius: 100, cursor: 'pointer',
+              background: 'var(--bg2)', border: '1px solid var(--b1)',
+              boxShadow: 'var(--shadow-sm)',
+              transition: 'all 0.2s var(--ease-out)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg2)'; }}
+          >
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M3 2h8v3a4 4 0 01-8 0V2z" stroke="var(--green)" strokeWidth="1.4" strokeLinejoin="round"/>
+              <path d="M11 3h1.5a1.5 1.5 0 01-1.5 2.5M3 3H1.5A1.5 1.5 0 003 5.5" stroke="var(--green)" strokeWidth="1.2" strokeLinecap="round"/>
+              <path d="M7 9v2M5 12h4" stroke="var(--green)" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            <span className="mono" style={{ fontSize: 9, color: 'var(--green-dim)', fontWeight: 700, letterSpacing: '0.1em' }}>RANKS</span>
+          </button>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '6px 12px', borderRadius: 100,
+            background: 'var(--bg2)', border: '1px solid var(--b1)',
+            boxShadow: 'var(--shadow-sm)',
+          }}>
+            <span className="dot dot-g" style={{ width: 6, height: 6 }}></span>
+            <span className="mono" style={{ fontSize: 9, color: 'var(--green-dim)', fontWeight: 700, letterSpacing: '0.1em' }}>ONLINE</span>
+          </div>
         </div>
       </div>
 
