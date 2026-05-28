@@ -15,15 +15,17 @@ vercel-live-feedback,
 }
 
 :root {
-  /* ─── Surface (light theme) ─── */
-  --bg:       #F4F6FB;
-  --bg2:      #FFFFFF;
-  --s1:       rgba(15, 20, 38, 0.025);
-  --s2:       rgba(15, 20, 38, 0.045);
-  --s3:       rgba(15, 20, 38, 0.075);
-  --b1:       rgba(15, 20, 38, 0.06);
-  --b2:       rgba(15, 20, 38, 0.10);
-  --b3:       rgba(15, 20, 38, 0.18);
+  /* ─── Surface (quiet daylight theme) ─── */
+  --bg:       oklch(0.965 0.011 185);
+  --bg2:      oklch(0.993 0.004 185);
+  --bg3:      oklch(0.935 0.016 185);
+  --chrome:   color-mix(in oklch, var(--bg2) 86%, transparent);
+  --s1:       color-mix(in oklch, var(--text) 3%, transparent);
+  --s2:       color-mix(in oklch, var(--text) 5%, transparent);
+  --s3:       color-mix(in oklch, var(--text) 8%, transparent);
+  --b1:       color-mix(in oklch, var(--text) 8%, transparent);
+  --b2:       color-mix(in oklch, var(--text) 13%, transparent);
+  --b3:       color-mix(in oklch, var(--text) 22%, transparent);
 
   /* Legacy aliases */
   --glass:          var(--s1);
@@ -31,37 +33,42 @@ vercel-live-feedback,
   --glass-border:   var(--b1);
   --glass-border2:  var(--b2);
 
-  /* ─── Accent palette (darker for white-bg contrast) ─── */
-  --green:       #00B25C;
-  --green-dim:   #008A48;
-  --green-glow:  rgba(0, 178, 92, 0.16);
-  --green-glow2: rgba(0, 178, 92, 0.30);
-  --cyan:        #009EBB;
-  --cyan-glow:   rgba(0, 158, 187, 0.16);
-  --blue:        #2E66E3;
-  --violet:      #8B47EB;
-  --red:         #E84545;
-  --red-glow:    rgba(232, 69, 69, 0.14);
-  --amber:       #F0A500;
-  --amber-glow:  rgba(240, 165, 0, 0.16);
+  /* ─── Accent palette ─── */
+  --green:       oklch(0.59 0.145 158);
+  --green-dim:   oklch(0.49 0.12 158);
+  --green-glow:  color-mix(in oklch, var(--green) 16%, transparent);
+  --green-glow2: color-mix(in oklch, var(--green) 28%, transparent);
+  --cyan:        oklch(0.55 0.105 210);
+  --cyan-glow:   color-mix(in oklch, var(--cyan) 15%, transparent);
+  --blue:        oklch(0.54 0.13 250);
+  --violet:      oklch(0.56 0.15 295);
+  --red:         oklch(0.58 0.18 25);
+  --red-glow:    color-mix(in oklch, var(--red) 14%, transparent);
+  --amber:       oklch(0.68 0.145 78);
+  --amber-glow:  color-mix(in oklch, var(--amber) 17%, transparent);
+  --on-accent:   oklch(0.985 0.004 185);
+  --brand:       oklch(0.45 0.12 178);
+  --success-soft: color-mix(in oklch, var(--green) 10%, transparent);
+  --danger-soft:  color-mix(in oklch, var(--red) 10%, transparent);
+  --warning-soft: color-mix(in oklch, var(--amber) 11%, transparent);
 
   /* ─── Text ─── */
-  --text:  #0F1426;
-  --text2: #515569;
-  --text3: #898C9E;
-  --text4: #BCBED0;
+  --text:  oklch(0.235 0.035 245);
+  --text2: oklch(0.43 0.03 245);
+  --text3: oklch(0.61 0.025 245);
+  --text4: oklch(0.76 0.018 245);
 
   /* ─── Gradients ─── */
-  --grad-main:  linear-gradient(135deg, #00B25C 0%, #009EBB 50%, #2E66E3 100%);
-  --grad-green: linear-gradient(135deg, #00B25C, #008A48);
-  --grad-hot:   linear-gradient(135deg, #8B47EB, #2E66E3);
+  --grad-main:  linear-gradient(135deg, var(--green) 0%, var(--cyan) 58%, var(--blue) 100%);
+  --grad-green: linear-gradient(135deg, var(--green), var(--green-dim));
+  --grad-hot:   linear-gradient(135deg, var(--violet), var(--blue));
 
   /* ─── Shadows ─── */
-  --shadow:     0 16px 40px rgba(15, 20, 38, 0.08), 0 4px 12px rgba(15, 20, 38, 0.04);
-  --shadow-sm:  0 4px 16px rgba(15, 20, 38, 0.05);
-  --shadow-lg:  0 24px 60px rgba(15, 20, 38, 0.12), 0 8px 20px rgba(15, 20, 38, 0.06);
-  --glow-green: 0 0 30px rgba(0, 178, 92, 0.22), 0 0 60px rgba(0, 178, 92, 0.08);
-  --glow-cyan:  0 0 30px rgba(0, 158, 187, 0.22), 0 0 60px rgba(0, 158, 187, 0.08);
+  --shadow:     0 18px 44px color-mix(in oklch, var(--text) 10%, transparent), 0 4px 12px color-mix(in oklch, var(--text) 5%, transparent);
+  --shadow-sm:  0 5px 16px color-mix(in oklch, var(--text) 6%, transparent);
+  --shadow-lg:  0 24px 62px color-mix(in oklch, var(--text) 15%, transparent), 0 8px 20px color-mix(in oklch, var(--text) 7%, transparent);
+  --glow-green: 0 0 26px color-mix(in oklch, var(--green) 22%, transparent), 0 0 54px color-mix(in oklch, var(--green) 8%, transparent);
+  --glow-cyan:  0 0 26px color-mix(in oklch, var(--cyan) 22%, transparent), 0 0 54px color-mix(in oklch, var(--cyan) 8%, transparent);
 
   /* ─── Easing ─── */
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);

@@ -17,11 +17,13 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { username, fingerprint } = req.body ?? {};
+  let { username, fingerprint } = req.body ?? {};
 
-  if (!username || !USERNAME_RE.test(username)) {
+  if (!username || typeof username !== 'string' || !USERNAME_RE.test(username)) {
     return res.status(400).json({ error: 'Invalid username' });
   }
+  // Normalize to lowercase so 'Akki' and 'akki' are the same player
+  username = username.toLowerCase();
   if (!fingerprint || typeof fingerprint !== 'string' || fingerprint.length > 64) {
     return res.status(400).json({ error: 'Invalid fingerprint' });
   }
@@ -40,8 +42,13 @@ export default async function handler(req, res) {
 
     if (error) {
       if (error.code === '23505') {
-        // Generic conflict — don't reveal which constraint failed
-        return res.status(409).json({ error: 'already_registered' });
+        // Surface which field collided so the client can show the right message
+        const msg = error.message || '';
+        let field = 'device';
+        if (msg.includes('username')) field = 'username';
+        else if (msg.includes('ip'))   field = 'ip';
+        else if (msg.includes('fingerprint')) field = 'device';
+        return res.status(409).json({ error: 'already_registered', field });
       }
       throw error;
     }

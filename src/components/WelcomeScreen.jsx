@@ -191,7 +191,7 @@ export default function WelcomeScreen({ onContinue }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const trimmedUser = username.trim();
+    const trimmedUser = username.trim().toLowerCase();
     if (!trimmedUser) { setError('Username required'); return; }
     if (!USERNAME_RE.test(trimmedUser)) { setError('3–20 chars: letters, digits, _ . -'); return; }
 
@@ -221,7 +221,16 @@ export default function WelcomeScreen({ onContinue }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        if (data.error === 'already_registered') { setBlocked('username_taken'); return; }
+        if (data.error === 'already_registered') {
+          // Username collision is a recoverable error — show inline, let them retry
+          if (data.field === 'username') {
+            setError('This username is already taken — pick another');
+            return;
+          }
+          // Device or IP collision is permanent — show the block screen
+          setBlocked(data.field === 'ip' ? 'ip_registered' : 'device_registered');
+          return;
+        }
       }
       localStorage.setItem('sns_user', trimmedUser);
       onContinue(trimmedUser);
