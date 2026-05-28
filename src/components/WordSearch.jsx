@@ -82,8 +82,8 @@ const W = {
   },
 };
 
-export default function WordSearch({ email, onBack }) {
-  const key = 'sns_' + (email || 'anon') + '_ws';
+export default function WordSearch({ username, onBack }) {
+  const key = 'sns_' + (username || 'anon') + '_ws';
 
   const [done, setDone]           = useState(false);
   const [prevScore, setPrevScore] = useState(0);
@@ -146,7 +146,7 @@ export default function WordSearch({ email, onBack }) {
     if (gState !== 'finished' || !pz) return;
     const fw = Object.keys(found).length;
     localStorage.setItem(key, JSON.stringify({ score, found: fw, total: pz.words.length, playedAt: Date.now() }));
-    saveScore(email, 'wordsearch', score);
+    saveScore(username, 'wordsearch', score);
   }, [gState]);
 
   const cur    = useMemo(() => (sel && ds ? selCells(ds, de || ds) : []), [sel, ds, de]);

@@ -7,7 +7,6 @@ function getClientIp(req) {
 }
 
 export default async function handler(req, res) {
-  // Scope CORS to same origin — no wildcard
   const origin = req.headers.origin || '';
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -20,7 +19,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid fingerprint' });
   }
 
-  // Always read IP server-side — never trust client-supplied value
+  // IP is always read server-side — never trust the client
   const ip = getClientIp(req);
 
   try {
@@ -29,22 +28,18 @@ export default async function handler(req, res) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    const { data: byFp } = await supabase
-      .from('players')
-      .select('id')
-      .eq('fingerprint', fingerprint)
-      .maybeSingle();
+    // Block if this device fingerprint OR this IP has already played
+    const [{ data: byFp }, { data: byIp }] = await Promise.all([
+      supabase.from('players').select('id').eq('fingerprint', fingerprint).maybeSingle(),
+      supabase.from('players').select('id').eq('ip', ip).maybeSingle(),
+    ]);
 
-    if (byFp) {
-      return res.json({ allowed: false, reason: 'device_registered' });
-    }
+    if (byFp) return res.json({ allowed: false, reason: 'device_registered' });
+    if (byIp) return res.json({ allowed: false, reason: 'ip_registered' });
 
     return res.json({ allowed: true });
   } catch (err) {
     console.error('[check] error:', err.message);
-    // Distinguish transient DB error from a clean "not found".
-    // For a first-time visitor we can't confirm they're clear, so return an
-    // explicit error code — the client decides whether to fail open or not.
     return res.status(503).json({ error: 'service_unavailable' });
   }
 }

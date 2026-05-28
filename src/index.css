@@ -1,5 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
+/* ─── Kill the Vercel Toolbar on all deployments ─── */
+vercel-toolbar,
+vercel-live-feedback,
+[data-vercel-toolbar],
+[data-vercel-live-feedback],
+#vercel-toolbar,
+div[data-testid="vercel-toolbar"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
 :root {
   /* Surface */
   --bg:       #020204;

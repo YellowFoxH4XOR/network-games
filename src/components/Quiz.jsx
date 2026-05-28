@@ -69,8 +69,8 @@ const S = {
   },
 };
 
-export default function Quiz({ email, onBack }) {
-  const storageKey = 'sns_' + (email || 'anon') + '_quiz';
+export default function Quiz({ username, onBack }) {
+  const storageKey = 'sns_' + (username || 'anon') + '_quiz';
 
   const [alreadyPlayed, setAlreadyPlayed] = useState(false);
   const [prevScore, setPrevScore]         = useState(0);
@@ -121,7 +121,7 @@ export default function Quiz({ email, onBack }) {
       if (idx >= 4) {
         setGameState('finished');
         localStorage.setItem(storageKey, JSON.stringify({ score, answers, playedAt: Date.now() }));
-        saveScore(email, 'quiz', score);
+        saveScore(username, 'quiz', score);
       } else {
         setIdx(i => i + 1); setSelected(null); setShowFb(false); setTimeLeft(30);
       }

@@ -51,9 +51,9 @@ function ScoreBadge({ score, color }) {
   );
 }
 
-export default function LandingPage({ email, onSelectGame }) {
-  const quizKey = 'sns_' + email + '_quiz';
-  const wsKey   = 'sns_' + email + '_ws';
+export default function LandingPage({ username, onSelectGame }) {
+  const quizKey = 'sns_' + username + '_quiz';
+  const wsKey   = 'sns_' + username + '_ws';
   const quizData = localStorage.getItem(quizKey) ? JSON.parse(localStorage.getItem(quizKey)) : null;
   const wsData   = localStorage.getItem(wsKey)   ? JSON.parse(localStorage.getItem(wsKey))   : null;
   const total    = (quizData?.score || 0) + (wsData?.score || 0);
@@ -74,7 +74,7 @@ export default function LandingPage({ email, onSelectGame }) {
             <span style={{ color: 'var(--text)' }}>Games</span>
           </div>
           <div className="mono" style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4, letterSpacing: '0.04em' }}>
-            {email}
+            @{username}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', background: 'var(--s2)', borderRadius: 100, border: '1px solid var(--b1)' }}>

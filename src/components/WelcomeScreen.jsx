@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { getFingerprint } from '../lib/fingerprint.js';
 
-const ADMIN_EMAIL = 'admin@snsdays.com';
+const ADMIN_USERNAME = 'admin';
+const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
 
 /* ── Animated network topology ── */
 function NetTopology() {
@@ -94,8 +95,14 @@ function MagneticBtn({ children, onClick, type = 'button', disabled, loading }) 
   );
 }
 
-/* ── Already played screen ── */
+/* ── Blocked screen ── */
 function AlreadyPlayed({ reason }) {
+  const message = {
+    device_registered: 'This device has already participated. Each device can only play once.',
+    ip_registered:    'This network has already been used. Each network can only register one player.',
+    username_taken:   'This username is already taken. Choose a different one.',
+  }[reason] || 'You have already participated. Each player gets one attempt.';
+
   return (
     <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '32px 24px', textAlign: 'center', animation: 'fadeUp 0.6s var(--ease-out)' }}>
       <NetTopology />
@@ -108,71 +115,54 @@ function AlreadyPlayed({ reason }) {
       <h2 style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 10, color: 'var(--text)' }}>
         Access Denied
       </h2>
-      <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.65, maxWidth: 280, marginBottom: 28 }}>
-        {reason === 'device_registered'
-          ? 'This device has already participated. Each device can only play once.'
-          : 'This email has already been used. Each player gets one attempt.'}
+      <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.65, maxWidth: 300, marginBottom: 28 }}>
+        {message}
       </p>
       <div style={{ padding: '14px 24px', background: 'var(--s2)', border: '1px solid var(--b2)', borderRadius: 14 }}>
-        <span className="label">CHALLENGE CLOSED FOR THIS DEVICE</span>
+        <span className="label">CHALLENGE CLOSED</span>
       </div>
     </div>
   );
 }
 
 export default function WelcomeScreen({ onContinue }) {
-  const [email, setEmail]       = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [ip, setIp]             = useState('');
   const [fingerprint, setFp]    = useState('');
   const [error, setError]       = useState('');
-  const [ipLoading, setIpLoad]  = useState(true);
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmit] = useState(false);
   const [blocked, setBlocked]   = useState(null);
   const [booted, setBooted]     = useState(false);
   const [showScan, setShowScan] = useState(true);
 
-  const isAdmin = email.trim().toLowerCase() === ADMIN_EMAIL;
+  const isAdmin = username.trim().toLowerCase() === ADMIN_USERNAME;
 
   useEffect(() => {
     const t1 = setTimeout(() => setShowScan(false), 2600);
     const t2 = setTimeout(() => setBooted(true), 400);
 
-    // Fetch IP and fingerprint in parallel
-    const initPromise = Promise.all([
-      fetch('https://api.ipify.org?format=json')
-        .then(r => r.json()).then(d => d.ip)
-        .catch(() => 'unavailable'),
-      getFingerprint(),
-    ]).then(([detectedIp, fp]) => {
-      setIp(detectedIp);
-      setIpLoad(false);
+    getFingerprint().then(fp => {
       setFp(fp);
-
-      // Store fp in localStorage for rehydration
       localStorage.setItem('sns_fp', fp);
 
-      // Admin bypasses device check entirely
-      const savedEmail = localStorage.getItem('sns_user_email') || '';
-      if (savedEmail === ADMIN_EMAIL) {
+      const savedUser = localStorage.getItem('sns_user') || '';
+      if (savedUser === ADMIN_USERNAME) {
         setChecking(false);
         return;
       }
 
-      // Check device against backend
       return fetch('/api/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fingerprint: fp, ip: detectedIp }),
+        body: JSON.stringify({ fingerprint: fp }),
       })
         .then(r => r.json())
-        .catch(() => ({ allowed: true })); // fail open if API is down
-    }).then(result => {
-      if (result && !result.allowed) {
-        setBlocked(result.reason || 'device_registered');
-      }
-      setChecking(false);
+        .catch(() => ({ allowed: true })) // fail open on local dev
+        .then(result => {
+          if (result && !result.allowed) setBlocked(result.reason);
+          setChecking(false);
+        });
     });
 
     return () => { clearTimeout(t1); clearTimeout(t2); };
@@ -180,13 +170,17 @@ export default function WelcomeScreen({ onContinue }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim()) { setError('Email required'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Invalid email address'); return; }
+    const trimmedUser = username.trim();
+    if (!trimmedUser) { setError('Username required'); return; }
+    if (!USERNAME_RE.test(trimmedUser)) {
+      setError('3–20 chars: letters, digits, _ . -');
+      return;
+    }
 
     setSubmit(true);
     setError('');
 
-    // Admin: verify password against server before granting access
+    // Admin flow: verify password via leaderboard auth
     if (isAdmin) {
       if (!password.trim()) { setError('Admin password required'); setSubmit(false); return; }
       try {
@@ -199,50 +193,42 @@ export default function WelcomeScreen({ onContinue }) {
         setError('Could not reach server'); setSubmit(false); return;
       }
       sessionStorage.setItem('sns_admin_token', password);
-      localStorage.setItem('sns_user_email', email);
-      onContinue(email);
+      localStorage.setItem('sns_user', ADMIN_USERNAME);
+      onContinue(ADMIN_USERNAME);
       return;
     }
 
+    // Regular player: register with backend
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, fingerprint, ip }),
+        body: JSON.stringify({ username: trimmedUser, fingerprint }),
       });
       const data = await res.json();
 
       if (!res.ok) {
         if (data.error === 'already_registered') {
-          if (data.field === 'email') {
-            setBlocked('email_taken');
-          } else {
-            setBlocked('device_registered');
-          }
+          setBlocked('username_taken');
           return;
         }
-        // Server error — still allow through (fail open)
         console.warn('Register API error — allowing through:', data.error);
       }
 
-      localStorage.setItem('sns_user_email', email);
-      localStorage.setItem('sns_user_ip', ip);
-      onContinue(email);
-    } catch (err) {
-      // API unavailable (local dev / network error) — fail open
+      localStorage.setItem('sns_user', trimmedUser);
+      onContinue(trimmedUser);
+    } catch {
+      // API unavailable (local dev) — fail open
       console.warn('Register API unavailable — allowing through');
-      localStorage.setItem('sns_user_email', email);
-      localStorage.setItem('sns_user_ip', ip);
-      onContinue(email);
+      localStorage.setItem('sns_user', trimmedUser);
+      onContinue(trimmedUser);
     } finally {
       setSubmit(false);
     }
   };
 
-  // ── Already blocked ──
   if (blocked) return <AlreadyPlayed reason={blocked} />;
 
-  // ── Boot / checking screen ──
   if (checking) {
     return (
       <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 20, padding: 24 }}>
@@ -285,16 +271,20 @@ export default function WelcomeScreen({ onContinue }) {
         Test your networking knowledge.<br/>Two games. One shot. No retries.
       </p>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} style={{ opacity: booted ? 1 : 0, animation: booted ? 'fadeUp 0.7s var(--ease-out) 0.45s both' : 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div>
           <label className="label" style={{ display: 'block', marginBottom: 10 }}>
-            Enter email to authenticate
+            Choose a username
           </label>
           <input
-            type="email" value={email}
-            onChange={e => { setEmail(e.target.value); setError(''); }}
-            placeholder="you@example.com"
+            type="text"
+            value={username}
+            onChange={e => { setUsername(e.target.value); setError(''); }}
+            placeholder="your_name"
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck="false"
+            maxLength={20}
             autoFocus
             style={{
               width: '100%', padding: '16px 18px',
@@ -311,7 +301,7 @@ export default function WelcomeScreen({ onContinue }) {
           )}
         </div>
 
-        {/* Password field — only visible for admin email */}
+        {/* Password field — only when admin username is typed */}
         {isAdmin && (
           <div style={{ animation: 'scaleIn 0.25s var(--ease-spring)' }}>
             <label className="label" style={{ display: 'block', marginBottom: 10 }}>

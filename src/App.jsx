@@ -6,26 +6,26 @@ import Quiz from './components/Quiz.jsx';
 import WordSearch from './components/WordSearch.jsx';
 import AdminView from './components/AdminView.jsx';
 
-const ADMIN_EMAIL = 'admin@snsdays.com';
+const ADMIN_USERNAME = 'admin';
 
 export default function App() {
-  const savedEmail = localStorage.getItem('sns_user_email') || '';
+  const savedUser = localStorage.getItem('sns_user') || '';
   const [screen, setScreen] = useState(() => {
-    if (!savedEmail) return 'welcome';
-    if (savedEmail === ADMIN_EMAIL) return 'admin';
+    if (!savedUser) return 'welcome';
+    if (savedUser === ADMIN_USERNAME) return 'admin';
     return 'landing';
   });
-  const [email, setEmail] = useState(savedEmail);
-  const [fade, setFade]   = useState('fadeUp');
+  const [user, setUser] = useState(savedUser);
+  const [fade, setFade] = useState('fadeUp');
 
   const nav = useCallback((dest) => {
     setFade('fadeOut');
     setTimeout(() => { setScreen(dest); setFade('fadeUp'); }, 220);
   }, []);
 
-  const handleLogin = useCallback((e) => {
-    setEmail(e);
-    if (e === ADMIN_EMAIL) {
+  const handleLogin = useCallback((u) => {
+    setUser(u);
+    if (u === ADMIN_USERNAME) {
       nav('admin');
     } else {
       nav('landing');
@@ -33,10 +33,9 @@ export default function App() {
   }, [nav]);
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('sns_user_email');
-    localStorage.removeItem('sns_user_ip');
+    localStorage.removeItem('sns_user');
     sessionStorage.removeItem('sns_admin_token');
-    setEmail('');
+    setUser('');
     nav('welcome');
   }, [nav]);
 
@@ -45,21 +44,11 @@ export default function App() {
       <Background />
       <CursorGlow />
       <div style={{ animation: `${fade} 0.4s var(--ease-out)`, minHeight: '100dvh' }}>
-        {screen === 'welcome' && (
-          <WelcomeScreen onContinue={handleLogin} />
-        )}
-        {screen === 'landing' && (
-          <LandingPage email={email} onSelectGame={g => nav(g)} />
-        )}
-        {screen === 'quiz' && (
-          <Quiz email={email} onBack={() => nav('landing')} />
-        )}
-        {screen === 'wordsearch' && (
-          <WordSearch email={email} onBack={() => nav('landing')} />
-        )}
-        {screen === 'admin' && (
-          <AdminView onLogout={handleLogout} />
-        )}
+        {screen === 'welcome'    && <WelcomeScreen onContinue={handleLogin} />}
+        {screen === 'landing'    && <LandingPage username={user} onSelectGame={g => nav(g)} />}
+        {screen === 'quiz'       && <Quiz username={user} onBack={() => nav('landing')} />}
+        {screen === 'wordsearch' && <WordSearch username={user} onBack={() => nav('landing')} />}
+        {screen === 'admin'      && <AdminView onLogout={handleLogout} />}
       </div>
     </>
   );

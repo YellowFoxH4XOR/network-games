@@ -1,15 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
-const ADMIN_EMAIL = 'admin@snsdays.com';
 
-function maskEmail(email) {
-  const [user, domain] = email.split('@');
-  if (user.length <= 2) return `${user[0]}*@${domain}`;
-  return `${user[0]}${user[1]}${'*'.repeat(Math.min(user.length - 2, 4))}@${domain}`;
-}
-
-function RankRow({ rank, email, score, color, delay = 0 }) {
+function RankRow({ rank, username, score, color, delay = 0 }) {
   const isTop3 = rank <= 3;
   return (
     <div style={{
@@ -34,15 +27,15 @@ function RankRow({ rank, email, score, color, delay = 0 }) {
         {isTop3 ? MEDAL[rank - 1] : rank}
       </div>
 
-      {/* Email */}
+      {/* Username */}
       <span style={{
-        flex: 1, fontSize: 13, fontWeight: 600,
+        flex: 1, fontSize: 14, fontWeight: 700,
         color: isTop3 ? 'var(--text)' : 'var(--text2)',
         fontFamily: "'JetBrains Mono', monospace",
         letterSpacing: '0.02em',
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
-        {maskEmail(email)}
+        @{username}
       </span>
 
       {/* Score */}
@@ -104,9 +97,9 @@ function Board({ title, data, color, icon, loading }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {data.map((row, i) => (
             <RankRow
-              key={row.email}
+              key={row.username}
               rank={i + 1}
-              email={row.email}
+              username={row.username}
               score={row.score}
               color={color}
               delay={i * 0.04}

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/;
+// Username: 3-20 chars, letters, digits, underscore, hyphen, dot
+const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
 
 function getClientIp(req) {
   const fwd = req.headers['x-forwarded-for'];
@@ -16,16 +17,15 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { email, fingerprint } = req.body ?? {};
+  const { username, fingerprint } = req.body ?? {};
 
-  if (!email || !EMAIL_RE.test(email)) {
-    return res.status(400).json({ error: 'Invalid email' });
+  if (!username || !USERNAME_RE.test(username)) {
+    return res.status(400).json({ error: 'Invalid username' });
   }
   if (!fingerprint || typeof fingerprint !== 'string' || fingerprint.length > 64) {
     return res.status(400).json({ error: 'Invalid fingerprint' });
   }
 
-  // Read IP server-side — never trust client-supplied value
   const ip = getClientIp(req);
 
   try {
@@ -36,11 +36,11 @@ export default async function handler(req, res) {
 
     const { error } = await supabase
       .from('players')
-      .insert({ email, fingerprint, ip });
+      .insert({ username, fingerprint, ip });
 
     if (error) {
       if (error.code === '23505') {
-        // Don't reveal which constraint failed — generic message only
+        // Generic conflict — don't reveal which constraint failed
         return res.status(409).json({ error: 'already_registered' });
       }
       throw error;
