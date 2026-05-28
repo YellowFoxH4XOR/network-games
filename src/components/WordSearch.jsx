@@ -129,7 +129,7 @@ function Confetti() {
             width: p.size, height: p.size,
             background: p.color,
             borderRadius: p.id % 3 === 0 ? '50%' : '2px',
-            boxShadow: `0 0 8px ${p.color}80`,
+            boxShadow: `0 0 8px color-mix(in oklch, ${p.color} 50%, transparent)`,
             animation: `confettiBurst 1.4s cubic-bezier(0.16, 1, 0.3, 1) ${p.delay}s forwards`,
             ['--angle']: `${p.angle}deg`,
             ['--dist']: `${p.distance}px`,
@@ -440,7 +440,7 @@ export default function WordSearch({ username, onBack }) {
               width: found[w] ? 22 : 6, height: 6,
               borderRadius: 3,
               background: found[w] ? found[w] : 'var(--text4)',
-              boxShadow: found[w] ? `0 2px 6px ${found[w]}50` : 'none',
+              boxShadow: found[w] ? `0 2px 6px color-mix(in oklch, ${found[w]} 34%, transparent)` : 'none',
               transition: 'all 0.4s var(--ease-spring)',
             }} />
           ))}
@@ -461,7 +461,7 @@ export default function WordSearch({ username, onBack }) {
           gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
           gap: 3,
           width: '100%', maxWidth: 420, margin: '0 auto',
-          background: flash ? `${flash}10` : 'var(--bg2)',
+          background: flash ? `color-mix(in oklch, ${flash} 10%, var(--bg2))` : 'var(--bg2)',
           border: `2px solid ${flash ? flash : 'var(--b1)'}`,
           borderRadius: 18, padding: 8,
           boxShadow: flash
@@ -489,7 +489,7 @@ export default function WordSearch({ username, onBack }) {
                   fontWeight: f || active ? 800 : 600,
                   color: f ? f.color : active ? 'var(--green-dim)' : 'var(--text)',
                   background: f
-                    ? `${f.color}18`
+                    ? `color-mix(in oklch, ${f.color} 18%, transparent)`
                     : active ? 'var(--green-glow)' : 'var(--bg2)',
                   border: `1.5px solid ${active ? 'color-mix(in oklch, var(--green) 50%, transparent)' : f ? `color-mix(in oklch, ${f.color} 42%, transparent)` : 'transparent'}`,
                   transform: active ? 'scale(1.18)' : 'scale(1)',
@@ -538,14 +538,14 @@ export default function WordSearch({ username, onBack }) {
             return (
               <span key={w} className="mono" style={{
                 padding: '6px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700,
-                background: isF ? `${col}14` : 'var(--bg2)',
-                border: `1.5px solid ${isF ? `${col}40` : 'var(--b1)'}`,
+                background: isF ? `color-mix(in oklch, ${col} 14%, transparent)` : 'var(--bg2)',
+                border: `1.5px solid ${isF ? `color-mix(in oklch, ${col} 32%, transparent)` : 'var(--b1)'}`,
                 color: isF ? col : 'var(--text2)',
                 textDecoration: isF ? 'line-through' : 'none',
                 opacity: isF ? 0.8 : 1,
                 transition: 'all 0.4s var(--ease-out)',
                 letterSpacing: '0.04em',
-                boxShadow: isF ? `0 2px 8px ${col}25` : 'var(--shadow-sm)',
+                boxShadow: isF ? `0 2px 8px color-mix(in oklch, ${col} 22%, transparent)` : 'var(--shadow-sm)',
                 animation: isF ? 'wordFound 0.6s var(--ease-spring)' : 'none',
                 display: 'inline-flex', alignItems: 'center', gap: 5,
               }}>
