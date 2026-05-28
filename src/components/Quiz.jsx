@@ -44,9 +44,9 @@ function ProgressNode({ index, current, answer }) {
       <div style={{
         width: 32, height: 32, borderRadius: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: active ? 'var(--s3)' : past ? (correct ? 'var(--green-glow)' : 'rgba(255,71,71,0.12)') : 'var(--s1)',
-        border: `1.5px solid ${active ? 'var(--b3)' : past ? (correct ? 'rgba(0,255,135,0.3)' : 'rgba(255,71,71,0.3)') : 'var(--b1)'}`,
-        boxShadow: active ? '0 0 12px rgba(255,255,255,0.06)' : past && correct ? '0 0 12px var(--green-glow)' : 'none',
+        background: active ? 'var(--s3)' : past ? (correct ? 'var(--success-soft)' : 'var(--danger-soft)') : 'var(--s1)',
+        border: `1.5px solid ${active ? 'var(--b3)' : past ? (correct ? 'color-mix(in oklch, var(--green) 30%, transparent)' : 'color-mix(in oklch, var(--red) 30%, transparent)') : 'var(--b1)'}`,
+        boxShadow: active ? 'var(--shadow-sm)' : past && correct ? '0 0 12px var(--green-glow)' : 'none',
         transition: 'all 0.3s var(--ease-out)',
       }}>
         {past
@@ -84,6 +84,7 @@ export default function Quiz({ username, onBack }) {
   const [answers, setAnswers]             = useState([]);
   const timerRef = useRef(null);
   const fbRef    = useRef(null);
+  const savedRef = useRef(false);
 
   useEffect(() => {
     const s = localStorage.getItem(storageKey);
@@ -120,8 +121,11 @@ export default function Quiz({ username, onBack }) {
     fbRef.current = setTimeout(() => {
       if (idx >= 4) {
         setGameState('finished');
-        localStorage.setItem(storageKey, JSON.stringify({ score, answers, playedAt: Date.now() }));
-        saveScore(username, 'quiz', score);
+        if (!savedRef.current) {
+          savedRef.current = true;
+          localStorage.setItem(storageKey, JSON.stringify({ score, answers, playedAt: Date.now() }));
+          saveScore(username, 'quiz', score);
+        }
       } else {
         setIdx(i => i + 1); setSelected(null); setShowFb(false); setTimeLeft(30);
       }
@@ -158,7 +162,7 @@ export default function Quiz({ username, onBack }) {
             </div>
             <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 6, color: 'var(--text2)', letterSpacing: '-0.02em' }}>Already Completed</div>
             <div className="label" style={{ marginBottom: 32 }}>One attempt per player — your score is final</div>
-            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', background: 'var(--green-glow)', borderRadius: 20, padding: '20px 44px', border: '1px solid rgba(0,255,135,0.15)' }}>
+            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', background: 'var(--green-glow)', borderRadius: 20, padding: '20px 44px', border: '1px solid color-mix(in oklch, var(--green) 18%, transparent)' }}>
               <span className="mono" style={{ fontSize: 52, fontWeight: 700, color: 'var(--green)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevScore}</span>
               <span className="label" style={{ color: 'var(--green)', marginTop: 6, opacity: 0.8 }}>Points Scored</span>
             </div>
@@ -189,8 +193,8 @@ export default function Quiz({ username, onBack }) {
                 {answers.map((a, i) => (
                   <div key={i} style={{
                     width: 36, height: 36, borderRadius: 10,
-                    background: a.sel === a.cor ? 'var(--green-glow)' : 'rgba(255,71,71,0.1)',
-                    border: `1px solid ${a.sel === a.cor ? 'rgba(0,255,135,0.25)' : 'rgba(255,71,71,0.25)'}`,
+                    background: a.sel === a.cor ? 'var(--green-glow)' : 'var(--danger-soft)',
+                    border: `1px solid ${a.sel === a.cor ? 'color-mix(in oklch, var(--green) 25%, transparent)' : 'color-mix(in oklch, var(--red) 25%, transparent)'}`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 14, color: a.sel === a.cor ? 'var(--green)' : 'var(--red)',
                     boxShadow: a.sel === a.cor ? '0 0 12px var(--green-glow)' : 'none',
@@ -225,9 +229,8 @@ export default function Quiz({ username, onBack }) {
               return (
                 <div key={i} style={{
                   padding: '14px 16px', borderRadius: 16,
-                  background: ok ? 'rgba(0,255,135,0.04)' : 'rgba(255,71,71,0.04)',
-                  border: `1px solid ${ok ? 'rgba(0,255,135,0.12)' : 'rgba(255,71,71,0.12)'}`,
-                  borderLeft: `3px solid ${ok ? 'var(--green)' : 'var(--red)'}`,
+                  background: ok ? 'color-mix(in oklch, var(--green) 5%, var(--bg2))' : 'color-mix(in oklch, var(--red) 5%, var(--bg2))',
+                  border: `1px solid ${ok ? 'color-mix(in oklch, var(--green) 16%, transparent)' : 'color-mix(in oklch, var(--red) 16%, transparent)'}`,
                 }}>
                   <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6, lineHeight: 1.5 }}>{questions[i].question}</div>
                   <div className="mono" style={{ fontSize: 12, fontWeight: 600, color: ok ? 'var(--green)' : 'var(--red)' }}>
@@ -279,7 +282,7 @@ export default function Quiz({ username, onBack }) {
           background: 'var(--s2)', border: '1px solid var(--b2)',
           borderRadius: 20, padding: '24px 20px',
           animation: 'scaleIn 0.3s var(--ease-out)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          boxShadow: 'var(--shadow)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <span className="label" style={{ color: 'var(--green)' }}>Q{idx + 1} OF 5</span>
@@ -305,8 +308,8 @@ export default function Quiz({ username, onBack }) {
           let shadow = 'none';
 
           if (showFb) {
-            if (isCorrect)  { bg = 'rgba(0,255,135,0.08)'; border = 'rgba(0,255,135,0.4)'; textC = 'var(--green)'; shadow = '0 0 24px var(--green-glow)'; }
-            else if (isSelected) { bg = 'rgba(255,71,71,0.08)'; border = 'rgba(255,71,71,0.4)'; textC = 'var(--red)'; }
+            if (isCorrect)  { bg = 'var(--success-soft)'; border = 'color-mix(in oklch, var(--green) 40%, transparent)'; textC = 'var(--green)'; shadow = '0 0 24px var(--green-glow)'; }
+            else if (isSelected) { bg = 'var(--danger-soft)'; border = 'color-mix(in oklch, var(--red) 40%, transparent)'; textC = 'var(--red)'; }
             else { textC = 'var(--text4)'; }
           }
 
@@ -329,9 +332,9 @@ export default function Quiz({ username, onBack }) {
                 width: 34, height: 34, borderRadius: 10, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontWeight: 700, fontSize: 13,
-                background: showFb && isCorrect ? 'rgba(0,255,135,0.15)' : 'var(--s2)',
+                background: showFb && isCorrect ? 'var(--green-glow)' : 'var(--s2)',
                 color: showFb && isCorrect ? 'var(--green)' : 'var(--text3)',
-                border: `1px solid ${showFb && isCorrect ? 'rgba(0,255,135,0.3)' : 'var(--b1)'}`,
+                border: `1px solid ${showFb && isCorrect ? 'color-mix(in oklch, var(--green) 30%, transparent)' : 'var(--b1)'}`,
                 transition: 'all 0.22s',
               }}>
                 {String.fromCharCode(65 + i)}
@@ -339,7 +342,7 @@ export default function Quiz({ username, onBack }) {
               <span style={{ flex: 1, fontWeight: 500, lineHeight: 1.45 }}>{opt}</span>
               {showFb && isCorrect && (
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0 }}>
-                  <circle cx="9" cy="9" r="8" fill="rgba(0,255,135,0.15)"/>
+                  <circle cx="9" cy="9" r="8" fill="var(--green-glow)"/>
                   <path d="M5.5 9l2.5 2.5 4.5-5" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               )}
@@ -356,8 +359,8 @@ export default function Quiz({ username, onBack }) {
         return (
           <div style={{
             margin: '0 24px', padding: '16px 20px', borderRadius: 16,
-            background: isRight ? 'rgba(0,255,135,0.06)' : isTimeout ? 'rgba(255,184,0,0.06)' : 'rgba(255,71,71,0.06)',
-            border: `1px solid ${isRight ? 'rgba(0,255,135,0.2)' : isTimeout ? 'rgba(255,184,0,0.2)' : 'rgba(255,71,71,0.2)'}`,
+            background: isRight ? 'var(--success-soft)' : isTimeout ? 'var(--warning-soft)' : 'var(--danger-soft)',
+            border: `1px solid ${isRight ? 'color-mix(in oklch, var(--green) 22%, transparent)' : isTimeout ? 'color-mix(in oklch, var(--amber) 24%, transparent)' : 'color-mix(in oklch, var(--red) 22%, transparent)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             animation: 'scaleIn 0.3s var(--ease-spring)',
           }}>

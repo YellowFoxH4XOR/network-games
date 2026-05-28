@@ -109,50 +109,43 @@ input:focus {
 ::-webkit-scrollbar-thumb:hover { background: var(--b3); }
 ::selection { background: var(--green-glow2); color: var(--text); }
 
-/* ─── Background orbs (light, dreamy pastels) ─── */
+/* ─── Background wash ─── */
 .orb {
-  position: absolute; border-radius: 50%;
-  filter: blur(80px);
+  position: absolute;
   pointer-events: none;
-  will-change: transform;
 }
 .orb-1 {
-  width: 480px; height: 480px;
-  background: radial-gradient(circle, rgba(0, 178, 92, 0.18) 0%, transparent 70%);
-  top: -180px; left: -120px;
-  animation: orbFloat1 22s ease-in-out infinite;
+  inset: -18% -10% auto -10%;
+  height: 54vh;
+  background:
+    linear-gradient(135deg,
+      color-mix(in oklch, var(--green) 16%, transparent),
+      color-mix(in oklch, var(--cyan) 10%, transparent) 48%,
+      transparent 78%);
+  filter: blur(42px);
+  transform: rotate(-2deg);
 }
 .orb-2 {
-  width: 420px; height: 420px;
-  background: radial-gradient(circle, rgba(0, 158, 187, 0.16) 0%, transparent 70%);
-  top: -100px; right: -120px;
-  animation: orbFloat2 28s ease-in-out infinite;
+  inset: auto -18% -24% -18%;
+  height: 48vh;
+  background:
+    linear-gradient(45deg,
+      transparent,
+      color-mix(in oklch, var(--blue) 8%, transparent) 42%,
+      color-mix(in oklch, var(--violet) 7%, transparent));
+  filter: blur(50px);
 }
 .orb-3 {
-  width: 560px; height: 560px;
-  background: radial-gradient(circle, rgba(139, 71, 235, 0.10) 0%, transparent 70%);
-  bottom: -240px; left: 50%;
-  transform: translateX(-50%);
-  animation: orbFloat3 34s ease-in-out infinite;
+  inset: 0;
+  background:
+    linear-gradient(180deg,
+      transparent 0%,
+      color-mix(in oklch, var(--bg3) 55%, transparent) 62%,
+      color-mix(in oklch, var(--cyan) 7%, transparent) 100%);
 }
 @media (max-width: 480px) {
-  .orb-1 { width: 320px; height: 320px; }
-  .orb-2 { width: 280px; height: 280px; }
-  .orb-3 { width: 380px; height: 380px; }
-}
-@keyframes orbFloat1 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  33%     { transform: translate(60px, 40px) scale(1.08); }
-  66%     { transform: translate(-30px, 70px) scale(0.94); }
-}
-@keyframes orbFloat2 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  40%     { transform: translate(-50px, 60px) scale(1.06); }
-  75%     { transform: translate(40px, -30px) scale(0.96); }
-}
-@keyframes orbFloat3 {
-  0%,100% { transform: translateX(-50%) scale(1); }
-  50%     { transform: translateX(-50%) translateY(-40px) scale(1.04); }
+  .orb-1 { height: 44vh; }
+  .orb-2 { height: 38vh; }
 }
 
 /* Soft noise grain — adds tactility on light bg */
@@ -167,9 +160,9 @@ input:focus {
 /* Subtle dot grid */
 .dot-grid {
   position: absolute; inset: 0;
-  background-image: radial-gradient(circle 0.5px, rgba(15, 20, 38, 0.08) 0%, transparent 100%);
-  background-size: 28px 28px;
-  opacity: 0.55;
+  background-image: radial-gradient(circle 0.5px, color-mix(in oklch, var(--text) 10%, transparent) 0%, transparent 100%);
+  background-size: 30px 30px;
+  opacity: 0.38;
   pointer-events: none;
 }
 
@@ -258,18 +251,14 @@ input:focus {
 /* ─── Glass surfaces (subtle on light bg) ─── */
 .glass {
   background: var(--bg2);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid var(--b1);
-  border-radius: 20px;
+  border-radius: 16px;
   box-shadow: var(--shadow-sm);
 }
 .glass-strong {
   background: var(--bg2);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid var(--b2);
-  border-radius: 20px;
+  border-radius: 16px;
   box-shadow: var(--shadow);
 }
 
@@ -277,9 +266,9 @@ input:focus {
 .grad-border {
   position: relative; border-radius: 20px; padding: 1.5px;
   background: linear-gradient(135deg,
-    rgba(0, 178, 92, 0.5)  0%,
-    rgba(0, 158, 187, 0.5) 50%,
-    rgba(46, 102, 227, 0.5) 100%);
+    color-mix(in oklch, var(--green) 48%, transparent) 0%,
+    color-mix(in oklch, var(--cyan) 42%, transparent) 56%,
+    color-mix(in oklch, var(--blue) 36%, transparent) 100%);
 }
 .grad-border > * { border-radius: 18.5px; }
 
@@ -310,16 +299,16 @@ input:focus {
   color: var(--text3);
 }
 .grad-text {
-  background: var(--grad-main);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--brand);
 }
 .display {
-  font-size: clamp(40px, 11vw, 72px);
+  font-size: 56px;
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
   line-height: 0.95;
+}
+@media (max-width: 420px) {
+  .display { font-size: 44px; }
 }
 
 /* ─── Tag pills ─── */
@@ -331,8 +320,8 @@ input:focus {
   text-transform: uppercase;
 }
 .tag-dim   { background: var(--s2); color: var(--text2); border: 1px solid var(--b1); }
-.tag-green { background: var(--green-glow); color: var(--green-dim); border: 1px solid rgba(0, 178, 92, 0.25); }
-.tag-cyan  { background: var(--cyan-glow); color: var(--cyan); border: 1px solid rgba(0, 158, 187, 0.25); }
+.tag-green { background: var(--green-glow); color: var(--green-dim); border: 1px solid color-mix(in oklch, var(--green) 25%, transparent); }
+.tag-cyan  { background: var(--cyan-glow); color: var(--cyan); border: 1px solid color-mix(in oklch, var(--cyan) 25%, transparent); }
 
 /* ─── Card hover lift ─── */
 .tilt-card {
@@ -373,7 +362,7 @@ input:focus {
   position: fixed;
   width: 320px; height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 178, 92, 0.10) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in oklch, var(--green) 10%, transparent) 0%, transparent 70%);
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);

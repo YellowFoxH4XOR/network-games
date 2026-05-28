@@ -19,9 +19,9 @@ function NetTopology() {
       <svg viewBox="0 0 180 160" fill="none" style={{ width: '100%', overflow: 'visible' }}>
         <defs>
           <linearGradient id="ng1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stopColor="#00B25C"/>
-            <stop offset="50%"  stopColor="#009EBB"/>
-            <stop offset="100%" stopColor="#2E66E3"/>
+            <stop offset="0%"   stopColor="var(--green)"/>
+            <stop offset="55%"  stopColor="var(--cyan)"/>
+            <stop offset="100%" stopColor="var(--blue)"/>
           </linearGradient>
           <filter id="glow-filter">
             <feGaussianBlur stdDeviation="2" result="blur"/>
@@ -30,25 +30,25 @@ function NetTopology() {
         </defs>
         <circle cx="90" cy="80" r="62" stroke="url(#ng1)" strokeWidth="0.6" opacity="0.22" strokeDasharray="3 7"/>
         <circle cx="90" cy="80" r="44" stroke="url(#ng1)" strokeWidth="0.6" opacity="0.14" strokeDasharray="2 6"/>
-        <line x1="90"  y1="46"  x2="90"  y2="24"  stroke="#00B25C" strokeWidth="0.8" opacity="0.35" strokeDasharray="3 4"/>
-        <line x1="148" y1="110" x2="110" y2="92"  stroke="#009EBB" strokeWidth="0.8" opacity="0.35" strokeDasharray="3 4"/>
-        <line x1="32"  y1="110" x2="70"  y2="92"  stroke="#8B47EB" strokeWidth="0.8" opacity="0.35" strokeDasharray="3 4"/>
-        <circle cx="90" cy="80" r="18" fill="rgba(0,178,92,0.08)" stroke="url(#ng1)" strokeWidth="1.8" filter="url(#glow-filter)"/>
-        <circle cx="90" cy="80" r="6"  fill="#00B25C" opacity="0.95" filter="url(#glow-filter)"/>
-        <circle cx="90" cy="80" r="10" fill="none" stroke="#00B25C" strokeWidth="0.6" opacity="0.5" style={{ animation: 'pulse 2s ease infinite' }}/>
-        <circle cx="90"  cy="18"  r="10" fill="rgba(0,158,187,0.10)" stroke="#009EBB" strokeWidth="1.2" filter="url(#glow-filter)"/>
-        <circle cx="90"  cy="18"  r="4"  fill="#009EBB"/>
-        <circle cx="148" cy="110" r="10" fill="rgba(139,71,235,0.10)" stroke="#8B47EB" strokeWidth="1.2" filter="url(#glow-filter)"/>
-        <circle cx="148" cy="110" r="4"  fill="#8B47EB"/>
-        <circle cx="32"  cy="110" r="10" fill="rgba(46,102,227,0.10)" stroke="#2E66E3" strokeWidth="1.2" filter="url(#glow-filter)"/>
-        <circle cx="32"  cy="110" r="4"  fill="#2E66E3"/>
-        <circle r="2.2" fill="#00B25C" filter="url(#glow-filter)">
+        <line x1="90"  y1="46"  x2="90"  y2="24"  stroke="var(--green)" strokeWidth="0.8" opacity="0.35" strokeDasharray="3 4"/>
+        <line x1="148" y1="110" x2="110" y2="92"  stroke="var(--cyan)" strokeWidth="0.8" opacity="0.35" strokeDasharray="3 4"/>
+        <line x1="32"  y1="110" x2="70"  y2="92"  stroke="var(--violet)" strokeWidth="0.8" opacity="0.35" strokeDasharray="3 4"/>
+        <circle cx="90" cy="80" r="18" fill="var(--green-glow)" stroke="url(#ng1)" strokeWidth="1.8" filter="url(#glow-filter)"/>
+        <circle cx="90" cy="80" r="6"  fill="var(--green)" opacity="0.95" filter="url(#glow-filter)"/>
+        <circle cx="90" cy="80" r="10" fill="none" stroke="var(--green)" strokeWidth="0.6" opacity="0.5" style={{ animation: 'pulse 2s ease infinite' }}/>
+        <circle cx="90"  cy="18"  r="10" fill="var(--cyan-glow)" stroke="var(--cyan)" strokeWidth="1.2" filter="url(#glow-filter)"/>
+        <circle cx="90"  cy="18"  r="4"  fill="var(--cyan)"/>
+        <circle cx="148" cy="110" r="10" fill="var(--s2)" stroke="var(--violet)" strokeWidth="1.2" filter="url(#glow-filter)"/>
+        <circle cx="148" cy="110" r="4"  fill="var(--violet)"/>
+        <circle cx="32"  cy="110" r="10" fill="var(--s2)" stroke="var(--blue)" strokeWidth="1.2" filter="url(#glow-filter)"/>
+        <circle cx="32"  cy="110" r="4"  fill="var(--blue)"/>
+        <circle r="2.2" fill="var(--green)" filter="url(#glow-filter)">
           <animateMotion dur="3s" repeatCount="indefinite" path="M 90 80 L 90 18 L 90 80"/>
         </circle>
-        <circle r="2.2" fill="#009EBB" filter="url(#glow-filter)">
+        <circle r="2.2" fill="var(--cyan)" filter="url(#glow-filter)">
           <animateMotion dur="4s" repeatCount="indefinite" begin="1s" path="M 90 80 L 148 110 L 90 80"/>
         </circle>
-        <circle r="2.2" fill="#8B47EB" filter="url(#glow-filter)">
+        <circle r="2.2" fill="var(--violet)" filter="url(#glow-filter)">
           <animateMotion dur="3.5s" repeatCount="indefinite" begin="2s" path="M 90 80 L 32 110 L 90 80"/>
         </circle>
       </svg>
@@ -83,25 +83,25 @@ function MagneticBtn({ children, type = 'button', loading }) {
           backgroundSize: '200% 100%',
           backgroundPosition: '0% 50%',
           borderRadius: 16,
-          fontSize: 16, fontWeight: 800, color: '#fff',
+          fontSize: 16, fontWeight: 800, color: 'var(--on-accent)',
           letterSpacing: '-0.01em',
-          boxShadow: '0 8px 24px rgba(0, 178, 92, 0.32), 0 2px 4px rgba(15,20,38,0.08)',
+          boxShadow: '0 10px 26px color-mix(in oklch, var(--green) 28%, transparent), 0 2px 4px color-mix(in oklch, var(--text) 8%, transparent)',
           transition: 'transform 0.4s var(--ease-spring), box-shadow 0.3s, background-position 0.6s',
           cursor: loading ? 'wait' : 'pointer',
           opacity: loading ? 0.7 : 1,
         }}
         onMouseEnter={e => {
-          e.currentTarget.style.boxShadow = '0 12px 32px rgba(0, 178, 92, 0.45), 0 4px 8px rgba(15,20,38,0.12)';
+          e.currentTarget.style.boxShadow = '0 14px 34px color-mix(in oklch, var(--green) 34%, transparent), 0 4px 8px color-mix(in oklch, var(--text) 10%, transparent)';
           e.currentTarget.style.backgroundPosition = '100% 50%';
         }}
         onMouseLeave={e => {
-          e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 178, 92, 0.32), 0 2px 4px rgba(15,20,38,0.08)';
+          e.currentTarget.style.boxShadow = '0 10px 26px color-mix(in oklch, var(--green) 28%, transparent), 0 2px 4px color-mix(in oklch, var(--text) 8%, transparent)';
           e.currentTarget.style.backgroundPosition = '0% 50%';
         }}
       >
         {loading ? (
           <>
-            <span style={{ width: 16, height: 16, border: '2.5px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }}/>
+            <span style={{ width: 16, height: 16, border: '2.5px solid color-mix(in oklch, var(--on-accent) 45%, transparent)', borderTopColor: 'var(--on-accent)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }}/>
             Authenticating
           </>
         ) : (
@@ -359,10 +359,10 @@ export default function WelcomeScreen({ onContinue }) {
               autoFocus
               style={{
                 width: '100%', padding: '15px 18px',
-                background: 'var(--bg2)', border: '1px solid rgba(139,71,235,0.4)',
+                background: 'var(--bg2)', border: '1px solid color-mix(in oklch, var(--violet) 38%, transparent)',
                 borderRadius: 14, fontSize: 16, color: 'var(--text)',
                 fontFamily: "'JetBrains Mono', monospace",
-                boxShadow: '0 4px 16px rgba(139,71,235,0.10)',
+                boxShadow: '0 4px 16px color-mix(in oklch, var(--violet) 10%, transparent)',
                 transition: 'border-color 0.25s, box-shadow 0.25s',
               }}
             />

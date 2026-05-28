@@ -115,7 +115,7 @@ export default function LandingPage({ username, onSelectGame }) {
                   marginTop: 14, padding: '9px 14px',
                   background: 'var(--green-glow)', borderRadius: 10,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  border: '1px solid rgba(0,178,92,0.2)',
+                  border: '1px solid color-mix(in oklch, var(--green) 22%, transparent)',
                   animation: 'fadeIn 0.5s ease',
                 }}>
                   <span className="led-pulse"/>
@@ -144,9 +144,9 @@ export default function LandingPage({ username, onSelectGame }) {
         >
           <div style={{
             background: 'var(--bg2)',
-            border: `1px solid ${quizData ? 'var(--b1)' : 'rgba(0,178,92,0.25)'}`,
+            border: `1px solid ${quizData ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 26%, transparent)'}`,
             borderRadius: 18, overflow: 'hidden',
-            boxShadow: quizData ? 'var(--shadow-sm)' : '0 12px 36px rgba(0,178,92,0.10), var(--shadow-sm)',
+            boxShadow: quizData ? 'var(--shadow-sm)' : '0 12px 36px color-mix(in oklch, var(--green) 10%, transparent), var(--shadow-sm)',
             opacity: quizData ? 0.62 : 1,
             transition: 'opacity 0.3s, box-shadow 0.3s',
           }}>
@@ -156,8 +156,8 @@ export default function LandingPage({ username, onSelectGame }) {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-                  background: quizData ? 'var(--s2)' : 'rgba(0,178,92,0.08)',
-                  border: `1px solid ${quizData ? 'var(--b1)' : 'rgba(0,178,92,0.2)'}`,
+                  background: quizData ? 'var(--s2)' : 'var(--success-soft)',
+                  border: `1px solid ${quizData ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 22%, transparent)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
@@ -191,8 +191,8 @@ export default function LandingPage({ username, onSelectGame }) {
 
             {!quizData && (
               <div style={{
-                padding: '11px 20px', borderTop: '1px solid rgba(0,178,92,0.1)',
-                background: 'rgba(0,178,92,0.04)',
+                padding: '11px 20px', borderTop: '1px solid color-mix(in oklch, var(--green) 12%, transparent)',
+                background: 'color-mix(in oklch, var(--green) 5%, var(--bg2))',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
                 <span className="mono" style={{ fontSize: 11, color: 'var(--green-dim)', fontWeight: 800, letterSpacing: '0.1em' }}>PLAY NOW</span>
@@ -212,9 +212,9 @@ export default function LandingPage({ username, onSelectGame }) {
         >
           <div style={{
             background: 'var(--bg2)',
-            border: `1px solid ${wsData ? 'var(--b1)' : 'rgba(0,158,187,0.25)'}`,
+            border: `1px solid ${wsData ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 26%, transparent)'}`,
             borderRadius: 18, overflow: 'hidden',
-            boxShadow: wsData ? 'var(--shadow-sm)' : '0 12px 36px rgba(0,158,187,0.10), var(--shadow-sm)',
+            boxShadow: wsData ? 'var(--shadow-sm)' : '0 12px 36px color-mix(in oklch, var(--cyan) 10%, transparent), var(--shadow-sm)',
             opacity: wsData ? 0.62 : 1,
             transition: 'opacity 0.3s, box-shadow 0.3s',
           }}>
@@ -224,8 +224,8 @@ export default function LandingPage({ username, onSelectGame }) {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-                  background: wsData ? 'var(--s2)' : 'rgba(0,158,187,0.08)',
-                  border: `1px solid ${wsData ? 'var(--b1)' : 'rgba(0,158,187,0.2)'}`,
+                  background: wsData ? 'var(--s2)' : 'var(--cyan-glow)',
+                  border: `1px solid ${wsData ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 22%, transparent)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
@@ -262,8 +262,8 @@ export default function LandingPage({ username, onSelectGame }) {
 
             {!wsData && (
               <div style={{
-                padding: '11px 20px', borderTop: '1px solid rgba(0,158,187,0.1)',
-                background: 'rgba(0,158,187,0.04)',
+                padding: '11px 20px', borderTop: '1px solid color-mix(in oklch, var(--cyan) 12%, transparent)',
+                background: 'color-mix(in oklch, var(--cyan) 5%, var(--bg2))',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
                 <span className="mono" style={{ fontSize: 11, color: 'var(--cyan)', fontWeight: 800, letterSpacing: '0.1em' }}>PLAY NOW</span>

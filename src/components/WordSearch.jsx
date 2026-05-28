@@ -8,8 +8,8 @@ const WORD_COUNT = 10;
 const GAME_TIME  = 300;
 
 const WORD_COLORS = [
-  '#00A050', '#0096B5', '#E69400', '#D63F3F', '#8538D8',
-  '#D03F86', '#0F9C8A', '#E66B12', '#4B52CC', '#2858CE',
+  'oklch(0.55 0.13 158)', 'oklch(0.54 0.10 210)', 'oklch(0.65 0.13 78)', 'oklch(0.57 0.16 25)', 'oklch(0.54 0.14 295)',
+  'oklch(0.58 0.14 335)', 'oklch(0.55 0.11 178)', 'oklch(0.62 0.14 55)', 'oklch(0.52 0.12 270)', 'oklch(0.52 0.12 250)',
 ];
 
 const DIRS = [
@@ -176,6 +176,7 @@ export default function WordSearch({ username, onBack }) {
   const [celebrate, setCelebrate] = useState(false);
   const [lastFoundWord, setLastFoundWord] = useState(null);
   const tRef = useRef(null);
+  const savedRef = useRef(false);
 
   const animScore = useCountUp(score, 500);
 
@@ -221,11 +222,14 @@ export default function WordSearch({ username, onBack }) {
   }, [found, pz]);
 
   useEffect(() => {
-    if (gState !== 'finished' || !pz) return;
+    if (gState !== 'finished' || !pz || savedRef.current) return;
+    savedRef.current = true;
     const fw = Object.keys(found).length;
-    localStorage.setItem(key, JSON.stringify({ score, found: fw, total: pz.words.length, playedAt: Date.now() }));
+    localStorage.setItem(key, JSON.stringify({
+      score, found: fw, total: pz.words.length, playedAt: Date.now(),
+    }));
     saveScore(username, 'wordsearch', score);
-  }, [gState]);
+  }, [gState, score, found, pz, key, username]);
 
   const cur    = useMemo(() => (sel && ds ? selCells(ds, de || ds) : []), [sel, ds, de]);
   const cellAt = useCallback((x, y) => {
@@ -303,11 +307,11 @@ export default function WordSearch({ username, onBack }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 4, letterSpacing: '-0.02em' }}>Already Completed</div>
             <div className="label" style={{ marginBottom: 28 }}>One attempt per player — your score is final</div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <div style={{ background: 'var(--green-glow)', borderRadius: 18, padding: '16px 26px', border: '1px solid rgba(0,178,92,0.18)', textAlign: 'center' }}>
+              <div style={{ background: 'var(--green-glow)', borderRadius: 18, padding: '16px 26px', border: '1px solid color-mix(in oklch, var(--green) 20%, transparent)', textAlign: 'center' }}>
                 <div className="mono" style={{ fontSize: 36, fontWeight: 800, color: 'var(--green-dim)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevScore}</div>
                 <div className="label" style={{ color: 'var(--green-dim)', opacity: 0.8, marginTop: 6 }}>Points</div>
               </div>
-              <div style={{ background: 'var(--cyan-glow)', borderRadius: 18, padding: '16px 26px', border: '1px solid rgba(0,158,187,0.18)', textAlign: 'center' }}>
+              <div style={{ background: 'var(--cyan-glow)', borderRadius: 18, padding: '16px 26px', border: '1px solid color-mix(in oklch, var(--cyan) 20%, transparent)', textAlign: 'center' }}>
                 <div className="mono" style={{ fontSize: 36, fontWeight: 800, color: 'var(--cyan)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevFound}/{prevTotal}</div>
                 <div className="label" style={{ color: 'var(--cyan)', opacity: 0.8, marginTop: 6 }}>Found</div>
               </div>
@@ -343,8 +347,8 @@ export default function WordSearch({ username, onBack }) {
                   {pz.words.map((w, i) => (
                     <div key={i} style={{
                       width: 30, height: 30, borderRadius: 8,
-                      background: found[w] ? `${found[w]}15` : 'rgba(232,69,69,0.08)',
-                      border: `1px solid ${found[w] ? `${found[w]}45` : 'rgba(232,69,69,0.25)'}`,
+                      background: found[w] ? `color-mix(in oklch, ${found[w]} 15%, transparent)` : 'var(--danger-soft)',
+                      border: `1px solid ${found[w] ? `color-mix(in oklch, ${found[w]} 34%, transparent)` : 'color-mix(in oklch, var(--red) 25%, transparent)'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 12, fontWeight: 700, color: found[w] || 'var(--red)',
                       animation: `popIn 0.4s var(--ease-spring) ${i * 0.04}s both`,
@@ -363,11 +367,11 @@ export default function WordSearch({ username, onBack }) {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-                  <div style={{ background: 'var(--green-glow)', borderRadius: 16, padding: '16px 28px', border: '1px solid rgba(0,178,92,0.18)', animation: 'popIn 0.5s var(--ease-spring) 0.3s both' }}>
+                  <div style={{ background: 'var(--green-glow)', borderRadius: 16, padding: '16px 28px', border: '1px solid color-mix(in oklch, var(--green) 20%, transparent)', animation: 'popIn 0.5s var(--ease-spring) 0.3s both' }}>
                     <div className="mono" style={{ fontSize: 38, fontWeight: 800, color: 'var(--green-dim)', lineHeight: 1, letterSpacing: '-0.04em' }}>{animScore}</div>
                     <div className="label" style={{ color: 'var(--green-dim)', opacity: 0.8, marginTop: 6 }}>Points</div>
                   </div>
-                  <div style={{ background: 'var(--cyan-glow)', borderRadius: 16, padding: '16px 28px', border: '1px solid rgba(0,158,187,0.18)', animation: 'popIn 0.5s var(--ease-spring) 0.4s both' }}>
+                  <div style={{ background: 'var(--cyan-glow)', borderRadius: 16, padding: '16px 28px', border: '1px solid color-mix(in oklch, var(--cyan) 20%, transparent)', animation: 'popIn 0.5s var(--ease-spring) 0.4s both' }}>
                     <div className="mono" style={{ fontSize: 38, fontWeight: 800, color: 'var(--cyan)', lineHeight: 1, letterSpacing: '-0.04em' }}>{fc}</div>
                     <div className="label" style={{ color: 'var(--cyan)', opacity: 0.8, marginTop: 6 }}>Found</div>
                   </div>
@@ -381,8 +385,8 @@ export default function WordSearch({ username, onBack }) {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {pz.words.filter(w => !found[w]).map((w, i) => (
                     <span key={w} className="mono tag" style={{
-                      background: 'rgba(232,69,69,0.06)',
-                      border: '1px solid rgba(232,69,69,0.18)',
+                      background: 'var(--danger-soft)',
+                      border: '1px solid color-mix(in oklch, var(--red) 20%, transparent)',
                       color: 'var(--red)', fontSize: 11, padding: '5px 10px',
                       animation: `popIn 0.35s var(--ease-spring) ${0.5 + i * 0.04}s both`,
                     }}>{w}</span>
@@ -461,7 +465,7 @@ export default function WordSearch({ username, onBack }) {
           border: `2px solid ${flash ? flash : 'var(--b1)'}`,
           borderRadius: 18, padding: 8,
           boxShadow: flash
-            ? `0 0 40px ${flash}40, 0 16px 40px rgba(15,20,38,0.10)`
+            ? `0 0 40px color-mix(in oklch, ${flash} 34%, transparent), 0 16px 40px color-mix(in oklch, var(--text) 10%, transparent)`
             : 'var(--shadow)',
           transition: 'border-color 0.4s, box-shadow 0.4s, background 0.4s',
           animation: shake ? 'shakeX 0.42s' : celebrate ? 'glowPulse 1.2s ease' : 'none',
@@ -486,14 +490,14 @@ export default function WordSearch({ username, onBack }) {
                   color: f ? f.color : active ? 'var(--green-dim)' : 'var(--text)',
                   background: f
                     ? `${f.color}18`
-                    : active ? 'rgba(0,178,92,0.18)' : 'var(--bg2)',
-                  border: `1.5px solid ${active ? 'rgba(0,178,92,0.5)' : f ? `${f.color}55` : 'transparent'}`,
+                    : active ? 'var(--green-glow)' : 'var(--bg2)',
+                  border: `1.5px solid ${active ? 'color-mix(in oklch, var(--green) 50%, transparent)' : f ? `color-mix(in oklch, ${f.color} 42%, transparent)` : 'transparent'}`,
                   transform: active ? 'scale(1.18)' : 'scale(1)',
                   transition: 'transform 0.12s var(--ease-out), background 0.15s, color 0.15s, border-color 0.15s',
                   cursor: 'crosshair', lineHeight: 1,
                   boxShadow: active
-                    ? `0 3px 12px rgba(0,178,92,0.32)`
-                    : f ? `0 1px 3px ${f.color}25`
+                    ? '0 3px 12px color-mix(in oklch, var(--green) 28%, transparent)'
+                    : f ? `0 1px 3px color-mix(in oklch, ${f.color} 22%, transparent)`
                     : 'none',
                   animation: f ? `cellReveal 0.5s var(--ease-spring) ${f.order * 0.07}s both` : 'none',
                 }}

@@ -4,12 +4,13 @@ const MEDAL = ['🥇', '🥈', '🥉'];
 
 function RankRow({ rank, username, score, color, delay = 0 }) {
   const isTop3 = rank <= 3;
+  const tint = (amount) => `color-mix(in oklch, ${color} ${amount}%, transparent)`;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 14,
       padding: '13px 16px', borderRadius: 14,
-      background: isTop3 ? `${color}08` : 'var(--s1)',
-      border: `1px solid ${isTop3 ? `${color}20` : 'var(--b1)'}`,
+      background: isTop3 ? tint(8) : 'var(--s1)',
+      border: `1px solid ${isTop3 ? tint(20) : 'var(--b1)'}`,
       animation: `fadeUp 0.4s var(--ease-out) ${delay}s both`,
       transition: 'background 0.2s',
     }}>
@@ -17,8 +18,8 @@ function RankRow({ rank, username, score, color, delay = 0 }) {
       <div style={{
         width: 32, height: 32, borderRadius: 10, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: isTop3 ? `${color}18` : 'var(--s2)',
-        border: `1px solid ${isTop3 ? `${color}30` : 'var(--b1)'}`,
+        background: isTop3 ? tint(18) : 'var(--s2)',
+        border: `1px solid ${isTop3 ? tint(30) : 'var(--b1)'}`,
         fontSize: isTop3 ? 16 : 13,
         fontFamily: isTop3 ? 'inherit' : "'JetBrains Mono', monospace",
         fontWeight: 700,
@@ -44,7 +45,7 @@ function RankRow({ rank, username, score, color, delay = 0 }) {
         color: isTop3 ? color : 'var(--text3)',
         fontFamily: "'JetBrains Mono', monospace",
         letterSpacing: '-0.02em',
-        textShadow: isTop3 ? `0 0 12px ${color}50` : 'none',
+        textShadow: isTop3 ? `0 0 12px ${tint(40)}` : 'none',
       }}>
         {score}
       </span>
@@ -53,19 +54,20 @@ function RankRow({ rank, username, score, color, delay = 0 }) {
 }
 
 function Board({ title, data, color, icon, loading }) {
+  const tint = (amount) => `color-mix(in oklch, ${color} ${amount}%, transparent)`;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {/* Board header */}
       <div style={{
         padding: '16px 20px',
-        background: `${color}08`,
-        border: `1px solid ${color}20`,
+        background: tint(8),
+        border: `1px solid ${tint(20)}`,
         borderRadius: 16,
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <div style={{
           width: 40, height: 40, borderRadius: 12,
-          background: `${color}15`, border: `1px solid ${color}25`,
+          background: tint(15), border: `1px solid ${tint(25)}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 20,
         }}>
@@ -144,9 +146,9 @@ export default function AdminView({ onLogout }) {
   }, [fetchData]);
 
   const tabs = [
-    { id: 'combined',    label: 'Combined',   icon: '🏆', color: '#FFB800' },
-    { id: 'quiz',        label: 'Quiz',        icon: '❓', color: '#00FF87' },
-    { id: 'wordsearch',  label: 'Word Search', icon: '🔍', color: '#00D4FF' },
+    { id: 'combined',    label: 'Combined',   icon: '🏆', color: 'var(--amber)' },
+    { id: 'quiz',        label: 'Quiz',        icon: '❓', color: 'var(--green)' },
+    { id: 'wordsearch',  label: 'Word Search', icon: '🔍', color: 'var(--cyan)' },
   ];
 
   const activeTab = tabs.find(t => t.id === tab);
@@ -159,9 +161,9 @@ export default function AdminView({ onLogout }) {
       <div style={{
         padding: '16px 22px',
         borderBottom: '1px solid var(--b1)',
-        background: 'rgba(255,255,255,0.85)',
-        backdropFilter: 'blur(20px) saturate(160%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+        background: 'var(--chrome)',
+        backdropFilter: 'blur(18px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(18px) saturate(140%)',
         position: 'sticky', top: 0, zIndex: 50,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         animation: 'fadeDown 0.4s var(--ease-out)',
@@ -195,12 +197,12 @@ export default function AdminView({ onLogout }) {
             onClick={onLogout}
             style={{
               padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight: 700,
-              background: 'rgba(255,71,71,0.08)', border: '1px solid rgba(255,71,71,0.2)',
+              background: 'var(--danger-soft)', border: '1px solid color-mix(in oklch, var(--red) 22%, transparent)',
               color: 'var(--red)', cursor: 'pointer', fontFamily: 'inherit',
               transition: 'all 0.2s',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,71,71,0.15)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,71,71,0.08)'}
+            onMouseEnter={e => e.currentTarget.style.background = 'color-mix(in oklch, var(--red) 15%, transparent)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--danger-soft)'}
           >
             Logout
           </button>
