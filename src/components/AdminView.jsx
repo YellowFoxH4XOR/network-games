@@ -125,6 +125,7 @@ export default function AdminView({ onLogout }) {
     try {
       const res = await fetch('/api/leaderboard', {
         headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
       });
       if (res.status === 401) { onLogout(); return; }
       const json = await res.json();

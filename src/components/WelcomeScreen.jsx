@@ -156,36 +156,26 @@ export default function WelcomeScreen({ onContinue }) {
   const [password, setPassword] = useState('');
   const [fingerprint, setFp]    = useState('');
   const [error, setError]       = useState('');
-  const [checking, setChecking] = useState(true);
   const [submitting, setSubmit] = useState(false);
   const [blocked, setBlocked]   = useState(null);
   const [showScan, setShowScan] = useState(true);
 
   const isAdmin = username.trim().toLowerCase() === ADMIN_USERNAME;
 
+  // App.jsx already ran syncUser() before mounting this screen, so we know the
+  // device is NOT yet registered. We just need the fingerprint for the eventual
+  // /api/register call.
   useEffect(() => {
     const t = setTimeout(() => setShowScan(false), 2400);
-    getFingerprint().then(fp => {
-      setFp(fp);
-      localStorage.setItem('sns_fp', fp);
-
-      if ((localStorage.getItem('sns_user') || '') === ADMIN_USERNAME) {
-        setChecking(false);
-        return;
-      }
-      return fetch('/api/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fingerprint: fp }),
-      })
-        .then(r => r.json())
-        .catch(() => ({ allowed: true }))
-        .then(result => {
-          if (result && !result.allowed) setBlocked(result.reason);
-          setChecking(false);
-        });
-    });
-
+    const stored = localStorage.getItem('sns_fp');
+    if (stored) {
+      setFp(stored);
+    } else {
+      getFingerprint().then(fp => {
+        setFp(fp);
+        localStorage.setItem('sns_fp', fp);
+      });
+    }
     return () => clearTimeout(t);
   }, []);
 
@@ -201,7 +191,10 @@ export default function WelcomeScreen({ onContinue }) {
     if (isAdmin) {
       if (!password.trim()) { setError('Admin password required'); setSubmit(false); return; }
       try {
-        const res = await fetch('/api/leaderboard', { headers: { Authorization: `Bearer ${password}` } });
+        const res = await fetch('/api/leaderboard', {
+          headers: { Authorization: `Bearer ${password}` },
+          cache: 'no-store',
+        });
         if (res.status === 401) { setError('Incorrect admin password'); setSubmit(false); return; }
         if (!res.ok) { setError('Server error — try again'); setSubmit(false); return; }
       } catch {
@@ -217,6 +210,7 @@ export default function WelcomeScreen({ onContinue }) {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
         body: JSON.stringify({ username: trimmedUser, fingerprint }),
       });
       const data = await res.json();
@@ -243,26 +237,6 @@ export default function WelcomeScreen({ onContinue }) {
   };
 
   if (blocked) return <AlreadyPlayed reason={blocked} />;
-
-  if (checking) {
-    return (
-      <div className="screen-centered" style={{ alignItems: 'center', gap: 16, padding: 24, position: 'relative' }}>
-        {showScan && <div className="scan-line" />}
-        <NetTopology />
-        <div className="label" style={{ color: 'var(--green)' }}>
-          ◈&nbsp;&nbsp;AUTHENTICATING DEVICE&nbsp;&nbsp;◈
-        </div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {[0,1,2].map(i => (
-            <div key={i} style={{
-              width: 6, height: 6, borderRadius: 3, background: 'var(--green)',
-              animation: `pulse 1.2s ease ${i * 0.2}s infinite`,
-            }}/>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="screen-centered" style={{ padding: '20px 22px', position: 'relative', gap: 0 }}>

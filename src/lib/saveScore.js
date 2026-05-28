@@ -6,6 +6,7 @@ export async function saveScore(username, game, score) {
     await fetch('/api/score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
       body: JSON.stringify({ username: u, game, score }),
     });
   } catch {
