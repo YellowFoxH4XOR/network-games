@@ -121,7 +121,6 @@ function MagneticBtn({ children, type = 'button', loading }) {
 function AlreadyPlayed({ reason }) {
   const message = {
     device_registered: 'This device has already participated. Each device can play only once.',
-    ip_registered:    'This network has already been used. One player per network.',
     username_taken:   'This username is already taken — pick a different one.',
   }[reason] || 'You have already participated.';
 
@@ -214,8 +213,8 @@ export default function WelcomeScreen({ onContinue }) {
             setError('This username is already taken — pick another');
             return;
           }
-          // Device or IP collision is permanent — show the block screen
-          setBlocked(data.field === 'ip' ? 'ip_registered' : 'device_registered');
+          // Device collision is permanent — show the block screen
+          setBlocked('device_registered');
           return;
         }
         setError('Could not register — try again');

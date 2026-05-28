@@ -47,10 +47,7 @@ export default async function handler(req, res) {
       if (error.code === '23505') {
         // Surface which field collided so the client can show the right message
         const msg = error.message || '';
-        let field = 'device';
-        if (msg.includes('username')) field = 'username';
-        else if (msg.includes('ip'))   field = 'ip';
-        else if (msg.includes('fingerprint')) field = 'device';
+        const field = msg.includes('username') ? 'username' : 'device';
         return res.status(409).json({ error: 'already_registered', field });
       }
       throw error;
