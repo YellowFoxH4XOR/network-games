@@ -157,13 +157,14 @@ export default function AdminView({ onLogout }) {
 
       {/* Header */}
       <div style={{
-        padding: '16px 24px',
+        padding: '16px 22px',
         borderBottom: '1px solid var(--b1)',
-        background: 'rgba(2,2,4,0.7)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: 'rgba(255,255,255,0.85)',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         position: 'sticky', top: 0, zIndex: 50,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        animation: 'fadeDown 0.4s var(--ease-out)',
       }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.03em' }}>

@@ -8,8 +8,8 @@ const WORD_COUNT = 10;
 const GAME_TIME  = 300;
 
 const WORD_COLORS = [
-  '#00FF87', '#00D4FF', '#FFB800', '#FF4747', '#A855F7',
-  '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#4F8EF7',
+  '#00A050', '#0096B5', '#E69400', '#D63F3F', '#8538D8',
+  '#D03F86', '#0F9C8A', '#E66B12', '#4B52CC', '#2858CE',
 ];
 
 const DIRS = [
@@ -368,13 +368,12 @@ export default function WordSearch({ username, onBack }) {
           gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
           gap: 1.5,
           width: '100%', maxWidth: 440, margin: '0 auto',
-          background: flash ? `${flash}06` : 'var(--s1)',
-          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          border: `1.5px solid ${flash ? flash + '30' : 'var(--b1)'}`,
-          borderRadius: 18, padding: 5,
+          background: flash ? `${flash}12` : 'var(--bg2)',
+          border: `1.5px solid ${flash ? flash + '50' : 'var(--b1)'}`,
+          borderRadius: 18, padding: 6,
           boxShadow: flash
-            ? `0 0 40px ${flash}18, var(--shadow), inset 0 1px 0 rgba(255,255,255,0.04)`
-            : `var(--shadow), inset 0 1px 0 rgba(255,255,255,0.04)`,
+            ? `0 0 40px ${flash}30, var(--shadow)`
+            : 'var(--shadow)',
           transition: 'border-color 0.4s, box-shadow 0.4s, background 0.4s',
           animation: shake ? 'shakeX 0.42s' : 'none',
         }}>
@@ -394,19 +393,16 @@ export default function WordSearch({ username, onBack }) {
                   aspectRatio: '1', borderRadius: 6,
                   fontSize: 'clamp(10px, 2.3vw, 14px)',
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontWeight: f || active ? 800 : 500,
-                  color: f ? '#fff' : active ? 'var(--green)' : 'var(--text2)',
+                  fontWeight: f || active ? 800 : 600,
+                  color: f ? f : active ? 'var(--green-dim)' : 'var(--text2)',
                   background: f
-                    ? `${f}22`
-                    : active ? 'rgba(0,255,135,0.14)' : 'transparent',
-                  textShadow: f
-                    ? `0 0 12px ${f}`
-                    : active ? '0 0 10px var(--green)' : 'none',
-                  border: `1px solid ${active ? 'rgba(0,255,135,0.3)' : f ? `${f}28` : 'transparent'}`,
+                    ? `${f}18`
+                    : active ? 'rgba(0,178,92,0.16)' : 'transparent',
+                  border: `1px solid ${active ? 'rgba(0,178,92,0.4)' : f ? `${f}40` : 'transparent'}`,
                   transform: active ? 'scale(1.14)' : 'scale(1)',
-                  transition: 'transform 0.08s var(--ease-out), background 0.12s, color 0.12s, text-shadow 0.12s',
+                  transition: 'transform 0.08s var(--ease-out), background 0.12s, color 0.12s',
                   cursor: 'crosshair', lineHeight: 1,
-                  boxShadow: active ? '0 0 8px rgba(0,255,135,0.2)' : 'none',
+                  boxShadow: active ? `0 2px 8px rgba(0,178,92,0.25)` : 'none',
                 }}
               >
                 {ch}
