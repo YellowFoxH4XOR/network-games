@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { isValidSlug } from './_stalls.js';
 
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
 const MAX_SCORE = { quiz: 150, wordsearch: 200 };
@@ -15,12 +16,15 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  let { username, game, score } = req.body ?? {};
+  let { username, stall, game, score } = req.body ?? {};
 
   if (!username || typeof username !== 'string' || !USERNAME_RE.test(username)) {
     return res.status(400).json({ error: 'Invalid username' });
   }
   username = username.toLowerCase();
+  if (!isValidSlug(stall)) {
+    return res.status(400).json({ error: 'Invalid stall' });
+  }
   if (!['quiz', 'wordsearch'].includes(game)) {
     return res.status(400).json({ error: 'Invalid game' });
   }
@@ -38,10 +42,12 @@ export default async function handler(req, res) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
+    // Player must be registered for THIS stall before a score counts.
     const { data: player } = await supabase
       .from('players')
       .select('id')
       .eq('username', username)
+      .eq('stall', stall)
       .maybeSingle();
 
     if (!player) {
@@ -50,6 +56,7 @@ export default async function handler(req, res) {
 
     const { error } = await supabase.rpc('upsert_score_if_higher', {
       p_username: username,
+      p_stall:    stall,
       p_game:     game,
       p_score:    n,
     });

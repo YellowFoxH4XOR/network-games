@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
+import { isValidSlug } from './_stalls.js';
 
-// Public overall leaderboard: top 5 by combined score across all games,
-// plus the requesting player's own rank. Exposes only username + score —
-// never fingerprint or ip.
+// Public leaderboard. Two modes:
+//   mode=stall  → ranks players within one stall (sum of their games in that stall)
+//   mode=overall→ ranks players across ALL stalls (sum of every score, by username)
+// Exposes only username + score — never fingerprint or ip.
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   res.setHeader('Access-Control-Allow-Origin', origin);
@@ -14,9 +16,13 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const me = typeof req.query.username === 'string'
-    ? req.query.username.toLowerCase()
-    : '';
+  const me = typeof req.query.username === 'string' ? req.query.username.toLowerCase() : '';
+  const mode = req.query.mode === 'overall' ? 'overall' : 'stall';
+  const stall = typeof req.query.stall === 'string' ? req.query.stall : '';
+
+  if (mode === 'stall' && !isValidSlug(stall)) {
+    return res.status(400).json({ error: 'Invalid stall' });
+  }
 
   try {
     const supabase = createClient(
@@ -24,18 +30,18 @@ export default async function handler(req, res) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    const { data: rows, error } = await supabase
-      .from('scores')
-      .select('username, score');
+    let query = supabase.from('scores').select('username, score, stall');
+    if (mode === 'stall') query = query.eq('stall', stall);
+    const { data: rows, error } = await query;
     if (error) throw error;
 
-    // Sum every player's score across all games.
+    // Sum every player's score (across games, and across stalls for overall mode).
     const totals = {};
     for (const row of rows ?? []) {
       totals[row.username] = (totals[row.username] || 0) + row.score;
     }
 
-    // Sort by score desc, then assign standard competition ranks (ties share a rank).
+    // Sort desc, then standard competition ranks (ties share a rank).
     const sorted = Object.entries(totals)
       .map(([username, score]) => ({ username, score }))
       .sort((a, b) => b.score - a.score);
@@ -53,7 +59,18 @@ export default async function handler(req, res) {
     const top = ranked.slice(0, 5);
     const mine = me ? ranked.find(r => r.username === me) || null : null;
 
+    // Resolve the stall's display name for the UI header.
+    let stallName = null;
+    if (mode === 'stall') {
+      const { data: s } = await supabase
+        .from('stalls').select('name').eq('slug', stall).maybeSingle();
+      stallName = s?.name ?? null;
+    }
+
     return res.json({
+      mode,
+      stall: mode === 'stall' ? stall : null,
+      stallName,
       top,
       me: mine,
       totalPlayers: ranked.length,

@@ -43,9 +43,10 @@ function ScoreBadge({ score, color }) {
   );
 }
 
-export default function LandingPage({ username, onBack, onSelectGame }) {
-  const quizKey  = 'sns_' + username + '_quiz';
-  const wsKey    = 'sns_' + username + '_ws';
+export default function LandingPage({ username, stall, onBack, onSelectGame }) {
+  const slug     = stall?.slug || 'stall-1';
+  const quizKey  = 'sns_' + username + '_' + slug + '_quiz';
+  const wsKey    = 'sns_' + username + '_' + slug + '_ws';
   const quizData = localStorage.getItem(quizKey) ? JSON.parse(localStorage.getItem(quizKey)) : null;
   const wsData   = localStorage.getItem(wsKey)   ? JSON.parse(localStorage.getItem(wsKey))   : null;
   const total    = (quizData?.score || 0) + (wsData?.score || 0);

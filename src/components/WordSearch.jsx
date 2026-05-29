@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { NETWORK_KEYWORDS } from '../data.js';
+import { stallKeywords } from '../data.js';
 import TopBar from './TopBar.jsx';
 import { saveScore } from '../lib/saveScore.js';
 import { useCountUp } from '../lib/useCountUp.js';
@@ -26,11 +26,11 @@ const DIRS = [
  *  - Fills empty cells with letters weighted toward the alphabet that appears
  *    in the placed words, so filler doesn't stand out as obviously fake
  */
-function genPuzzle() {
+function genPuzzle(keywords) {
   const grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
 
   // Random subset → different words every game.
-  const valid = NETWORK_KEYWORDS.filter(w => w.length <= GRID_SIZE);
+  const valid = keywords.filter(w => w.length <= GRID_SIZE);
   const shuffled = [...valid].sort(() => Math.random() - 0.5);
   const candidates = shuffled.slice(0, Math.min(WORD_COUNT * 3, shuffled.length));
   // Place longest first — they're hardest to fit, so they need first pick.
@@ -172,8 +172,9 @@ const W = {
   },
 };
 
-export default function WordSearch({ username, onBack }) {
-  const key = 'sns_' + (username || 'anon') + '_ws';
+export default function WordSearch({ username, stall, onBack }) {
+  const slug = stall?.slug || 'stall-1';
+  const key = 'sns_' + (username || 'anon') + '_' + slug + '_ws';
 
   const [done, setDone]           = useState(false);
   const [prevScore, setPrevScore] = useState(0);
@@ -209,10 +210,10 @@ export default function WordSearch({ username, onBack }) {
   }, [key]);
 
   const init = useCallback(() => {
-    setPz(genPuzzle()); setFound({}); setFCells({});
+    setPz(genPuzzle(stallKeywords(slug))); setFound({}); setFCells({});
     setDs(null); setDe(null); setSel(false);
     setTime(GAME_TIME); setScore(0); setGState('playing');
-  }, []);
+  }, [slug]);
 
   useEffect(() => { if (!done) init(); }, [init, done]);
 
@@ -247,8 +248,8 @@ export default function WordSearch({ username, onBack }) {
     localStorage.setItem(key, JSON.stringify({
       score, found: fw, total: pz.words.length, playedAt: Date.now(),
     }));
-    saveScore(username, 'wordsearch', score);
-  }, [gState, score, found, pz, key, username]);
+    saveScore(username, slug, 'wordsearch', score);
+  }, [gState, score, found, pz, key, username, slug]);
 
   const cur    = useMemo(() => (sel && ds ? selCells(ds, de || ds) : []), [sel, ds, de]);
   const cellAt = useCallback((x, y) => {

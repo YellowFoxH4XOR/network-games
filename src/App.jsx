@@ -8,6 +8,8 @@ import WordSearch from './components/WordSearch.jsx';
 import Leaderboard from './components/Leaderboard.jsx';
 import AdminView from './components/AdminView.jsx';
 import { syncUser, clearLocalSession } from './lib/syncUser.js';
+import { getFingerprint } from './lib/fingerprint.js';
+import { validateCode, registerForStall, setActiveStall, clearActiveStall } from './lib/stall.js';
 
 // three.js is heavy; only load it when the player opens Visualize.
 const Visualize = lazy(() => import('./components/Visualize.jsx'));
@@ -49,6 +51,7 @@ function BootingScreen() {
 export default function App() {
   const [screen, setScreen] = useState('booting');
   const [user, setUser]     = useState('');
+  const [stall, setStall]   = useState(null);   // { slug, name } | null
   const [fade, setFade]     = useState('screenIn');
 
   // Boot sync: reconcile localStorage with the database
@@ -61,11 +64,13 @@ export default function App() {
         setScreen('admin');
       } else if (result.kind === 'registered') {
         setUser(result.username);
+        setStall({ slug: result.stall, name: result.stallName });
         setScreen('home');
-      } else if (result.kind === 'offline' && result.username) {
+      } else if (result.kind === 'offline' && result.username && result.stall) {
         // API unreachable — best-effort fallback to local data
         setUser(result.username);
-        setScreen(result.username === ADMIN_USERNAME ? 'admin' : 'home');
+        setStall({ slug: result.stall, name: result.stallName });
+        setScreen('home');
       } else {
         setUser('');
         setScreen('welcome');
@@ -79,18 +84,50 @@ export default function App() {
     setTimeout(() => { setScreen(dest); setFade('screenIn'); }, 180);
   }, []);
 
-  const handleLogin = useCallback((u) => {
+  const handleLogin = useCallback((u, enteredStall) => {
     setUser(u);
     if (u === ADMIN_USERNAME) {
       nav('admin');
     } else {
+      setStall(enteredStall);
       nav('home');
     }
   }, [nav]);
 
+  // Switch stalls from a new code: validate → register for it → swap.
+  // Returns { ok } or { error } so the caller can show an inline message.
+  const changeStall = useCallback(async (code) => {
+    let v;
+    try { v = await validateCode(code); }
+    catch { return { error: 'Could not reach the server' }; }
+    if (!v.valid) return { error: 'That code isn’t valid' };
+    if (stall && v.stall.slug === stall.slug) {
+      return { error: `You’re already in ${v.stall.name}` };
+    }
+
+    const fp = await getFingerprint();
+    const r = await registerForStall(user, fp, v.stall.slug);
+    // 409 'device' just means this device already played that stall — that's
+    // fine, we still switch them in to view it. 'username' means the name is
+    // taken by someone else in that stall.
+    if (!r.ok && r.error === 'already_registered' && r.field === 'username') {
+      return { error: `“${user}” is taken in ${v.stall.name}` };
+    }
+    if (!r.ok && r.error && r.error !== 'already_registered') {
+      return { error: 'Could not switch stalls — try again' };
+    }
+
+    setActiveStall(v.stall);
+    setStall(v.stall);
+    nav('home');
+    return { ok: true, stall: v.stall };
+  }, [user, stall, nav]);
+
   const handleLogout = useCallback(() => {
     clearLocalSession();
+    clearActiveStall();
     setUser('');
+    setStall(null);
     nav('welcome');
   }, [nav]);
 
@@ -101,16 +138,16 @@ export default function App() {
       <div style={{ animation: `${fade} 0.34s var(--ease-out)`, minHeight: '100dvh' }}>
         {screen === 'booting'    && <BootingScreen />}
         {screen === 'welcome'    && <WelcomeScreen onContinue={handleLogin} />}
-        {screen === 'home'       && <HomePage username={user} onSelect={dest => nav(dest)} />}
-        {screen === 'landing'    && <LandingPage username={user} onBack={() => nav('home')} onSelectGame={g => nav(g)} />}
-        {screen === 'quiz'       && <Quiz username={user} onBack={() => nav('landing')} />}
-        {screen === 'wordsearch' && <WordSearch username={user} onBack={() => nav('landing')} />}
+        {screen === 'home'       && <HomePage username={user} stall={stall} onSelect={dest => nav(dest)} onChangeStall={changeStall} />}
+        {screen === 'landing'    && <LandingPage username={user} stall={stall} onBack={() => nav('home')} onSelectGame={g => nav(g)} />}
+        {screen === 'quiz'       && <Quiz username={user} stall={stall} onBack={() => nav('landing')} />}
+        {screen === 'wordsearch' && <WordSearch username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'visualize'  && (
           <Suspense fallback={<BootingScreen />}>
-            <Visualize onBack={() => nav('home')} />
+            <Visualize stall={stall} onBack={() => nav('home')} />
           </Suspense>
         )}
-        {screen === 'leaderboard' && <Leaderboard username={user} onBack={() => nav('home')} />}
+        {screen === 'leaderboard' && <Leaderboard username={user} stall={stall} onBack={() => nav('home')} />}
         {screen === 'admin'      && <AdminView onLogout={handleLogout} />}
       </div>
     </>

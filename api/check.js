@@ -1,10 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-
-function getClientIp(req) {
-  const fwd = req.headers['x-forwarded-for'];
-  if (fwd) return fwd.split(',')[0].trim();
-  return req.socket?.remoteAddress || 'unknown';
-}
+import { isValidSlug } from './_stalls.js';
 
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
@@ -17,13 +12,13 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { fingerprint } = req.body ?? {};
+  const { fingerprint, stall } = req.body ?? {};
   if (!fingerprint || typeof fingerprint !== 'string' || fingerprint.length > 64) {
     return res.status(400).json({ error: 'Invalid fingerprint' });
   }
-
-  // IP is always read server-side — never trust the client
-  const ip = getClientIp(req);
+  if (!isValidSlug(stall)) {
+    return res.status(400).json({ error: 'Invalid stall' });
+  }
 
   try {
     const supabase = createClient(
@@ -31,15 +26,17 @@ export default async function handler(req, res) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    // Block if this device fingerprint OR this IP has already played
-    const [{ data: byFp }, { data: byIp }] = await Promise.all([
-      supabase.from('players').select('id').eq('fingerprint', fingerprint).maybeSingle(),
-      supabase.from('players').select('id').eq('ip', ip).maybeSingle(),
-    ]);
+    // One attempt per stall, per device. IP is NOT checked any more: at a venue
+    // everyone shares one Wi-Fi NAT IP, so an IP lock would block every visitor
+    // after the first. Device fingerprint scoped to the stall is the gate.
+    const { data: byFp } = await supabase
+      .from('players')
+      .select('id')
+      .eq('fingerprint', fingerprint)
+      .eq('stall', stall)
+      .maybeSingle();
 
     if (byFp) return res.json({ allowed: false, reason: 'device_registered' });
-    if (byIp) return res.json({ allowed: false, reason: 'ip_registered' });
-
     return res.json({ allowed: true });
   } catch (err) {
     console.error('[check] error:', err.message);

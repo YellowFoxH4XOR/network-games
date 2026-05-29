@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { QUIZ_QUESTIONS } from '../data.js';
+import { stallQuiz } from '../data.js';
 import TopBar from './TopBar.jsx';
 import { saveScore } from '../lib/saveScore.js';
 import { useCountUp } from '../lib/useCountUp.js';
@@ -70,8 +70,9 @@ const S = {
   },
 };
 
-export default function Quiz({ username, onBack }) {
-  const storageKey = 'sns_' + (username || 'anon') + '_quiz';
+export default function Quiz({ username, stall, onBack }) {
+  const slug = stall?.slug || 'stall-1';
+  const storageKey = 'sns_' + (username || 'anon') + '_' + slug + '_quiz';
 
   const [alreadyPlayed, setAlreadyPlayed] = useState(false);
   const [prevScore, setPrevScore]         = useState(0);
@@ -95,11 +96,12 @@ export default function Quiz({ username, onBack }) {
   }, [storageKey]);
 
   const init = useCallback(() => {
-    const shuffled = [...QUIZ_QUESTIONS].sort(() => Math.random() - 0.5);
+    const pool = stallQuiz(slug);
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
     setQuestions(shuffled.slice(0, 5));
     setIdx(0); setSelected(null); setShowFb(false);
     setScore(0); setTimeLeft(30); setGameState('playing'); setAnswers([]);
-  }, []);
+  }, [slug]);
 
   useEffect(() => { if (!alreadyPlayed) init(); }, [init, alreadyPlayed]);
 
@@ -127,14 +129,14 @@ export default function Quiz({ username, onBack }) {
         if (!savedRef.current) {
           savedRef.current = true;
           localStorage.setItem(storageKey, JSON.stringify({ score, answers, playedAt: Date.now() }));
-          saveScore(username, 'quiz', score);
+          saveScore(username, slug, 'quiz', score);
         }
       } else {
         setIdx(i => i + 1); setSelected(null); setShowFb(false); setTimeLeft(30);
       }
     }, 1800);
     return () => clearTimeout(fbRef.current);
-  }, [showFb, idx, score, answers, storageKey]);
+  }, [showFb, idx, score, answers, storageKey, slug, username]);
 
   const pick = (i) => {
     if (showFb || gameState !== 'playing') return;

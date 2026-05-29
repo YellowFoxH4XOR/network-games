@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, RoundedBox, ContactShadows, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import TopBar from './TopBar.jsx';
-import { DEVICES } from '../lib/devices3d.js';
+import { getStallDevices } from '../lib/devices3d.js';
 
 /**
  * Lay device groups out as individual port meshes on the front face (+Z).
@@ -159,12 +159,13 @@ function CameraRig({ focus, controlsRef, onHome }) {
 
 const DEFAULT_CAM = [0, 1.7, 5.2];
 
-export default function Visualize({ onBack }) {
+export default function Visualize({ stall, onBack }) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
   const [focus, setFocus] = useState(null);
   const controlsRef = useRef();
 
+  const DEVICES = useMemo(() => getStallDevices(stall?.slug), [stall]);
   const device = DEVICES[index];
   const ports = useMemo(() => buildPorts(device), [device]);
 

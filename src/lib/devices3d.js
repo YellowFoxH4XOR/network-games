@@ -11,6 +11,8 @@
  * Chassis bodies are a near-neutral light grey, faintly tinted per device so the
  * three devices stay distinguishable without adding loud color.
  */
+import { stallIndex } from '../data.js';
+
 export const DEVICES = [
   {
     id: 'switch',
@@ -91,3 +93,13 @@ export const DEVICES = [
     ],
   },
 ];
+
+/**
+ * Per-stall device ordering. With only three devices and four stalls there
+ * can't be a fully unique set per stall, so each stall leads with a different
+ * device (rotated order) to give the visualization some per-stall flavor.
+ */
+export function getStallDevices(slug) {
+  const r = stallIndex(slug) % DEVICES.length;
+  return DEVICES.slice(r).concat(DEVICES.slice(0, r));
+}

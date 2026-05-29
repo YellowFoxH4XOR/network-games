@@ -37,12 +37,42 @@ function Row({ entry, isMe }) {
   );
 }
 
-export default function Leaderboard({ username, onBack }) {
+function Toggle({ mode, setMode }) {
+  const opt = (key, label) => (
+    <button
+      onClick={() => setMode(key)}
+      style={{
+        flex: 1, padding: '9px 10px', borderRadius: 0, cursor: 'pointer',
+        fontSize: 12, fontWeight: 800, letterSpacing: '0.02em',
+        background: mode === key ? 'var(--green)' : 'var(--bg2)',
+        color: mode === key ? 'var(--ink)' : 'var(--text2)',
+        border: '2px solid var(--ink)',
+        boxShadow: mode === key ? 'var(--shadow-sm)' : 'none',
+        transition: 'background 0.15s, color 0.15s',
+      }}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div style={{ display: 'flex', gap: 8 }}>
+      {opt('stall', 'This stall')}
+      {opt('overall', 'Overall')}
+    </div>
+  );
+}
+
+export default function Leaderboard({ username, stall, onBack }) {
+  const [mode, setMode]   = useState('stall');
   const [state, setState] = useState({ status: 'loading' });
 
   useEffect(() => {
+    // 'This stall' needs a stall; if we somehow don't have one, fall back to overall.
+    const effectiveMode = mode === 'stall' && !stall?.slug ? 'overall' : mode;
     let cancelled = false;
-    fetch(`/api/rankings?username=${encodeURIComponent(username || '')}`, { cache: 'no-store' })
+    const params = new URLSearchParams({ username: username || '', mode: effectiveMode });
+    if (effectiveMode === 'stall') params.set('stall', stall.slug);
+    fetch(`/api/rankings?${params.toString()}`, { cache: 'no-store' })
       .then(res => {
         if (!res.ok) throw new Error(`status ${res.status}`);
         return res.json();
@@ -50,17 +80,24 @@ export default function Leaderboard({ username, onBack }) {
       .then(data => { if (!cancelled) setState({ status: 'ready', data }); })
       .catch(() => { if (!cancelled) setState({ status: 'error' }); });
     return () => { cancelled = true; };
-  }, [username]);
+  }, [username, mode, stall]);
 
   const { status, data } = state;
   const meInTop = data?.me && data.top.some(t => t.username === data.me.username);
+  const heading = mode === 'overall'
+    ? 'TOP 5 · ALL STALLS'
+    : `TOP 5 · ${(data?.stallName || stall?.name || 'STALL').toUpperCase()}`;
 
   return (
     <div className="screen" style={{ padding: '0 0 32px' }}>
       <TopBar onBack={onBack} title="Leaderboard" />
 
       <div style={{ padding: '20px 22px 0', animation: 'fadeUp 0.5s var(--ease-out)' }}>
-        <div className="divider">TOP 5 · OVERALL</div>
+        <Toggle mode={mode} setMode={setMode} />
+      </div>
+
+      <div style={{ padding: '18px 22px 0', animation: 'fadeUp 0.5s var(--ease-out)' }}>
+        <div className="divider">{heading}</div>
       </div>
 
       <div style={{ padding: '16px 22px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -108,7 +145,7 @@ export default function Leaderboard({ username, onBack }) {
 
       {status === 'ready' && (
         <p className="mono" style={{ textAlign: 'center', color: 'var(--text4)', fontSize: 10, padding: '24px 22px 0', letterSpacing: '0.08em' }}>
-          {data.totalPlayers} PLAYER{data.totalPlayers === 1 ? '' : 'S'} RANKED · COMBINED SCORE
+          {data.totalPlayers} PLAYER{data.totalPlayers === 1 ? '' : 'S'} RANKED · {mode === 'overall' ? 'ACROSS ALL STALLS' : 'THIS STALL'}
         </p>
       )}
     </div>

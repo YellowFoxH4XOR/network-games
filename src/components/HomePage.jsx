@@ -1,3 +1,74 @@
+import { useState } from 'react';
+
+/* ── Modal to switch stalls by entering a new code ── */
+function StallSwitcher({ current, onSubmit, onClose }) {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    const c = code.trim();
+    if (!c) { setError('Enter a stall code'); return; }
+    setBusy(true); setError('');
+    const r = await onSubmit(c);
+    if (r?.error) { setError(r.error); setBusy(false); }
+    // on success the parent navigates away, unmounting this modal
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        background: 'color-mix(in oklch, var(--ink) 38%, transparent)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 22,
+        animation: 'fadeIn 0.2s var(--ease-out)',
+      }}
+    >
+      <form
+        onClick={e => e.stopPropagation()}
+        onSubmit={submit}
+        className="glass-strong"
+        style={{ width: '100%', maxWidth: 360, padding: 22, animation: 'stampIn 0.4s var(--ease-spring)' }}
+      >
+        <div className="label" style={{ marginBottom: 6 }}>Switch stall</div>
+        <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 14 }}>
+          You’re in <strong style={{ color: 'var(--text)' }}>{current?.name || '—'}</strong>. Enter another
+          stall’s code to load its games.
+        </p>
+        <input
+          type="text"
+          value={code}
+          onChange={e => { setCode(e.target.value.toUpperCase()); setError(''); }}
+          placeholder="STALL CODE"
+          autoComplete="off" autoCapitalize="characters" spellCheck="false" maxLength={32} autoFocus
+          style={{
+            width: '100%', padding: '14px 16px',
+            background: 'var(--bg2)', border: '1px solid var(--b2)', borderRadius: 0,
+            fontSize: 16, color: 'var(--text)', fontFamily: "'JetBrains Mono', monospace",
+            letterSpacing: '0.12em', boxShadow: 'var(--shadow-sm)',
+          }}
+        />
+        {error && (
+          <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 8, fontWeight: 600 }}>⚠ {error}</div>
+        )}
+        <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+          <button type="button" onClick={onClose} style={{
+            flex: 1, padding: '12px', borderRadius: 0, fontSize: 14, fontWeight: 700,
+            background: 'var(--bg2)', border: '2px solid var(--ink)', color: 'var(--text2)', cursor: 'pointer',
+          }}>Cancel</button>
+          <button type="submit" disabled={busy} style={{
+            flex: 1, padding: '12px', borderRadius: 0, fontSize: 14, fontWeight: 800,
+            background: 'var(--green)', border: '2px solid var(--ink)', color: 'var(--ink)',
+            boxShadow: 'var(--shadow-sm)', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1,
+          }}>{busy ? 'Switching…' : 'Switch →'}</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 const SECTIONS = [
   {
     id: 'landing',
@@ -31,9 +102,17 @@ const SECTIONS = [
   },
 ];
 
-export default function HomePage({ username, onSelect }) {
+export default function HomePage({ username, stall, onSelect, onChangeStall }) {
+  const [switching, setSwitching] = useState(false);
   return (
     <div className="screen" style={{ padding: '0 0 32px' }}>
+      {switching && (
+        <StallSwitcher
+          current={stall}
+          onSubmit={onChangeStall}
+          onClose={() => setSwitching(false)}
+        />
+      )}
       {/* Header */}
       <div style={{
         padding: '18px 22px 0',
@@ -45,8 +124,28 @@ export default function HomePage({ username, onSelect }) {
             <span className="grad-text">Network</span>{' '}
             <span style={{ color: 'var(--text)' }}>Challenge</span>
           </div>
-          <div className="mono" style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4, letterSpacing: '0.04em' }}>
-            @{username}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
+            <span className="mono" style={{ fontSize: 11, color: 'var(--text3)', letterSpacing: '0.04em' }}>
+              @{username}
+            </span>
+            {stall && (
+              <button
+                onClick={() => setSwitching(true)}
+                title="Change stall code"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '3px 8px', borderRadius: 0, cursor: 'pointer',
+                  background: 'var(--green-glow)', border: '1px solid color-mix(in oklch, var(--green) 35%, transparent)',
+                }}
+              >
+                <span className="mono" style={{ fontSize: 9, fontWeight: 700, color: 'var(--green-dim)', letterSpacing: '0.08em' }}>
+                  {stall.name.toUpperCase()}
+                </span>
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                  <path d="M11.5 6A4.5 4.5 0 103 9.5M11.5 2v4h-4" stroke="var(--green-dim)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

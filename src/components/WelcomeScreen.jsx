@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getFingerprint } from '../lib/fingerprint.js';
+import { validateCode, registerForStall, setActiveStall } from '../lib/stall.js';
 
 const ADMIN_USERNAME = 'admin';
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
@@ -117,7 +118,7 @@ function MagneticBtn({ children, type = 'button', loading }) {
 /* ── Blocked screen ── */
 function AlreadyPlayed({ reason }) {
   const message = {
-    device_registered: 'This device has already participated. Each device can play only once.',
+    device_registered: 'This device has already played this stall. Each device gets one attempt per stall.',
     username_taken:   'This username is already taken — pick a different one.',
   }[reason] || 'You have already participated.';
 
@@ -150,6 +151,7 @@ function AlreadyPlayed({ reason }) {
 export default function WelcomeScreen({ onContinue }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [code, setCode]         = useState('');
   const [fingerprint, setFp]    = useState('');
   const [error, setError]       = useState('');
   const [submitting, setSubmit] = useState(false);
@@ -195,30 +197,35 @@ export default function WelcomeScreen({ onContinue }) {
       return;
     }
 
+    // A stall code is required for non-admins — validate it first.
+    const trimmedCode = code.trim();
+    if (!trimmedCode) { setError('Enter your stall code'); setSubmit(false); return; }
+
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        cache: 'no-store',
-        body: JSON.stringify({ username: trimmedUser, fingerprint }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        if (data.error === 'already_registered') {
-          // Username collision is a recoverable error — show inline, let them retry
-          if (data.field === 'username') {
-            setError('This username is already taken — pick another');
-            return;
-          }
-          // Device collision is permanent — show the block screen
+      let v;
+      try { v = await validateCode(trimmedCode); }
+      catch { setError('Could not reach server'); return; }
+      if (!v.valid) { setError('That stall code isn’t valid'); return; }
+
+      const r = await registerForStall(trimmedUser, fingerprint, v.stall.slug);
+      if (!r.ok) {
+        if (r.error === 'already_registered' && r.field === 'username') {
+          // Username collision within this stall — recoverable, let them retry
+          setError(`This username is taken in ${v.stall.name} — pick another`);
+          return;
+        }
+        if (r.error === 'already_registered') {
+          // Device already played this stall — permanent block for this stall
           setBlocked('device_registered');
           return;
         }
         setError('Could not register — try again');
         return;
       }
+
       localStorage.setItem('sns_user', trimmedUser);
-      onContinue(trimmedUser);
+      setActiveStall(v.stall);
+      onContinue(trimmedUser, v.stall);
     } catch {
       setError('Could not reach server');
     } finally {
@@ -310,6 +317,32 @@ export default function WelcomeScreen({ onContinue }) {
           )}
         </div>
 
+        {!isAdmin && (
+          <div>
+            <label className="label" style={{ display: 'block', marginBottom: 8 }}>
+              Stall code
+            </label>
+            <input
+              type="text"
+              value={code}
+              onChange={e => { setCode(e.target.value.toUpperCase()); setError(''); }}
+              placeholder="STALL CODE"
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck="false"
+              maxLength={32}
+              style={{
+                width: '100%', padding: '15px 18px',
+                background: 'var(--bg2)', border: '1px solid var(--b2)',
+                borderRadius: 0, fontSize: 16, color: 'var(--text)',
+                fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.12em',
+                boxShadow: 'var(--shadow-sm)',
+                transition: 'border-color 0.25s, box-shadow 0.25s',
+              }}
+            />
+          </div>
+        )}
+
         {isAdmin && (
           <div style={{ animation: 'popIn 0.3s var(--ease-spring)' }}>
             <label className="label" style={{ display: 'block', marginBottom: 8 }}>
@@ -340,7 +373,7 @@ export default function WelcomeScreen({ onContinue }) {
 
       <div style={{ textAlign: 'center', marginTop: 20, animation: 'fadeUp 0.7s var(--ease-out) 0.5s both' }}>
         <span className="mono" style={{ fontSize: 10, color: 'var(--text4)', letterSpacing: '0.08em' }}>
-          ONE ATTEMPT PER DEVICE · SCORES FINAL
+          ONE ATTEMPT PER STALL · SCORES FINAL
         </span>
       </div>
     </div>

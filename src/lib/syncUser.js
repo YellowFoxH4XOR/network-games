@@ -38,7 +38,12 @@ export async function syncUser() {
     }
   }
 
-  // Player path: fingerprint → /api/me
+  // Player path needs a chosen stall. Without one, the user must enter a code.
+  const stall = localStorage.getItem('sns_stall') || '';
+  const stallName = localStorage.getItem('sns_stall_name') || '';
+  if (!stall) return { kind: 'fresh' };
+
+  // fingerprint + stall → /api/me
   const fp = await getFingerprint();
   localStorage.setItem('sns_fp', fp);
 
@@ -48,43 +53,43 @@ export async function syncUser() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       cache: 'no-store',
-      body: JSON.stringify({ fingerprint: fp }),
+      body: JSON.stringify({ fingerprint: fp, stall }),
     });
     if (!res.ok) throw new Error(`status ${res.status}`);
     data = await res.json();
   } catch {
     // API unreachable — fall back to local state without modifying it
-    if (savedUser) return { kind: 'offline', username: savedUser };
+    if (savedUser) return { kind: 'offline', username: savedUser, stall, stallName };
     return { kind: 'offline' };
   }
 
   if (!data.registered) {
-    // DB doesn't know this device — wipe stale state and start fresh
-    clearAllSns();
+    // Device isn't registered for THIS stall. Keep any other-stall caches; the
+    // user just needs to (re)enter a code. Don't nuke everything.
     return { kind: 'fresh' };
   }
 
-  // Sync: localStorage mirrors what the DB knows
+  // Sync: localStorage mirrors what the DB knows for this stall (keys namespaced by stall).
   const u = data.username;
   localStorage.setItem('sns_user', u);
 
   if (data.quiz) {
-    localStorage.setItem(`sns_${u}_quiz`, JSON.stringify({
+    localStorage.setItem(`sns_${u}_${stall}_quiz`, JSON.stringify({
       score: data.quiz.score, playedAt: Date.now(),
     }));
   } else {
-    localStorage.removeItem(`sns_${u}_quiz`);
+    localStorage.removeItem(`sns_${u}_${stall}_quiz`);
   }
 
   if (data.wordsearch) {
-    localStorage.setItem(`sns_${u}_ws`, JSON.stringify({
+    localStorage.setItem(`sns_${u}_${stall}_ws`, JSON.stringify({
       score: data.wordsearch.score, playedAt: Date.now(),
     }));
   } else {
-    localStorage.removeItem(`sns_${u}_ws`);
+    localStorage.removeItem(`sns_${u}_${stall}_ws`);
   }
 
-  return { kind: 'registered', username: u };
+  return { kind: 'registered', username: u, stall, stallName };
 }
 
 export function clearLocalSession() {

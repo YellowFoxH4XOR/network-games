@@ -312,3 +312,34 @@ export const QUIZ_QUESTIONS = [
   Q('What is "wireshark" (in general terms)?', ['A tool that captures and inspects network traffic', 'A real shark', 'A music app', 'A type of cable'], 0),
   Q('What is "SSL/TLS"?', ['The protocols that secure most encrypted connections on the web', 'A music format', 'A type of cable', 'A new printer'], 0),
 ];
+
+/* ─── Per-stall content partitioning ───────────────────────────────────────
+ * Each stall plays a different slice of the shared content so the four booths
+ * feel distinct without authoring four full content sets.
+ *  - Quiz: a DISJOINT round-robin split (273 Qs → ~68 per stall, no overlap).
+ *  - Word search: an OVERLAPPING 25-word window per stall. The list is only 50
+ *    words, and a 10-word grid needs a comfortable pool, so we offset windows
+ *    (distinct sets) rather than quartering it (which would starve the grid).
+ */
+export const STALL_SLUGS = ['stall-1', 'stall-2', 'stall-3', 'stall-4'];
+
+export function stallIndex(slug) {
+  const i = STALL_SLUGS.indexOf(slug);
+  return i < 0 ? 0 : i;
+}
+
+export function stallQuiz(slug) {
+  const idx = stallIndex(slug);
+  const n = STALL_SLUGS.length;
+  return QUIZ_QUESTIONS.filter((_, k) => k % n === idx);
+}
+
+export function stallKeywords(slug) {
+  const idx = stallIndex(slug);
+  const L = NETWORK_KEYWORDS.length;
+  const start = Math.floor((idx * L) / STALL_SLUGS.length); // 0, 12, 25, 37
+  const windowSize = Math.ceil(L / 2);                      // 25
+  const out = [];
+  for (let k = 0; k < windowSize; k++) out.push(NETWORK_KEYWORDS[(start + k) % L]);
+  return [...new Set(out)];
+}
