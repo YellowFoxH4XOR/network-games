@@ -17,7 +17,7 @@ export default function TopBar({ onBack, title, right }) {
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
           color: 'var(--text2)', fontSize: 13, fontWeight: 600,
-          padding: '8px 12px', borderRadius: 10,
+          padding: '8px 12px', borderRadius: 0,
           background: 'var(--bg2)', border: '1px solid var(--b1)',
           boxShadow: 'var(--shadow-sm)',
           cursor: 'pointer',

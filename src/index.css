@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* ─── Kill the Vercel Toolbar ─── */
 vercel-toolbar,
@@ -15,17 +15,20 @@ vercel-live-feedback,
 }
 
 :root {
-  /* ─── Surface (quiet daylight theme) ─── */
-  --bg:       oklch(0.965 0.011 185);
-  --bg2:      oklch(0.993 0.004 185);
-  --bg3:      oklch(0.935 0.016 185);
-  --chrome:   color-mix(in oklch, var(--bg2) 86%, transparent);
-  --s1:       color-mix(in oklch, var(--text) 3%, transparent);
-  --s2:       color-mix(in oklch, var(--text) 5%, transparent);
-  --s3:       color-mix(in oklch, var(--text) 8%, transparent);
-  --b1:       color-mix(in oklch, var(--text) 8%, transparent);
-  --b2:       color-mix(in oklch, var(--text) 13%, transparent);
-  --b3:       color-mix(in oklch, var(--text) 22%, transparent);
+  /* ─── Surface (NEXTEC warm cream) ─── */
+  --bg:       #fff5ef;          /* warm off-white */
+  --bg2:      #fffbf8;          /* lighter card surface */
+  --bg3:      #f4e7de;          /* warm sunken shade */
+  --chrome:   color-mix(in oklch, var(--bg2) 90%, transparent);
+  --s1:       color-mix(in oklch, var(--text) 4%, transparent);
+  --s2:       color-mix(in oklch, var(--text) 7%, transparent);
+  --s3:       color-mix(in oklch, var(--text) 11%, transparent);
+  --b1:       color-mix(in oklch, var(--text) 16%, transparent);  /* subtle dividers */
+  --b2:       color-mix(in oklch, var(--text) 45%, transparent);
+  --b3:       var(--text);                                        /* solid ink */
+
+  /* Solid ink — brutalist outlines + hard offset shadows */
+  --ink:      #0d0d0f;
 
   /* Legacy aliases */
   --glass:          var(--s1);
@@ -33,42 +36,47 @@ vercel-live-feedback,
   --glass-border:   var(--b1);
   --glass-border2:  var(--b2);
 
-  /* ─── Accent palette ─── */
-  --green:       oklch(0.59 0.145 158);
-  --green-dim:   oklch(0.49 0.12 158);
+  /* ─── Accent palette (NEXTEC blocks) ───
+     Quiz semantics preserved: teal = success/correct/primary action,
+     coral-red = wrong/danger, so the two never collide. */
+  --green:       #3a9fa7;   /* teal → success / correct / CTA */
+  --green-dim:   #2f8088;
   --green-glow:  color-mix(in oklch, var(--green) 16%, transparent);
   --green-glow2: color-mix(in oklch, var(--green) 28%, transparent);
-  --cyan:        oklch(0.55 0.105 210);
+  --cyan:        #6f98c8;   /* NEXTEC blue */
   --cyan-glow:   color-mix(in oklch, var(--cyan) 15%, transparent);
-  --blue:        oklch(0.54 0.13 250);
-  --violet:      oklch(0.56 0.15 295);
-  --red:         oklch(0.58 0.18 25);
+  --blue:        #6f98c8;
+  --violet:      #8a6fb0;   /* warm violet that fits the block palette */
+  --red:         #c54536;   /* coral-red → wrong / danger */
   --red-glow:    color-mix(in oklch, var(--red) 14%, transparent);
-  --amber:       oklch(0.68 0.145 78);
+  --amber:       #e0995b;   /* warm amber → warning */
   --amber-glow:  color-mix(in oklch, var(--amber) 17%, transparent);
-  --on-accent:   oklch(0.985 0.004 185);
-  --brand:       oklch(0.45 0.12 178);
-  --success-soft: color-mix(in oklch, var(--green) 10%, transparent);
-  --danger-soft:  color-mix(in oklch, var(--red) 10%, transparent);
-  --warning-soft: color-mix(in oklch, var(--amber) 11%, transparent);
+  --on-accent:   #fff5ef;
+  --brand:       #3a9fa7;   /* highlighted words in brand teal */
+  --success-soft: color-mix(in oklch, var(--green) 12%, transparent);
+  --danger-soft:  color-mix(in oklch, var(--red) 12%, transparent);
+  --warning-soft: color-mix(in oklch, var(--amber) 14%, transparent);
 
-  /* ─── Text ─── */
-  --text:  oklch(0.235 0.035 245);
-  --text2: oklch(0.43 0.03 245);
-  --text3: oklch(0.61 0.025 245);
-  --text4: oklch(0.76 0.018 245);
+  /* ─── Text (near-black ink) ───
+     Tiers darkened from the original greys to clear WCAG AA (4.5:1) on the
+     cream bg — outdoor phone use needs the extra contrast (mobile research). */
+  --text:  #0d0d0f;   /* ~18:1  */
+  --text2: #3a3a3d;   /* ~9:1   */
+  --text3: #595a5d;   /* ~6:1   (was #6b6b6e) */
+  --text4: #6f7074;   /* ~4.5:1 (was #9a9a9d, which failed at ~2.5:1) */
 
-  /* ─── Gradients ─── */
-  --grad-main:  linear-gradient(135deg, var(--green) 0%, var(--cyan) 58%, var(--blue) 100%);
+  /* ─── Gradients (recolored to NEXTEC palette; used sparingly) ─── */
+  --grad-main:  linear-gradient(135deg, var(--red) 0%, var(--violet) 52%, var(--cyan) 100%);
   --grad-green: linear-gradient(135deg, var(--green), var(--green-dim));
-  --grad-hot:   linear-gradient(135deg, var(--violet), var(--blue));
+  --grad-hot:   linear-gradient(135deg, var(--red), var(--amber));
 
-  /* ─── Shadows ─── */
-  --shadow:     0 18px 44px color-mix(in oklch, var(--text) 10%, transparent), 0 4px 12px color-mix(in oklch, var(--text) 5%, transparent);
-  --shadow-sm:  0 5px 16px color-mix(in oklch, var(--text) 6%, transparent);
-  --shadow-lg:  0 24px 62px color-mix(in oklch, var(--text) 15%, transparent), 0 8px 20px color-mix(in oklch, var(--text) 7%, transparent);
-  --glow-green: 0 0 26px color-mix(in oklch, var(--green) 22%, transparent), 0 0 54px color-mix(in oklch, var(--green) 8%, transparent);
-  --glow-cyan:  0 0 26px color-mix(in oklch, var(--cyan) 22%, transparent), 0 0 54px color-mix(in oklch, var(--cyan) 8%, transparent);
+  /* ─── Shadows (HARD offset, zero blur — the NEXTEC signature) ─── */
+  --shadow:     4px 4px 0 0 var(--ink);
+  --shadow-sm:  3px 3px 0 0 var(--ink);
+  --shadow-lg:  8px 8px 0 0 var(--ink);
+  /* Tiny soft halos kept only for LED-dot accents */
+  --glow-green: 0 0 16px color-mix(in oklch, var(--green) 30%, transparent);
+  --glow-cyan:  0 0 16px color-mix(in oklch, var(--cyan) 30%, transparent);
 
   /* ─── Easing ─── */
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
@@ -87,7 +95,7 @@ vercel-live-feedback,
 }
 html { scroll-behavior: smooth; }
 html, body {
-  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: 'Poppins', -apple-system, system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100dvh;
@@ -98,11 +106,12 @@ html, body {
 }
 #root { position: relative; z-index: 1; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
-button:active { transform: scale(0.97) !important; }
+/* Brutalist press: nudge toward the hard shadow instead of scaling */
+button:active { transform: translate(2px, 2px) !important; }
 input:focus {
   outline: none;
   border-color: var(--green) !important;
-  box-shadow: 0 0 0 4px var(--green-glow), 0 4px 16px var(--green-glow);
+  box-shadow: 4px 4px 0 0 var(--green);
 }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: var(--b2); border-radius: 3px; }
@@ -113,6 +122,7 @@ input:focus {
 .orb {
   position: absolute;
   pointer-events: none;
+  opacity: 0.4;   /* faint warm wash — brutalist bg stays flat & cream */
 }
 .orb-1 {
   inset: -18% -10% auto -10%;
@@ -248,29 +258,65 @@ input:focus {
   }
 }
 
+/* ─── Confident-polish motion (Awwwards-style, brutalist) ───
+   Fast (150–350ms), hard easing, nothing loops forever, never blocks a tap.
+   All of it is disabled by the prefers-reduced-motion block at the bottom. */
+
+/* Kinetic heading reveal — text wipes up from behind a hard clip mask */
+@keyframes revealUp {
+  from { clip-path: inset(0 0 102% 0); transform: translateY(0.3em); }
+  to   { clip-path: inset(0 0 -8% 0);  transform: translateY(0); }
+}
+.reveal-up { animation: revealUp 0.55s var(--ease-out) both; }
+
+/* Sharp directional screen transitions (used by App.jsx nav) */
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(16px); clip-path: inset(0 0 7% 0); }
+  to   { opacity: 1; transform: translateY(0);     clip-path: inset(0 0 0 0); }
+}
+@keyframes screenOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Result stamp — lands like a rubber stamp, then settles */
+@keyframes stampIn {
+  0%   { opacity: 0; transform: scale(1.35) translateY(-6px); }
+  55%  { opacity: 1; transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.stamp-in { animation: stampIn 0.5s var(--ease-spring) both; }
+
+/* Tactile interaction: hover nudges toward the cursor, press sinks into the
+   hard shadow. Hover gated to real pointers so touch devices don't stick. */
+button { transition: transform 0.16s var(--ease-out); }
+@media (hover: hover) {
+  button:hover:not(:disabled) { transform: translate(-1.5px, -1.5px); }
+}
+
 /* ─── Glass surfaces (subtle on light bg) ─── */
 .glass {
   background: var(--bg2);
-  border: 1px solid var(--b1);
-  border-radius: 16px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
   box-shadow: var(--shadow-sm);
 }
 .glass-strong {
   background: var(--bg2);
-  border: 1px solid var(--b2);
-  border-radius: 16px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
   box-shadow: var(--shadow);
 }
 
 /* Gradient border */
 .grad-border {
-  position: relative; border-radius: 20px; padding: 1.5px;
+  position: relative; border-radius: 0; padding: 2px;
   background: linear-gradient(135deg,
     color-mix(in oklch, var(--green) 48%, transparent) 0%,
     color-mix(in oklch, var(--cyan) 42%, transparent) 56%,
     color-mix(in oklch, var(--blue) 36%, transparent) 100%);
 }
-.grad-border > * { border-radius: 18.5px; }
+.grad-border > * { border-radius: 0; }
 
 /* ─── LED dots ─── */
 .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block; }
@@ -314,7 +360,7 @@ input:focus {
 /* ─── Tag pills ─── */
 .tag {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px; border-radius: 8px;
+  padding: 4px 10px; border-radius: 0;
   font-size: 10px; font-weight: 700;
   font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -326,9 +372,13 @@ input:focus {
 /* ─── Card hover lift ─── */
 .tilt-card {
   transform-style: preserve-3d;
-  transition: transform 0.18s var(--ease-out), box-shadow 0.25s var(--ease-out);
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.25s var(--ease-out);
   will-change: transform;
 }
+@media (hover: hover) {
+  .tilt-card:hover { transform: translate(-3px, -3px); }
+}
+.tilt-card:active { transform: translate(2px, 2px); }
 .lift-card {
   transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
 }

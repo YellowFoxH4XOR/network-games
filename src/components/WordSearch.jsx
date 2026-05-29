@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { NETWORK_KEYWORDS } from '../data.js';
 import TopBar from './TopBar.jsx';
 import { saveScore } from '../lib/saveScore.js';
+import { useCountUp } from '../lib/useCountUp.js';
 
 const GRID_SIZE  = 10;
 const WORD_COUNT = 10;
@@ -121,32 +122,6 @@ function selCells(s, e) {
   return out;
 }
 
-/* ── Smooth count-up animation for score ── */
-function useCountUp(target, duration = 400) {
-  const [value, setValue] = useState(target);
-  const startRef = useRef(target);
-  const startTimeRef = useRef(null);
-  const rafRef = useRef(null);
-
-  useEffect(() => {
-    cancelAnimationFrame(rafRef.current);
-    if (target === value) return;
-    startRef.current = value;
-    startTimeRef.current = performance.now();
-    const tick = (now) => {
-      const t = Math.min((now - startTimeRef.current) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      const v = Math.round(startRef.current + (target - startRef.current) * eased);
-      setValue(v);
-      if (t < 1) rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [target]);
-
-  return value;
-}
-
 /* ── Confetti burst component (CSS only) ── */
 function Confetti() {
   const pieces = useMemo(() => Array.from({ length: 24 }, (_, i) => ({
@@ -189,7 +164,7 @@ const W = {
   page: { display: 'flex', flexDirection: 'column', gap: 14, minHeight: '100dvh', paddingBottom: 36 },
   backFull: {
     width: '100%', padding: '15px', background: 'var(--bg2)',
-    border: '1px solid var(--b1)', borderRadius: 14,
+    border: '1px solid var(--b1)', borderRadius: 0,
     color: 'var(--text2)', fontSize: 14, fontWeight: 600,
     fontFamily: 'inherit', textAlign: 'center', cursor: 'pointer',
     boxShadow: 'var(--shadow-sm)',
@@ -339,7 +314,7 @@ export default function WordSearch({ username, onBack }) {
         <div style={{ padding: '0 22px', animation: 'fadeUp 0.5s var(--ease-out)' }}>
           <div className="glass" style={{ padding: '40px 24px', textAlign: 'center' }}>
             <div style={{
-              width: 64, height: 64, borderRadius: 20, background: 'var(--bg2)',
+              width: 64, height: 64, borderRadius: 0, background: 'var(--bg2)',
               border: '1px solid var(--b2)', boxShadow: 'var(--shadow-sm)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
             }}>
@@ -351,11 +326,11 @@ export default function WordSearch({ username, onBack }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 4, letterSpacing: '-0.02em' }}>Already Completed</div>
             <div className="label" style={{ marginBottom: 28 }}>One attempt per player — your score is final</div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <div style={{ background: 'var(--green-glow)', borderRadius: 18, padding: '16px 26px', border: '1px solid color-mix(in oklch, var(--green) 20%, transparent)', textAlign: 'center' }}>
+              <div style={{ background: 'var(--green-glow)', borderRadius: 0, padding: '16px 26px', border: '1px solid color-mix(in oklch, var(--green) 20%, transparent)', textAlign: 'center' }}>
                 <div className="mono" style={{ fontSize: 36, fontWeight: 800, color: 'var(--green-dim)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevScore}</div>
                 <div className="label" style={{ color: 'var(--green-dim)', opacity: 0.8, marginTop: 6 }}>Points</div>
               </div>
-              <div style={{ background: 'var(--cyan-glow)', borderRadius: 18, padding: '16px 26px', border: '1px solid color-mix(in oklch, var(--cyan) 20%, transparent)', textAlign: 'center' }}>
+              <div style={{ background: 'var(--cyan-glow)', borderRadius: 0, padding: '16px 26px', border: '1px solid color-mix(in oklch, var(--cyan) 20%, transparent)', textAlign: 'center' }}>
                 <div className="mono" style={{ fontSize: 36, fontWeight: 800, color: 'var(--cyan)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevFound}/{prevTotal}</div>
                 <div className="label" style={{ color: 'var(--cyan)', opacity: 0.8, marginTop: 6 }}>Found</div>
               </div>
@@ -386,11 +361,11 @@ export default function WordSearch({ username, onBack }) {
           <TopBar onBack={onBack} title="Results" />
           <div style={{ padding: '0 22px', animation: 'scaleIn 0.45s var(--ease-out)' }}>
             <div className="grad-border" style={{ marginBottom: 16 }}>
-              <div style={{ background: 'var(--bg2)', borderRadius: 18.5, padding: '26px 22px', textAlign: 'center' }}>
+              <div style={{ background: 'var(--bg2)', borderRadius: 0.5, padding: '26px 22px', textAlign: 'center' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 18 }}>
                   {pz.words.map((w, i) => (
                     <div key={i} style={{
-                      width: 30, height: 30, borderRadius: 8,
+                      width: 30, height: 30, borderRadius: 0,
                       background: found[w] ? `color-mix(in oklch, ${found[w]} 15%, transparent)` : 'var(--danger-soft)',
                       border: `1px solid ${found[w] ? `color-mix(in oklch, ${found[w]} 34%, transparent)` : 'color-mix(in oklch, var(--red) 25%, transparent)'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -411,11 +386,11 @@ export default function WordSearch({ username, onBack }) {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-                  <div style={{ background: 'var(--green-glow)', borderRadius: 16, padding: '16px 28px', border: '1px solid color-mix(in oklch, var(--green) 20%, transparent)', animation: 'popIn 0.5s var(--ease-spring) 0.3s both' }}>
+                  <div style={{ background: 'var(--green-glow)', borderRadius: 0, padding: '16px 28px', border: '1px solid color-mix(in oklch, var(--green) 20%, transparent)', animation: 'popIn 0.5s var(--ease-spring) 0.3s both' }}>
                     <div className="mono" style={{ fontSize: 38, fontWeight: 800, color: 'var(--green-dim)', lineHeight: 1, letterSpacing: '-0.04em' }}>{animScore}</div>
                     <div className="label" style={{ color: 'var(--green-dim)', opacity: 0.8, marginTop: 6 }}>Points</div>
                   </div>
-                  <div style={{ background: 'var(--cyan-glow)', borderRadius: 16, padding: '16px 28px', border: '1px solid color-mix(in oklch, var(--cyan) 20%, transparent)', animation: 'popIn 0.5s var(--ease-spring) 0.4s both' }}>
+                  <div style={{ background: 'var(--cyan-glow)', borderRadius: 0, padding: '16px 28px', border: '1px solid color-mix(in oklch, var(--cyan) 20%, transparent)', animation: 'popIn 0.5s var(--ease-spring) 0.4s both' }}>
                     <div className="mono" style={{ fontSize: 38, fontWeight: 800, color: 'var(--cyan)', lineHeight: 1, letterSpacing: '-0.04em' }}>{fc}</div>
                     <div className="label" style={{ color: 'var(--cyan)', opacity: 0.8, marginTop: 6 }}>Found</div>
                   </div>
@@ -464,10 +439,10 @@ export default function WordSearch({ username, onBack }) {
       {/* Timer */}
       <div style={{ padding: '0 22px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-          <div style={{ flex: 1, height: 6, background: 'var(--s2)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{ flex: 1, height: 6, background: 'var(--s2)', borderRadius: 0, overflow: 'hidden' }}>
             <div style={{
               height: '100%', width: `${pct}%`,
-              background: tC, borderRadius: 3,
+              background: tC, borderRadius: 0,
               transition: 'width 1s linear, background 0.5s',
               boxShadow: `0 0 14px ${tC === 'var(--red)' ? 'var(--red-glow)' : tC === 'var(--amber)' ? 'var(--amber-glow)' : 'var(--green-glow)'}`,
             }} />
@@ -482,9 +457,9 @@ export default function WordSearch({ username, onBack }) {
           {pz.words.map((w, i) => (
             <div key={i} style={{
               width: found[w] ? 22 : 6, height: 6,
-              borderRadius: 3,
+              borderRadius: 0,
               background: found[w] ? found[w] : 'var(--text4)',
-              boxShadow: found[w] ? `0 2px 6px color-mix(in oklch, ${found[w]} 34%, transparent)` : 'none',
+              boxShadow: 'none',
               transition: 'all 0.4s var(--ease-spring)',
             }} />
           ))}
@@ -507,7 +482,7 @@ export default function WordSearch({ username, onBack }) {
           width: '100%', maxWidth: 420, margin: '0 auto',
           background: flash ? `color-mix(in oklch, ${flash} 10%, var(--bg2))` : 'var(--bg2)',
           border: `2px solid ${flash ? flash : 'var(--b1)'}`,
-          borderRadius: 18, padding: 8,
+          borderRadius: 0, padding: 8,
           boxShadow: flash
             ? `0 0 40px color-mix(in oklch, ${flash} 34%, transparent), 0 16px 40px color-mix(in oklch, var(--text) 10%, transparent)`
             : 'var(--shadow)',
@@ -527,7 +502,7 @@ export default function WordSearch({ username, onBack }) {
                 onTouchStart={e => onDown(r, c, e)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  aspectRatio: '1', borderRadius: 8,
+                  aspectRatio: '1', borderRadius: 0,
                   fontSize: 'clamp(13px, 3vw, 18px)',
                   fontFamily: "'JetBrains Mono', monospace",
                   fontWeight: f || active ? 800 : 600,
@@ -558,7 +533,7 @@ export default function WordSearch({ username, onBack }) {
         <div style={{
           position: 'fixed', top: '20%', left: '50%',
           transform: 'translateX(-50%)',
-          padding: '12px 24px', borderRadius: 16,
+          padding: '12px 24px', borderRadius: 0,
           background: 'var(--bg2)', border: `2px solid ${WORD_COLORS[(Object.keys(found).length - 1) % WORD_COLORS.length]}`,
           boxShadow: 'var(--shadow-lg)',
           fontSize: 18, fontWeight: 800, letterSpacing: '0.05em',
@@ -581,7 +556,7 @@ export default function WordSearch({ username, onBack }) {
             const col = WORD_COLORS[i % WORD_COLORS.length];
             return (
               <span key={w} className="mono" style={{
-                padding: '6px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                padding: '6px 12px', borderRadius: 0, fontSize: 12, fontWeight: 700,
                 background: isF ? `color-mix(in oklch, ${col} 14%, transparent)` : 'var(--bg2)',
                 border: `1.5px solid ${isF ? `color-mix(in oklch, ${col} 32%, transparent)` : 'var(--b1)'}`,
                 color: isF ? col : 'var(--text2)',
@@ -589,7 +564,7 @@ export default function WordSearch({ username, onBack }) {
                 opacity: isF ? 0.8 : 1,
                 transition: 'all 0.4s var(--ease-out)',
                 letterSpacing: '0.04em',
-                boxShadow: isF ? `0 2px 8px color-mix(in oklch, ${col} 22%, transparent)` : 'var(--shadow-sm)',
+                boxShadow: isF ? `2px 2px 0 0 ${col}` : 'var(--shadow-sm)',
                 animation: isF ? 'wordFound 0.6s var(--ease-spring)' : 'none',
                 display: 'inline-flex', alignItems: 'center', gap: 5,
               }}>

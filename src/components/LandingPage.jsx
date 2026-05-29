@@ -65,7 +65,7 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
             aria-label="Back"
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: 36, height: 36, borderRadius: 10, cursor: 'pointer', flexShrink: 0,
+              width: 36, height: 36, borderRadius: 0, cursor: 'pointer', flexShrink: 0,
               background: 'var(--bg2)', border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
               color: 'var(--text2)', transition: 'all 0.2s var(--ease-out)',
             }}
@@ -91,7 +91,7 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
             onClick={() => onSelectGame('leaderboard')}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 13px', borderRadius: 100, cursor: 'pointer',
+              padding: '7px 13px', borderRadius: 0, cursor: 'pointer',
               background: 'var(--bg2)', border: '1px solid var(--b1)',
               boxShadow: 'var(--shadow-sm)',
               transition: 'all 0.2s var(--ease-out)',
@@ -108,7 +108,7 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
           </button>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 7,
-            padding: '6px 12px', borderRadius: 100,
+            padding: '6px 12px', borderRadius: 0,
             background: 'var(--bg2)', border: '1px solid var(--b1)',
             boxShadow: 'var(--shadow-sm)',
           }}>
@@ -122,7 +122,7 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
       {(quizData || wsData) && (
         <div style={{ padding: '18px 22px 0', animation: 'fadeUp 0.5s var(--ease-out) 0.08s both' }}>
           <div className="grad-border">
-            <div style={{ background: 'var(--bg2)', borderRadius: 18.5, padding: '18px 20px' }}>
+            <div style={{ background: 'var(--bg2)', borderRadius: 0.5, padding: '18px 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <span className="label">Total Score</span>
@@ -152,7 +152,7 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
               {bothDone && (
                 <div style={{
                   marginTop: 14, padding: '9px 14px',
-                  background: 'var(--green-glow)', borderRadius: 10,
+                  background: 'var(--green-glow)', borderRadius: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   border: '1px solid color-mix(in oklch, var(--green) 22%, transparent)',
                   animation: 'fadeIn 0.5s ease',
@@ -183,9 +183,9 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
         >
           <div style={{
             background: 'var(--bg2)',
-            border: `1px solid ${quizData ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 26%, transparent)'}`,
-            borderRadius: 18, overflow: 'hidden',
-            boxShadow: quizData ? 'var(--shadow-sm)' : '0 12px 36px color-mix(in oklch, var(--green) 10%, transparent), var(--shadow-sm)',
+            border: `2px solid ${quizData ? 'var(--ink)' : 'var(--green)'}`,
+            borderRadius: 0, overflow: 'hidden',
+            boxShadow: quizData ? 'var(--shadow-sm)' : 'var(--shadow)',
             opacity: quizData ? 0.62 : 1,
             transition: 'opacity 0.3s, box-shadow 0.3s',
           }}>
@@ -194,7 +194,7 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
             <div style={{ padding: '20px 20px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                  width: 52, height: 52, borderRadius: 0, flexShrink: 0,
                   background: quizData ? 'var(--s2)' : 'var(--success-soft)',
                   border: `1px solid ${quizData ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 22%, transparent)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -251,9 +251,9 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
         >
           <div style={{
             background: 'var(--bg2)',
-            border: `1px solid ${wsData ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 26%, transparent)'}`,
-            borderRadius: 18, overflow: 'hidden',
-            boxShadow: wsData ? 'var(--shadow-sm)' : '0 12px 36px color-mix(in oklch, var(--cyan) 10%, transparent), var(--shadow-sm)',
+            border: `2px solid ${wsData ? 'var(--ink)' : 'var(--cyan)'}`,
+            borderRadius: 0, overflow: 'hidden',
+            boxShadow: wsData ? 'var(--shadow-sm)' : 'var(--shadow)',
             opacity: wsData ? 0.62 : 1,
             transition: 'opacity 0.3s, box-shadow 0.3s',
           }}>
@@ -262,7 +262,7 @@ export default function LandingPage({ username, onBack, onSelectGame }) {
             <div style={{ padding: '20px 20px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                  width: 52, height: 52, borderRadius: 0, flexShrink: 0,
                   background: wsData ? 'var(--s2)' : 'var(--cyan-glow)',
                   border: `1px solid ${wsData ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 22%, transparent)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

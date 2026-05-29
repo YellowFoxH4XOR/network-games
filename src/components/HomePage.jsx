@@ -54,7 +54,7 @@ export default function HomePage({ username, onSelect }) {
             onClick={() => onSelect('leaderboard')}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 13px', borderRadius: 100, cursor: 'pointer',
+              padding: '7px 13px', borderRadius: 0, cursor: 'pointer',
               background: 'var(--bg2)', border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
               transition: 'all 0.2s var(--ease-out)',
             }}
@@ -70,7 +70,7 @@ export default function HomePage({ username, onSelect }) {
           </button>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 7,
-            padding: '6px 12px', borderRadius: 100,
+            padding: '6px 12px', borderRadius: 0,
             background: 'var(--bg2)', border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
           }}>
             <span className="dot dot-g" style={{ width: 6, height: 6 }}></span>
@@ -95,14 +95,14 @@ export default function HomePage({ username, onSelect }) {
           >
             <div style={{
               background: 'var(--bg2)',
-              border: `1px solid color-mix(in oklch, ${s.accent} 26%, transparent)`,
-              borderRadius: 18, overflow: 'hidden',
-              boxShadow: `0 12px 36px color-mix(in oklch, ${s.accent} 10%, transparent), var(--shadow-sm)`,
+              border: `2px solid ${s.accent}`,
+              borderRadius: 0, overflow: 'hidden',
+              boxShadow: 'var(--shadow)',
             }}>
               <div style={{ height: 3, background: s.grad }} />
               <div style={{ padding: '20px 20px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                  width: 52, height: 52, borderRadius: 0, flexShrink: 0,
                   background: `color-mix(in oklch, ${s.accent} 12%, var(--bg2))`,
                   border: `1px solid color-mix(in oklch, ${s.accent} 22%, transparent)`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -12,7 +12,7 @@ function Row({ entry, isMe }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 14,
-      padding: '13px 16px', borderRadius: 14,
+      padding: '13px 16px', borderRadius: 0,
       background: isMe ? 'var(--green-glow)' : 'var(--bg2)',
       border: `1px solid ${isMe ? 'color-mix(in oklch, var(--green) 32%, transparent)' : 'var(--b1)'}`,
       boxShadow: 'var(--shadow-sm)',

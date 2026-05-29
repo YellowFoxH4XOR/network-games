@@ -19,7 +19,7 @@ function BootingScreen() {
     <div className="screen-centered" style={{ alignItems: 'center', gap: 18, padding: 24, position: 'relative' }}>
       <div className="scan-line" />
       <div style={{
-        width: 64, height: 64, borderRadius: 20, background: 'var(--bg2)',
+        width: 64, height: 64, borderRadius: 0, background: 'var(--bg2)',
         border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         animation: 'float 3s ease-in-out infinite',
@@ -37,7 +37,7 @@ function BootingScreen() {
       <div style={{ display: 'flex', gap: 6 }}>
         {[0,1,2].map(i => (
           <div key={i} style={{
-            width: 6, height: 6, borderRadius: 3, background: 'var(--green)',
+            width: 6, height: 6, borderRadius: 0, background: 'var(--green)',
             animation: `pulse 1.2s ease ${i * 0.2}s infinite`,
           }}/>
         ))}
@@ -49,7 +49,7 @@ function BootingScreen() {
 export default function App() {
   const [screen, setScreen] = useState('booting');
   const [user, setUser]     = useState('');
-  const [fade, setFade]     = useState('fadeUp');
+  const [fade, setFade]     = useState('screenIn');
 
   // Boot sync: reconcile localStorage with the database
   useEffect(() => {
@@ -75,8 +75,8 @@ export default function App() {
   }, []);
 
   const nav = useCallback((dest) => {
-    setFade('fadeOut');
-    setTimeout(() => { setScreen(dest); setFade('fadeUp'); }, 220);
+    setFade('screenOut');
+    setTimeout(() => { setScreen(dest); setFade('screenIn'); }, 180);
   }, []);
 
   const handleLogin = useCallback((u) => {
@@ -98,7 +98,7 @@ export default function App() {
     <>
       <Background />
       <CursorGlow />
-      <div style={{ animation: `${fade} 0.4s var(--ease-out)`, minHeight: '100dvh' }}>
+      <div style={{ animation: `${fade} 0.34s var(--ease-out)`, minHeight: '100dvh' }}>
         {screen === 'booting'    && <BootingScreen />}
         {screen === 'welcome'    && <WelcomeScreen onContinue={handleLogin} />}
         {screen === 'home'       && <HomePage username={user} onSelect={dest => nav(dest)} />}

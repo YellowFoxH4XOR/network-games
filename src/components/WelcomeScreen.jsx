@@ -79,24 +79,21 @@ function MagneticBtn({ children, type = 'button', loading }) {
         style={{
           width: '100%', padding: '17px 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          background: 'var(--grad-main)',
-          backgroundSize: '200% 100%',
-          backgroundPosition: '0% 50%',
-          borderRadius: 16,
-          fontSize: 16, fontWeight: 800, color: 'var(--on-accent)',
+          background: 'var(--green)',
+          border: '2px solid var(--ink)',
+          borderRadius: 0,
+          fontSize: 16, fontWeight: 800, color: 'var(--ink)',
           letterSpacing: '-0.01em',
-          boxShadow: '0 10px 26px color-mix(in oklch, var(--green) 28%, transparent), 0 2px 4px color-mix(in oklch, var(--text) 8%, transparent)',
-          transition: 'transform 0.4s var(--ease-spring), box-shadow 0.3s, background-position 0.6s',
+          boxShadow: '6px 6px 0 0 var(--ink)',
+          transition: 'transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out)',
           cursor: loading ? 'wait' : 'pointer',
           opacity: loading ? 0.7 : 1,
         }}
         onMouseEnter={e => {
-          e.currentTarget.style.boxShadow = '0 14px 34px color-mix(in oklch, var(--green) 34%, transparent), 0 4px 8px color-mix(in oklch, var(--text) 10%, transparent)';
-          e.currentTarget.style.backgroundPosition = '100% 50%';
+          e.currentTarget.style.boxShadow = '8px 8px 0 0 var(--ink)';
         }}
         onMouseLeave={e => {
-          e.currentTarget.style.boxShadow = '0 10px 26px color-mix(in oklch, var(--green) 28%, transparent), 0 2px 4px color-mix(in oklch, var(--text) 8%, transparent)';
-          e.currentTarget.style.backgroundPosition = '0% 50%';
+          e.currentTarget.style.boxShadow = '6px 6px 0 0 var(--ink)';
         }}
       >
         {loading ? (
@@ -128,7 +125,7 @@ function AlreadyPlayed({ reason }) {
     <div className="screen-centered" style={{ padding: '24px', textAlign: 'center', animation: 'fadeUp 0.5s var(--ease-out)' }}>
       <NetTopology />
       <div style={{
-        marginTop: 24, width: 64, height: 64, borderRadius: 20,
+        marginTop: 24, width: 64, height: 64, borderRadius: 0,
         background: 'var(--bg2)', border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '24px auto 16px',
       }}>
@@ -143,7 +140,7 @@ function AlreadyPlayed({ reason }) {
       <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.6, maxWidth: 300, margin: '0 auto 20px' }}>
         {message}
       </p>
-      <div style={{ padding: '10px 20px', background: 'var(--bg2)', border: '1px solid var(--b1)', borderRadius: 12, boxShadow: 'var(--shadow-sm)' }}>
+      <div style={{ padding: '10px 20px', background: 'var(--bg2)', border: '1px solid var(--b1)', borderRadius: 0, boxShadow: 'var(--shadow-sm)' }}>
         <span className="label">CHALLENGE CLOSED</span>
       </div>
     </div>
@@ -239,7 +236,7 @@ export default function WelcomeScreen({ onContinue }) {
       <div style={{ textAlign: 'center', marginBottom: 20, animation: 'fadeDown 0.6s var(--ease-out)' }}>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '6px 14px', borderRadius: 100,
+          padding: '6px 14px', borderRadius: 0,
           background: 'var(--bg2)', border: '1px solid var(--b1)',
           boxShadow: 'var(--shadow-sm)',
         }}>
@@ -256,9 +253,9 @@ export default function WelcomeScreen({ onContinue }) {
       </div>
 
       {/* Display headline */}
-      <div style={{ textAlign: 'center', marginTop: 16, marginBottom: 10, animation: 'fadeUp 0.7s var(--ease-out) 0.2s both' }}>
-        <div className="display grad-text">NETWORK</div>
-        <div className="display" style={{ color: 'var(--text)' }}>CHALLENGE</div>
+      <div style={{ textAlign: 'center', marginTop: 16, marginBottom: 10 }}>
+        <div className="display grad-text reveal-up" style={{ animationDelay: '0.15s' }}>NETWORK</div>
+        <div className="display reveal-up" style={{ color: 'var(--text)', animationDelay: '0.27s' }}>CHALLENGE</div>
       </div>
 
       {/* Subtitle */}
@@ -296,7 +293,7 @@ export default function WelcomeScreen({ onContinue }) {
             style={{
               width: '100%', padding: '15px 18px',
               background: 'var(--bg2)', border: '1px solid var(--b2)',
-              borderRadius: 14, fontSize: 16, color: 'var(--text)',
+              borderRadius: 0, fontSize: 16, color: 'var(--text)',
               fontFamily: "'JetBrains Mono', monospace",
               boxShadow: 'var(--shadow-sm)',
               transition: 'border-color 0.25s, box-shadow 0.25s',
@@ -326,10 +323,10 @@ export default function WelcomeScreen({ onContinue }) {
               autoFocus
               style={{
                 width: '100%', padding: '15px 18px',
-                background: 'var(--bg2)', border: '1px solid color-mix(in oklch, var(--violet) 38%, transparent)',
-                borderRadius: 14, fontSize: 16, color: 'var(--text)',
+                background: 'var(--bg2)', border: '2px solid var(--ink)',
+                borderRadius: 0, fontSize: 16, color: 'var(--text)',
                 fontFamily: "'JetBrains Mono', monospace",
-                boxShadow: '0 4px 16px color-mix(in oklch, var(--violet) 10%, transparent)',
+                boxShadow: 'var(--shadow-sm)',
                 transition: 'border-color 0.25s, box-shadow 0.25s',
               }}
             />

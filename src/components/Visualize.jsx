@@ -47,8 +47,8 @@ function Port({ instance, active, onSelect }) {
   useFrame((state) => {
     if (!ref.current) return;
     ref.current.material.emissiveIntensity = active
-      ? 2.2 + Math.sin(state.clock.elapsedTime * 5) * 0.7
-      : 1.4;
+      ? 0.55 + Math.sin(state.clock.elapsedTime * 4) * 0.18
+      : 0.18;
   });
   return (
     <mesh
@@ -62,7 +62,7 @@ function Port({ instance, active, onSelect }) {
       <boxGeometry args={instance.size || [0.16, 0.12, 0.07]} />
       <meshStandardMaterial
         color={instance.color} emissive={instance.color}
-        emissiveIntensity={1.4} toneMapped={false} metalness={0.1} roughness={0.35}
+        emissiveIntensity={0.18} metalness={0.1} roughness={0.45}
       />
     </mesh>
   );
@@ -93,13 +93,13 @@ function DeviceModel({ device, ports, selectedGroup, onSelect }) {
       {/* Dark front panel so the glowing ports pop */}
       <mesh position={[0, 0, d / 2 + 0.005]}>
         <boxGeometry args={[w * 0.97, h * 0.82, 0.05]} />
-        <meshStandardMaterial color="#0b0f17" metalness={0.4} roughness={0.5} />
+        <meshStandardMaterial color="#2a2e36" metalness={0.4} roughness={0.55} />
       </mesh>
 
       {/* Bright accent strip along the top-front edge */}
       <mesh position={[0, h / 2 - 0.04, d / 2 - 0.01]}>
         <boxGeometry args={[w * 0.96, 0.03, 0.02]} />
-        <meshStandardMaterial color={device.accent} emissive={device.accent} emissiveIntensity={1.4} toneMapped={false} />
+        <meshStandardMaterial color={device.accent} emissive={device.accent} emissiveIntensity={0.35} />
       </mesh>
 
       {/* Antennas (routers) */}
@@ -199,14 +199,14 @@ export default function Visualize({ onBack }) {
               key={d.id}
               onClick={() => pickDevice(i)}
               style={{
-                flex: 1, padding: '10px 8px', borderRadius: 12, cursor: 'pointer',
+                flex: 1, padding: '10px 8px', borderRadius: 0, cursor: 'pointer',
                 background: on ? 'var(--bg2)' : 'transparent',
                 border: `1px solid ${on ? 'var(--b2)' : 'var(--b1)'}`,
                 boxShadow: on ? 'var(--shadow-sm)' : 'none',
                 transition: 'all 0.2s var(--ease-out)',
               }}
             >
-              <div style={{ width: 8, height: 8, borderRadius: '50%', margin: '0 auto 6px', background: d.accent, boxShadow: on ? `0 0 10px ${d.accent}` : 'none' }} />
+              <div style={{ width: 8, height: 8, borderRadius: '50%', margin: '0 auto 6px', background: d.accent, opacity: on ? 1 : 0.5 }} />
               <span style={{ fontSize: 12, fontWeight: 700, color: on ? 'var(--text)' : 'var(--text3)' }}>{d.name}</span>
             </button>
           );
@@ -216,20 +216,20 @@ export default function Visualize({ onBack }) {
       {/* 3D stage */}
       <div style={{ padding: '14px 22px 0' }}>
         <div style={{
-          height: 'min(46vh, 360px)', borderRadius: 18, overflow: 'hidden',
-          border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
-          background: `radial-gradient(circle at 50% 38%, color-mix(in oklch, ${device.accent} 26%, #0c1322) 0%, #070b13 72%)`,
+          height: 'min(46vh, 360px)', borderRadius: 0, overflow: 'hidden',
+          border: '2px solid var(--ink)', boxShadow: 'var(--shadow-sm)',
+          background: 'radial-gradient(circle at 50% 32%, #fffdfb 0%, #efe6dd 78%)',
         }}>
           <Canvas
             shadows dpr={[1, 2]} camera={{ position: [0, 1.7, 5.2], fov: 40 }}
             gl={{ alpha: true }}
             onPointerMissed={() => { if (selected) clear(); }}
           >
-            <ambientLight intensity={0.7} />
-            <directionalLight position={[4, 6, 4]} intensity={1.1} castShadow shadow-mapSize={[1024, 1024]} />
-            <spotLight position={[0, 5, 6]} angle={0.6} penumbra={0.7} intensity={1.4} />
-            <pointLight position={[-4, 1, -3]} intensity={1.0} color={device.accent} />
-            <pointLight position={[4, 0, -3]} intensity={0.6} color="#ffffff" />
+            <ambientLight intensity={1.0} />
+            <hemisphereLight args={['#ffffff', '#e8ddd0', 0.7]} />
+            <directionalLight position={[4, 6, 4]} intensity={1.0} castShadow shadow-mapSize={[1024, 1024]} />
+            <spotLight position={[0, 5, 6]} angle={0.6} penumbra={0.7} intensity={0.7} />
+            <pointLight position={[-4, 1, -3]} intensity={0.5} color="#ffffff" />
             <DeviceModel device={device} ports={ports} selectedGroup={selected?.groupId} onSelect={selectPort} />
             <ContactShadows position={[0, -device.size[1] / 2 - 0.01, 0]} opacity={0.5} scale={12} blur={2.6} far={4} />
             <OrbitControls
@@ -244,19 +244,19 @@ export default function Visualize({ onBack }) {
 
       {/* Info panel */}
       <div style={{ padding: '16px 22px 0' }}>
-        <div className="grad-border">
-          <div style={{ background: 'var(--bg2)', borderRadius: 18.5, padding: '18px 20px', minHeight: 120 }}>
+        <div className="glass" style={{ padding: '18px 20px', minHeight: 120 }}>
+          <div>
             {selected ? (
               <div style={{ animation: 'fadeUp 0.3s var(--ease-out)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: selected.color, boxShadow: `0 0 12px ${selected.color}`, flexShrink: 0 }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: selected.color, flexShrink: 0 }} />
                   <span style={{ fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>{selected.label}</span>
                 </div>
                 <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.6 }}>{selected.detail}</p>
                 <button
                   onClick={clear}
                   style={{
-                    marginTop: 14, padding: '8px 14px', borderRadius: 10, cursor: 'pointer',
+                    marginTop: 14, padding: '8px 14px', borderRadius: 0, cursor: 'pointer',
                     background: 'var(--bg2)', border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
                     fontSize: 12, fontWeight: 700, color: 'var(--text2)',
                   }}
@@ -270,7 +270,7 @@ export default function Visualize({ onBack }) {
                 <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.02em', margin: '6px 0 8px', color: 'var(--text)' }}>{device.name}</div>
                 <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.6, marginBottom: 12 }}>{device.blurb}</p>
                 <span className="mono" style={{ fontSize: 11, color: 'var(--text4)', letterSpacing: '0.06em' }}>
-                  ◈ TAP A GLOWING PORT · DRAG TO ROTATE
+                  ◈ TAP A PORT · DRAG TO ROTATE
                 </span>
               </div>
             )}
