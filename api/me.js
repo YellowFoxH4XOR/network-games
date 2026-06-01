@@ -21,7 +21,11 @@ export default async function handler(req, res) {
   if (!fingerprint || typeof fingerprint !== 'string' || fingerprint.length > 64) {
     return res.status(400).json({ error: 'Invalid fingerprint' });
   }
-  if (!isValidSlug(stall)) {
+  // `stall` is optional: the welcome screen looks a device up before any stall
+  // is chosen, purely to recover its existing username. When a stall IS sent it
+  // must be a valid slug (so we can answer "registered for THIS stall?").
+  const hasStall = stall !== undefined && stall !== null && stall !== '';
+  if (hasStall && !isValidSlug(stall)) {
     return res.status(400).json({ error: 'Invalid stall' });
   }
 
@@ -45,7 +49,7 @@ export default async function handler(req, res) {
 
     const username = rows[0].username;
     const playedStalls = rows.map(r => r.stall);
-    const registeredHere = playedStalls.includes(stall);
+    const registeredHere = hasStall && playedStalls.includes(stall);
 
     const out = {
       registered:   registeredHere,   // registered for the requested stall?

@@ -157,16 +157,39 @@ export default function WelcomeScreen({ onContinue }) {
   const [submitting, setSubmit] = useState(false);
   const [blocked, setBlocked]   = useState(null);
   const [showScan, setShowScan] = useState(true);
+  const [locked, setLocked]     = useState(false);
 
   const isAdmin = username.trim().toLowerCase() === ADMIN_USERNAME;
 
-  // App.jsx already ran syncUser() before mounting this screen, so we know the
-  // device is NOT yet registered. We just need the fingerprint for the eventual
-  // /api/register call.
+  // App.jsx already ran syncUser(), so the device isn't registered for the
+  // active stall (if any). But it may have played a DIFFERENT stall and already
+  // own a username. Look the device up by fingerprint: if it's a known device,
+  // bind to its existing username (pre-fill + lock) so identity stays stable
+  // across stalls. A fresh device just gets the fingerprint for /api/register.
   useEffect(() => {
     const t = setTimeout(() => setShowScan(false), 2400);
-    getFingerprint().then(setFp);
-    return () => clearTimeout(t);
+    let cancelled = false;
+    getFingerprint().then(async (fp) => {
+      if (cancelled) return;
+      setFp(fp);
+      try {
+        const res = await fetch('/api/me', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ fingerprint: fp }),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data.knownDevice && data.username) {
+          setUsername(data.username);
+          setLocked(true);
+        }
+      } catch {
+        // Offline — leave the field editable; /api/register reconciles later.
+      }
+    });
+    return () => { cancelled = true; clearTimeout(t); };
   }, []);
 
   const handleSubmit = async (e) => {
@@ -285,27 +308,48 @@ export default function WelcomeScreen({ onContinue }) {
       >
         <div>
           <label className="label" style={{ display: 'block', marginBottom: 8 }}>
-            Choose a username
+            {locked ? 'Your username' : 'Choose a username'}
           </label>
-          <input
-            type="text"
-            value={username}
-            onChange={e => { setUsername(e.target.value); setError(''); }}
-            placeholder="your_name"
-            autoComplete="off"
-            autoCapitalize="off"
-            spellCheck="false"
-            maxLength={20}
-            autoFocus
-            style={{
-              width: '100%', padding: '15px 18px',
-              background: 'var(--bg2)', border: '1px solid var(--b2)',
-              borderRadius: 0, fontSize: 16, color: 'var(--text)',
-              fontFamily: "'JetBrains Mono', monospace",
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'border-color 0.25s, box-shadow 0.25s',
-            }}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={username}
+              onChange={e => { if (locked) return; setUsername(e.target.value); setError(''); }}
+              placeholder="your_name"
+              autoComplete="off"
+              autoCapitalize="off"
+              spellCheck="false"
+              maxLength={20}
+              readOnly={locked}
+              aria-readonly={locked}
+              autoFocus={!locked}
+              style={{
+                width: '100%', padding: '15px 18px',
+                paddingRight: locked ? 44 : 18,
+                background: 'var(--bg2)', border: '1px solid var(--b2)',
+                borderRadius: 0, fontSize: 16,
+                color: locked ? 'var(--text2)' : 'var(--text)',
+                fontFamily: "'JetBrains Mono', monospace",
+                boxShadow: 'var(--shadow-sm)',
+                cursor: locked ? 'not-allowed' : 'text',
+                transition: 'border-color 0.25s, box-shadow 0.25s',
+              }}
+            />
+            {locked && (
+              <svg
+                width="16" height="16" viewBox="0 0 28 28" fill="none" aria-hidden="true"
+                style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+              >
+                <rect x="5" y="12" width="18" height="13" rx="3" stroke="var(--text3)" strokeWidth="1.6"/>
+                <path d="M9 12V9a5 5 0 0110 0v3" stroke="var(--text3)" strokeWidth="1.6" strokeLinecap="round"/>
+              </svg>
+            )}
+          </div>
+          {locked && (
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 8, letterSpacing: '0.02em' }}>
+              Linked to this device from a previous stall — enter the new stall code below.
+            </div>
+          )}
           {error && (
             <div style={{
               fontSize: 12, color: 'var(--red)', marginTop: 8, fontWeight: 600,
