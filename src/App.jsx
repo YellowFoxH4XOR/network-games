@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Background, { CursorGlow } from './components/Background.jsx';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
 import HomePage from './components/HomePage.jsx';
@@ -10,9 +10,6 @@ import AdminView from './components/AdminView.jsx';
 import { syncUser, clearLocalSession } from './lib/syncUser.js';
 import { getFingerprint } from './lib/fingerprint.js';
 import { validateCode, registerForStall, setActiveStall, clearActiveStall } from './lib/stall.js';
-
-// three.js is heavy; only load it when the player opens Visualize.
-const Visualize = lazy(() => import('./components/Visualize.jsx'));
 
 const ADMIN_USERNAME = 'admin';
 
@@ -142,11 +139,6 @@ export default function App() {
         {screen === 'landing'    && <LandingPage username={user} stall={stall} onBack={() => nav('home')} onSelectGame={g => nav(g)} />}
         {screen === 'quiz'       && <Quiz username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'wordsearch' && <WordSearch username={user} stall={stall} onBack={() => nav('landing')} />}
-        {screen === 'visualize'  && (
-          <Suspense fallback={<BootingScreen />}>
-            <Visualize stall={stall} onBack={() => nav('home')} />
-          </Suspense>
-        )}
         {screen === 'leaderboard' && <Leaderboard username={user} stall={stall} onBack={() => nav('home')} />}
         {screen === 'admin'      && <AdminView onLogout={handleLogout} />}
       </div>

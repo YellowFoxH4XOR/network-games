@@ -86,20 +86,6 @@ const SECTIONS = [
       </svg>
     ),
   },
-  {
-    id: 'visualize',
-    title: 'Visualize',
-    desc: 'Explore 3D switches, routers & load balancers. Tap ports to learn.',
-    accent: 'var(--cyan)',
-    grad: 'linear-gradient(135deg, var(--cyan), var(--blue))',
-    tag: '3D · INTERACTIVE',
-    icon: (
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <path d="M13 3l9 5v10l-9 5-9-5V8l9-5z" stroke="var(--cyan)" strokeWidth="1.6" strokeLinejoin="round" />
-        <path d="M13 3v10l9-5M13 13v10M13 13L4 8" stroke="var(--cyan)" strokeWidth="1.2" opacity="0.7" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
 ];
 
 export default function HomePage({ username, stall, onSelect, onChangeStall }) {
