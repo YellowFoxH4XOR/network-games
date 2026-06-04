@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import Background, { CursorGlow } from './components/Background.jsx';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
-import HomePage from './components/HomePage.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import Quiz from './components/Quiz.jsx';
 import WordSearch from './components/WordSearch.jsx';
@@ -62,12 +61,12 @@ export default function App() {
       } else if (result.kind === 'registered') {
         setUser(result.username);
         setStall({ slug: result.stall, name: result.stallName });
-        setScreen('home');
+        setScreen('landing');
       } else if (result.kind === 'offline' && result.username && result.stall) {
         // API unreachable — best-effort fallback to local data
         setUser(result.username);
         setStall({ slug: result.stall, name: result.stallName });
-        setScreen('home');
+        setScreen('landing');
       } else {
         setUser('');
         setScreen('welcome');
@@ -87,7 +86,7 @@ export default function App() {
       nav('admin');
     } else {
       setStall(enteredStall);
-      nav('home');
+      nav('landing');
     }
   }, [nav]);
 
@@ -116,7 +115,7 @@ export default function App() {
 
     setActiveStall(v.stall);
     setStall(v.stall);
-    nav('home');
+    nav('landing');
     return { ok: true, stall: v.stall };
   }, [user, stall, nav]);
 
@@ -135,11 +134,10 @@ export default function App() {
       <div style={{ animation: `${fade} 0.34s var(--ease-out)`, minHeight: '100dvh' }}>
         {screen === 'booting'    && <BootingScreen />}
         {screen === 'welcome'    && <WelcomeScreen onContinue={handleLogin} />}
-        {screen === 'home'       && <HomePage username={user} stall={stall} onSelect={dest => nav(dest)} onChangeStall={changeStall} />}
-        {screen === 'landing'    && <LandingPage username={user} stall={stall} onBack={() => nav('home')} onSelectGame={g => nav(g)} />}
+        {screen === 'landing'    && <LandingPage username={user} stall={stall} onSelectGame={g => nav(g)} onChangeStall={changeStall} />}
         {screen === 'quiz'       && <Quiz username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'wordsearch' && <WordSearch username={user} stall={stall} onBack={() => nav('landing')} />}
-        {screen === 'leaderboard' && <Leaderboard username={user} stall={stall} onBack={() => nav('home')} />}
+        {screen === 'leaderboard' && <Leaderboard username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'admin'      && <AdminView onLogout={handleLogout} />}
       </div>
     </>
