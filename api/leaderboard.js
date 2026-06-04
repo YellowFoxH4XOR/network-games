@@ -1,5 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
+import { buildBoards } from './_boards.js';
 
+// Admin console data: the stalls (INCLUDING their entry codes — admin-only!),
+// plus leaderboards scoped per stall and across all stalls.
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   res.setHeader('Access-Control-Allow-Origin', origin);
@@ -30,39 +33,33 @@ export default async function handler(req, res) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    const [quizResult, wsResult, totalResult] = await Promise.all([
-      supabase
-        .from('scores')
-        .select('username, score, created_at')
-        .eq('game', 'quiz')
-        .order('score', { ascending: false })
-        .order('created_at', { ascending: true })
-        .limit(10),
-      supabase
-        .from('scores')
-        .select('username, score, created_at')
-        .eq('game', 'wordsearch')
-        .order('score', { ascending: false })
-        .order('created_at', { ascending: true })
-        .limit(10),
-      supabase.from('scores').select('username, score'),
+    const [stallsRes, scoresRes, playersRes] = await Promise.all([
+      supabase.from('stalls').select('slug, name, code').order('slug'),
+      supabase.from('scores').select('username, stall, game, score, created_at'),
+      supabase.from('players').select('stall'),
     ]);
+    if (stallsRes.error) throw stallsRes.error;
+    if (scoresRes.error) throw scoresRes.error;
+    if (playersRes.error) throw playersRes.error;
 
-    // Sum scores across both games for the combined board
-    const totals = {};
-    for (const row of totalResult.data ?? []) {
-      totals[row.username] = (totals[row.username] || 0) + row.score;
+    const rows = scoresRes.data ?? [];
+    const slugs = (stallsRes.data ?? []).map((s) => s.slug);
+
+    // Registered-player count per stall, shown next to each code.
+    const playerCounts = {};
+    for (const p of playersRes.data ?? []) {
+      playerCounts[p.stall] = (playerCounts[p.stall] || 0) + 1;
     }
-    const combined = Object.entries(totals)
-      .map(([username, score]) => ({ username, score }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
 
     return res.json({
-      quiz:       quizResult.data ?? [],
-      wordsearch: wsResult.data   ?? [],
-      combined,
-      fetchedAt:  new Date().toISOString(),
+      stalls: (stallsRes.data ?? []).map((s) => ({
+        slug: s.slug,
+        name: s.name,
+        code: s.code,
+        players: playerCounts[s.slug] || 0,
+      })),
+      boards: buildBoards(rows, slugs),
+      fetchedAt: new Date().toISOString(),
     });
   } catch (err) {
     console.error('[leaderboard] error:', err.message);
