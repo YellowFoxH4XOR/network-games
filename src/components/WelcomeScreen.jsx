@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getFingerprint } from '../lib/fingerprint.js';
 import { validateCode, registerForStall, setActiveStall } from '../lib/stall.js';
+import { syncUser } from '../lib/syncUser.js';
 
 const ADMIN_USERNAME = 'admin';
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
@@ -115,39 +116,6 @@ function MagneticBtn({ children, type = 'button', loading }) {
   );
 }
 
-/* ── Blocked screen ── */
-function AlreadyPlayed({ reason }) {
-  const message = {
-    device_registered: 'This device has already played this stall. Each device gets one attempt per stall.',
-    username_taken:   'This username is already taken — pick a different one.',
-  }[reason] || 'You have already participated.';
-
-  return (
-    <div className="screen-centered" style={{ padding: '24px', textAlign: 'center', animation: 'fadeUp 0.5s var(--ease-out)' }}>
-      <NetTopology />
-      <div style={{
-        marginTop: 24, width: 64, height: 64, borderRadius: 0,
-        background: 'var(--bg2)', border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '24px auto 16px',
-      }}>
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <rect x="5" y="12" width="18" height="13" rx="3" stroke="var(--text3)" strokeWidth="1.6"/>
-          <path d="M9 12V9a5 5 0 0110 0v3" stroke="var(--text3)" strokeWidth="1.6" strokeLinecap="round"/>
-        </svg>
-      </div>
-      <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 8, color: 'var(--text)' }}>
-        Access Denied
-      </h2>
-      <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.6, maxWidth: 300, margin: '0 auto 20px' }}>
-        {message}
-      </p>
-      <div style={{ padding: '10px 20px', background: 'var(--bg2)', border: '1px solid var(--b1)', borderRadius: 0, boxShadow: 'var(--shadow-sm)' }}>
-        <span className="label">CHALLENGE CLOSED</span>
-      </div>
-    </div>
-  );
-}
-
 export default function WelcomeScreen({ onContinue }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -155,7 +123,6 @@ export default function WelcomeScreen({ onContinue }) {
   const [fingerprint, setFp]    = useState('');
   const [error, setError]       = useState('');
   const [submitting, setSubmit] = useState(false);
-  const [blocked, setBlocked]   = useState(null);
   const [showScan, setShowScan] = useState(true);
   const [locked, setLocked]     = useState(false);
 
@@ -238,8 +205,15 @@ export default function WelcomeScreen({ onContinue }) {
           return;
         }
         if (r.error === 'already_registered') {
-          // Device already played this stall — permanent block for this stall
-          setBlocked('device_registered');
+          // This device is already registered for this stall — welcome it back
+          // in rather than blocking. syncUser() recovers the DB's username for
+          // this device and re-caches its scores, so any completed game shows
+          // greyed-out with its final score instead of being playable again.
+          setActiveStall(v.stall);
+          const synced = await syncUser();
+          const u = synced.kind === 'registered' ? synced.username : trimmedUser;
+          localStorage.setItem('sns_user', u);
+          onContinue(u, v.stall);
           return;
         }
         setError('Could not register — try again');
@@ -255,8 +229,6 @@ export default function WelcomeScreen({ onContinue }) {
       setSubmit(false);
     }
   };
-
-  if (blocked) return <AlreadyPlayed reason={blocked} />;
 
   return (
     <div className="screen-centered" style={{ padding: '20px 22px', position: 'relative', gap: 0 }}>
