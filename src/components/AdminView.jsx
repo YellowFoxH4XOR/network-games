@@ -2,6 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
 
+const EMPTY_BOARD = { quiz: [], wordsearch: [], combined: [] };
+
+// Fetch the admin leaderboard. Returns the board JSON, or the string
+// 'unauthorized' on a 401 so the caller can log the admin out.
+async function loadBoard() {
+  const token = sessionStorage.getItem('sns_admin_token') || '';
+  const res = await fetch('/api/leaderboard', {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (res.status === 401) return 'unauthorized';
+  if (!res.ok) throw new Error(`status ${res.status}`); // e.g. 500 → caller keeps prior data
+  return res.json();
+}
+
 function RankRow({ rank, username, score, color, delay = 0 }) {
   const isTop3 = rank <= 3;
   const tint = (amount) => `color-mix(in oklch, ${color} ${amount}%, transparent)`;
@@ -99,7 +114,9 @@ function Board({ title, data, color, icon, loading }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {data.map((row, i) => (
             <RankRow
-              key={row.username}
+              // Per-game boards mix stalls, so a username can repeat — suffix the
+              // index to keep keys unique (combined board is already deduped).
+              key={`${row.username}-${i}`}
               rank={i + 1}
               username={row.username}
               score={row.score}
@@ -119,32 +136,43 @@ export default function AdminView({ onLogout }) {
   const [lastRefresh, setLast] = useState(null);
   const [tab, setTab]         = useState('combined'); // 'combined' | 'quiz' | 'wordsearch'
 
+  // Used by the manual Refresh button and the auto-refresh interval. Every
+  // state update happens after `await`, never synchronously. `loading` starts
+  // true for the first paint, and the Refresh button flips it on at the call site.
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    const token = sessionStorage.getItem('sns_admin_token') || '';
     try {
-      const res = await fetch('/api/leaderboard', {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
-      });
-      if (res.status === 401) { onLogout(); return; }
-      const json = await res.json();
+      const json = await loadBoard();
+      if (json === 'unauthorized') { onLogout(); return; }
       setData(json);
       setLast(new Date());
     } catch {
-      setData({ quiz: [], wordsearch: [], combined: [] });
+      setData(prev => prev ?? EMPTY_BOARD); // transient failure: keep what we have
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onLogout]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  // Auto-refresh every 30s
+  // Initial load + 30s auto-refresh. The mount fetch runs inline so its state
+  // updates only happen after `await` (never synchronously in the effect body),
+  // and `alive` guards against setting state after unmount.
   useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const json = await loadBoard();
+        if (!alive) return;
+        if (json === 'unauthorized') { onLogout(); return; }
+        setData(json);
+        setLast(new Date());
+      } catch {
+        if (alive) setData(prev => prev ?? EMPTY_BOARD); // keep prior data on a blip
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
     const id = setInterval(fetchData, 30_000);
-    return () => clearInterval(id);
-  }, [fetchData]);
+    return () => { alive = false; clearInterval(id); };
+  }, [fetchData, onLogout]);
 
   const tabs = [
     { id: 'combined',    label: 'Combined',   icon: '🏆', color: 'var(--amber)' },
@@ -180,7 +208,7 @@ export default function AdminView({ onLogout }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
-            onClick={fetchData}
+            onClick={() => { setLoading(true); fetchData(); }}
             style={{
               padding: '8px 14px', borderRadius: 0, fontSize: 12, fontWeight: 700,
               background: 'var(--s2)', border: '1px solid var(--b2)',
@@ -252,7 +280,7 @@ export default function AdminView({ onLogout }) {
               }}
             >
               <span>{t.icon}</span>
-              <span style={{ display: 'none', ['@media(minWidth:360px)']: { display: 'inline' } }}>{t.label}</span>
+              <span>{t.label}</span>
             </button>
           ))}
         </div>
@@ -269,8 +297,8 @@ export default function AdminView({ onLogout }) {
 
         {/* Footer */}
         <div className="mono" style={{ textAlign: 'center', fontSize: 10, color: 'var(--text4)', marginTop: 32, letterSpacing: '0.08em', lineHeight: 1.8 }}>
-          ADMIN@SNSDAYS.COM · AUTO-REFRESHES EVERY 30s<br/>
-          EMAILS PARTIALLY MASKED FOR PRIVACY
+          SNS ADMIN CONSOLE · AUTO-REFRESHES EVERY 30s<br/>
+          LIVE SCORES AGGREGATED ACROSS ALL STALLS
         </div>
       </div>
     </div>

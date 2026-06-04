@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { stallQuiz } from '../data.js';
+import { useState, useEffect, useRef } from 'react';
+import { quizRound } from '../data.js';
 import TopBar from './TopBar.jsx';
 import { saveScore } from '../lib/saveScore.js';
 import { useCountUp } from '../lib/useCountUp.js';
+import { readJSON } from '../lib/storage.js';
+import { quizPoints } from '../lib/scoring.js';
 
 /* ── Circular countdown timer ── */
 function CircleTimer({ timeLeft, total, color }) {
@@ -38,7 +40,6 @@ function ProgressNode({ index, current, answer }) {
   const past = index < current;
   const active = index === current;
   const correct = past && answer?.sel === answer?.cor;
-  const wrong   = past && answer?.sel !== answer?.cor;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
@@ -74,9 +75,19 @@ export default function Quiz({ username, stall, onBack }) {
   const slug = stall?.slug || 'stall-1';
   const storageKey = 'sns_' + (username || 'anon') + '_' + slug + '_quiz';
 
-  const [alreadyPlayed, setAlreadyPlayed] = useState(false);
-  const [prevScore, setPrevScore]         = useState(0);
-  const [questions, setQuestions]         = useState([]);
+  // The round is decided once at mount: a cached result means this stall is
+  // already played; otherwise quizRound() draws 5 random questions and shuffles
+  // each one's options (remapping `correct`) so the answer never sits in a fixed
+  // position. Quiz is mounted fresh per navigation, so username/stall are stable
+  // for its lifetime and a lazy initializer is the right place for this.
+  const [round] = useState(() => {
+    const cached = readJSON(storageKey);
+    return cached
+      ? { alreadyPlayed: true, prevScore: cached.score || 0, questions: [] }
+      : { alreadyPlayed: false, prevScore: 0, questions: quizRound(slug, 5) };
+  });
+  const { alreadyPlayed, prevScore, questions } = round;
+
   const [idx, setIdx]                     = useState(0);
   const [selected, setSelected]           = useState(null);
   const [showFb, setShowFb]               = useState(false);
@@ -89,21 +100,6 @@ export default function Quiz({ username, stall, onBack }) {
   const timerRef = useRef(null);
   const fbRef    = useRef(null);
   const savedRef = useRef(false);
-
-  useEffect(() => {
-    const s = localStorage.getItem(storageKey);
-    if (s) { const d = JSON.parse(s); setAlreadyPlayed(true); setPrevScore(d.score || 0); }
-  }, [storageKey]);
-
-  const init = useCallback(() => {
-    const pool = stallQuiz(slug);
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    setQuestions(shuffled.slice(0, 5));
-    setIdx(0); setSelected(null); setShowFb(false);
-    setScore(0); setTimeLeft(30); setGameState('playing'); setAnswers([]);
-  }, [slug]);
-
-  useEffect(() => { if (!alreadyPlayed) init(); }, [init, alreadyPlayed]);
 
   useEffect(() => {
     if (gameState !== 'playing' || showFb || !questions.length || alreadyPlayed) return;
@@ -143,7 +139,7 @@ export default function Quiz({ username, stall, onBack }) {
     clearInterval(timerRef.current);
     setSelected(i); setShowFb(true);
     const ok  = i === questions[idx].correct;
-    const pts = ok ? 10 + Math.floor(timeLeft / 3) : 0;
+    const pts = ok ? quizPoints(timeLeft) : 0;
     if (ok) setScore(s => s + pts);
     setAnswers(a => [...a, { sel: i, cor: questions[idx].correct, timedOut: false, pts }]);
   };

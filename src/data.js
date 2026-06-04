@@ -8,320 +8,122 @@ export const NETWORK_KEYWORDS = [
   'TELNET', 'TRACERT', 'NETMASK', 'UNICAST', 'DUPLEX', 'SEGMENT', 'DATAGRAM',
 ];
 
-// ALL questions are strictly NETWORKING-related.
-// Difficulty: LOW — written for an audience with no networking background.
+// ALL questions are strictly NETWORKING-related and centred on network gear —
+// switches, routers, load balancers, firewalls — plus the everyday concepts
+// (Wi-Fi, IP, DNS, cables, the cloud) that go with them.
+// Difficulty: EASY / beginner. The concept in each question is basic, but the
+// wrong options are real networking things (often another device's actual job),
+// so you must read them — the answer isn't a giveaway.
+//
+// NOTE: `correct` positions vary across the set, but never rely on that for
+// fairness — quizRound() reshuffles every question's options at runtime so the
+// answer's index is randomised per play. See quizRound()/shuffleOptions() below.
 const Q = (question, options, correct) => ({ question, options, correct });
 
 export const QUIZ_QUESTIONS = [
-  // ── INTERNET BASICS (network angle) ──────────────────────────
-  Q('What is the internet, simply?', ['A worldwide network of connected computers', 'A type of phone', 'A computer program', 'A type of cable'], 0),
-  Q('What does Wi-Fi let you do?', ['Connect to the internet wirelessly', 'Cook food', 'Charge your phone', 'Print documents'], 0),
-  Q('What does "www" stand for?', ['World Wide Web', 'World Wireless Web', 'World Web Wire', 'Wide World Web'], 0),
-  Q('What is an internet service provider (ISP)?', ['The company that gives you internet access', 'A search engine', 'A web browser', 'A type of cable'], 0),
-  Q('Which of these is an example of an ISP?', ['AT&T', 'Spotify', 'Photoshop', 'Notepad'], 0),
-  Q('What does "online" mean?', ['Connected to the internet', 'Switched off', 'Out of battery', 'Locked'], 0),
-  Q('What does "offline" mean?', ['Not connected to the internet', 'Connected to the internet', 'Charging', 'Streaming'], 0),
-  Q('What does it mean to "download" something?', ['Copy a file from the internet to your device', 'Send a file from your device to the internet', 'Delete a file', 'Print a file'], 0),
-  Q('What does it mean to "upload" something?', ['Send a file from your device to the internet', 'Receive a file from the internet', 'Delete a file', 'Print a file'], 0),
-  Q('What is a website made of?', ['Web pages linked together', 'Plastic pages', 'Printed posters', 'Hardware chips'], 0),
-  Q('What is a URL?', ['The address of a website', 'A type of password', 'An email address', 'A phone number'], 0),
-  Q('What is a "link" on a web page?', ['Clickable text or image that takes you to another page', 'A type of cable', 'A printer', 'A keyboard key'], 0),
-  Q('When you visit a website, what does your browser request from a server?', ['The web page', 'A phone number', 'Battery power', 'A song'], 0),
-  Q('What is a "server" in networking?', ['A computer that provides data or services to other computers', 'A waiter', 'A type of phone', 'A USB stick'], 0),
-  Q('What is a "client" in networking?', ['A device that requests data from a server', 'A bank customer', 'A printer', 'A speaker'], 0),
-  Q('Which is a typical client device?', ['A phone, laptop, or tablet', 'A power socket', 'A book', 'A water tap'], 0),
-  Q('What is "loading" a web page?', ['Fetching it from a server', 'Deleting it', 'Printing it', 'Saving it'], 0),
-  Q('What does "refresh" do to a web page?', ['Reloads it with the latest content', 'Closes it', 'Deletes it', 'Prints it'], 0),
-  Q('What does it mean to be "connected" to a network?', ['Able to communicate with other devices on that network', 'Sitting close to it', 'Charging from it', 'Painting it'], 0),
-  Q('What does "browsing" the web mean?', ['Visiting and viewing web pages', 'Drawing pictures', 'Cooking food', 'Buying clothes'], 0),
+  // ── SWITCHES ────────────────────────────────────────────────
+  Q('What does a network switch mainly do?', ['Connects several devices together on the same local network', 'Connects your home to the internet provider', 'Blocks unsafe traffic from the network', 'Spreads traffic across many servers'], 0),
+  Q('Which device connects many computers together in one office network?', ['A modem', 'A switch', 'A firewall', 'A microphone'], 1),
+  Q('A switch usually connects devices using what?', ['Radio satellites', 'Power cords only', 'Network (Ethernet) cables', 'HDMI cables'], 2),
+  Q('When a switch receives data, it tries to send it to…?', ['Every device on the internet', 'The nearest phone', 'A random server', 'The correct device it is meant for'], 3),
+  Q('Where would you most likely find a network switch?', ['Connecting computers in an office', 'Inside a phone battery', 'On a weather satellite', 'In a TV remote'], 0),
 
-  // ── WI-FI & WIRELESS ────────────────────────────────────────
-  Q('What does "Wi-Fi" stand for (loosely)?', ['Wireless Fidelity', 'Web Fidelity', 'Wired Fidelity', 'Window Frame'], 0),
-  Q('What does Wi-Fi use to send data?', ['Radio waves', 'Wires', 'Light bulbs', 'Smell'], 0),
-  Q('What does the Wi-Fi icon on your phone show?', ['Wireless signal strength', 'Battery level', 'Storage space', 'Volume'], 0),
-  Q('What does a stronger Wi-Fi signal usually mean?', ['Faster, more reliable internet', 'Slower internet', 'A broken device', 'Higher cost'], 0),
-  Q('Why might Wi-Fi be slow sometimes?', ['Distance, interference, or too many devices', 'The router is sleepy', 'The walls are tired', 'The Wi-Fi is bored'], 0),
-  Q('What is a "Wi-Fi network name" (SSID)?', ['The name that identifies a Wi-Fi network', 'Your password', 'A phone number', 'A cable type'], 0),
-  Q('What is a Wi-Fi password for?', ['Connecting securely to a Wi-Fi network', 'Logging into your phone', 'Charging your phone', 'Backing up files'], 0),
-  Q('What happens if you type the wrong Wi-Fi password?', ['You cannot connect to that network', 'The phone breaks', 'The internet gets faster', 'The phone turns off'], 0),
-  Q('What is a "hotspot"?', ['A device or place that provides internet access', 'A hot meal', 'A type of speaker', 'A weather term'], 0),
-  Q('Can your phone become a Wi-Fi hotspot?', ['Yes, most modern phones can share their data', 'No, only laptops can', 'Only smartwatches', 'Only routers can'], 0),
-  Q('What does it mean if a Wi-Fi network is "open"?', ['It has no password — anyone can connect', 'It is the fastest', 'It is broken', 'It is invisible'], 0),
-  Q('Are open public Wi-Fi networks safe?', ['They can be risky — others may see your data', 'Always perfectly safe', 'Always faster', 'Only for laptops'], 0),
-  Q('What is a "guest Wi-Fi network"?', ['A separate Wi-Fi network for visitors', 'A private email account', 'A backup drive', 'A spare TV'], 0),
-  Q('What is a "Wi-Fi extender" for?', ['Increasing the range of your Wi-Fi network', 'Charging devices', 'Playing music', 'Printing'], 0),
-  Q('What is a Wi-Fi "dead zone"?', ['An area with no Wi-Fi signal', 'The area with strongest signal', 'A type of password', 'A virus name'], 0),
-  Q('Where should you ideally place a Wi-Fi router?', ['Central, open location away from obstructions', 'Inside a metal cabinet', 'In the freezer', 'Under a sink'], 0),
-  Q('What can weaken a Wi-Fi signal?', ['Thick walls, distance, and other electronics', 'Sunlight', 'A nice carpet', 'A pet name'], 0),
-  Q('Does Wi-Fi work if the router has no power?', ['No, the router needs electricity', 'Yes, always', 'Only at night', 'Only on cloudy days'], 0),
-  Q('What are the two common Wi-Fi frequency bands?', ['2.4 GHz and 5 GHz', '50 Hz and 60 Hz', '10 Mbps and 100 Mbps', '12 V and 24 V'], 0),
-  Q('Which Wi-Fi band usually reaches farther?', ['2.4 GHz', '5 GHz', 'Both equally', 'Neither'], 0),
-  Q('Which Wi-Fi band is usually faster up close?', ['5 GHz', '2.4 GHz', 'They are identical', 'Neither'], 0),
-  Q('What is "Wi-Fi 6"?', ['A newer generation of Wi-Fi technology', 'A Wi-Fi password', 'A type of router brand', 'A web browser'], 0),
-  Q('Can many devices share one Wi-Fi network?', ['Yes, many devices at once', 'No, only one at a time', 'Only laptops', 'Only phones'], 0),
-  Q('What is "tethering"?', ['Sharing your phone\'s mobile data with other devices', 'Tying the phone with a rope', 'A new ringtone', 'A way to take selfies'], 0),
-  Q('Does tethering use your phone\'s data plan?', ['Yes — shared devices use your data', 'No, it is free', 'Only at night', 'Only with Wi-Fi off'], 0),
-  Q('What is the "airplane mode" on a phone?', ['A mode that disables all wireless signals', 'A music app', 'A photo filter', 'A new game'], 0),
-  Q('Can you enable Wi-Fi while in airplane mode?', ['Yes — many phones allow this separately', 'No, never', 'Only on weekends', 'Only with payment'], 0),
+  // ── ROUTERS ─────────────────────────────────────────────────
+  Q('What does a router mainly do?', ['Stores your photos and files', 'Connects your network to other networks like the internet', 'Cools down the computer', 'Scans USB sticks for viruses'], 1),
+  Q('Which device lets all your home devices share one internet connection?', ['A printer', 'A monitor', 'A router', 'A keyboard'], 2),
+  Q('What does a home Wi-Fi router give you?', ['Free electricity', 'Extra storage space', 'A louder speaker', 'Wireless internet access in your home'], 3),
+  Q('A router decides where to send data so it reaches the…?', ['Right destination network', 'Nearest power outlet', 'Closest printer', 'Brightest screen'], 0),
+  Q('Which device usually connects your home network to the internet?', ['A router', 'A webcam', 'A speaker', 'A game controller'], 0),
 
-  // ── MOBILE / CELLULAR NETWORKS ──────────────────────────────
-  Q('What is a "cellular network"?', ['A network of cell towers that carry mobile signals', 'A network of body cells', 'A type of Wi-Fi', 'A USB cable'], 0),
-  Q('What is a "cell tower"?', ['A tall structure that transmits mobile signals', 'A jail', 'A factory chimney', 'A weather vane'], 0),
-  Q('What does "5G" mean?', ['The 5th generation of mobile networks', 'A type of Wi-Fi password', 'A new phone color', 'A web browser'], 0),
-  Q('Which is generally faster: 3G or 4G?', ['4G', '3G', 'Equal', 'Neither'], 0),
-  Q('Which is generally faster: 4G or 5G?', ['5G', '4G', 'Equal', 'Neither'], 0),
-  Q('What does "LTE" on a phone mean?', ['A high-speed mobile data standard', 'A type of camera', 'A music app', 'A new website'], 0),
-  Q('What is a "mobile carrier"?', ['A company that provides mobile service', 'A delivery person', 'A printer brand', 'A keyboard maker'], 0),
-  Q('What is a "data plan"?', ['Your allowance of mobile internet from a carrier', 'A music album', 'A backup file', 'A spreadsheet'], 0),
-  Q('What happens when you exceed your mobile data limit?', ['Speeds may slow, or you may pay extra', 'The phone explodes', 'The phone turns off forever', 'You lose your contacts'], 0),
-  Q('What does "unlimited data" usually mean?', ['No hard data cap (but may have speed limits)', 'Free electricity', 'Free phone calls forever', 'Free apps'], 0),
-  Q('What is "international roaming"?', ['Using your phone on a network outside your home country', 'Walking abroad', 'Buying a phone abroad', 'Taking photos abroad'], 0),
-  Q('Why can roaming get expensive?', ['You use another carrier\'s network, which bills your provider', 'Phones cost more abroad', 'It is taxed twice', 'Because of weather'], 0),
-  Q('What does the "no signal" icon mean?', ['No connection to a mobile network', 'Battery is dead', 'Screen is broken', 'Phone is muted'], 0),
-  Q('What does a SIM card do?', ['Identifies your phone to the mobile network', 'Holds music', 'Charges the phone', 'Lights up the screen'], 0),
-  Q('What does "SIM" stand for?', ['Subscriber Identity Module', 'Simple Internet Machine', 'Signal Inside Mobile', 'Super Internet Mode'], 0),
-  Q('What is an "eSIM"?', ['An electronic SIM built into the phone', 'A glass SIM', 'A virus', 'A speaker'], 0),
-  Q('Why are mobile signals often weaker indoors?', ['Walls and materials block radio waves', 'The phone is sleepy', 'Signals like fresh air', 'It is colder indoors'], 0),
-  Q('What is "SMS"?', ['Short Message Service — basic text messaging', 'Super Mobile Speed', 'Small Music System', 'Smart Map System'], 0),
-  Q('What is "MMS"?', ['Multimedia Messaging — texts with media like photos', 'Microsoft Mail Service', 'Mobile Music Sound', 'Money Management System'], 0),
-  Q('What is "voicemail"?', ['A recorded message left when you miss a call', 'A type of email', 'A printed message', 'A photo album'], 0),
-  Q('What is "VoIP"?', ['Voice calls carried over the internet', 'A type of camera', 'A music app', 'A new keyboard'], 0),
-  Q('Which of these uses VoIP?', ['Voice calls via WhatsApp', 'Landline-only calls', 'Walkie-talkie', 'Two cans on a string'], 0),
-  Q('What is "Wi-Fi calling"?', ['Making phone calls over a Wi-Fi network', 'Calling the router', 'Sending email via Wi-Fi', 'A new browser'], 0),
-  Q('What does a "5G" symbol on your phone status bar mean?', ['You are connected to a 5G mobile network', 'You have 5 missed calls', 'You have 5 messages', 'It is 5 o\'clock'], 0),
-  Q('What happens if you remove your SIM card?', ['No mobile calls or mobile data on that device', 'The phone explodes', 'The phone gets faster', 'Battery charges faster'], 0),
-  Q('What is GPS on a phone?', ['A satellite-based location service', 'A type of mobile carrier', 'A music app', 'A new keyboard'], 0),
-  Q('Does GPS need a phone signal to work?', ['Not strictly — GPS itself uses satellites, but data needs a network', 'Always', 'Never works', 'Only on Wi-Fi'], 0),
+  // ── LOAD BALANCERS ──────────────────────────────────────────
+  Q('What does a load balancer do?', ['Stores all the passwords', 'Spreads incoming traffic across several servers', 'Connects cables together', 'Charges the servers'], 1),
+  Q('Why do busy websites use a load balancer?', ['To make the text bigger', 'To save electricity at night', 'So no single server gets overloaded', 'To print reports'], 2),
+  Q('A load balancer helps a website stay…?', ['Colourful', 'Quiet', 'Offline', 'Fast and available even with many visitors'], 3),
+  Q('If one server stops working, a load balancer can…?', ['Send traffic to the other working servers', 'Turn off the whole internet', 'Email everyone', 'Restart your phone'], 0),
+  Q('A load balancer is most useful when a website has…?', ['Only one visitor a day', 'A lot of visitors at once', 'No servers at all', 'A broken keyboard'], 1),
 
-  // ── NETWORK DEVICES ─────────────────────────────────────────
-  Q('What is a "router"?', ['A device that directs internet traffic between devices', 'A type of printer', 'A microphone', 'A keyboard'], 0),
-  Q('What is a "modem"?', ['A device that connects your home to your internet provider', 'A microwave oven', 'A charger', 'A camera'], 0),
-  Q('What is the difference between a modem and a router?', ['Modem connects to the ISP; router shares the connection with devices', 'They are identical', 'Modem is wireless only', 'Router is wired only'], 0),
-  Q('What is a network "switch"?', ['A device that connects multiple wired devices on a local network', 'A light switch', 'A power switch', 'A type of toggle'], 0),
-  Q('What is a network "hub"?', ['A simple device that broadcasts data to all connected devices', 'A train station', 'A type of cable', 'A printer'], 0),
-  Q('What is an "access point"?', ['A device that creates a Wi-Fi network', 'A type of door', 'A keyboard key', 'A USB stick'], 0),
-  Q('What is a "gateway" in networking?', ['A device connecting two different networks', 'A garden gate', 'A music app', 'A new website'], 0),
-  Q('What is an "ethernet cable"?', ['A wired cable used to connect devices to a network', 'A power cable', 'A USB charger', 'An HDMI cable'], 0),
-  Q('What port does an ethernet cable plug into?', ['A rectangular network port', 'A USB-C port', 'A round headphone jack', 'A power outlet'], 0),
-  Q('Is wired ethernet generally faster or slower than Wi-Fi?', ['Usually faster and more stable', 'Slower', 'Exactly the same', 'It cannot connect at all'], 0),
-  Q('What does "fiber" internet use?', ['Thin glass strands carrying light signals', 'Cotton strings', 'Metal pipes', 'Plastic ribbons'], 0),
-  Q('Why is fiber internet popular?', ['Very fast and reliable speeds', 'It is cheaper than tin cans', 'It runs on heat', 'It does not need power'], 0),
-  Q('What does a Wi-Fi router give you?', ['Wireless internet access in its range', 'A new phone', 'Free electricity', 'A subscription to music'], 0),
-  Q('What is a "mesh Wi-Fi" system?', ['Multiple Wi-Fi units working together to cover a larger area', 'A net for fish', 'A type of cable', 'A music speaker'], 0),
-  Q('What is a "smart router"?', ['A router with extra features like app control and security', 'A router made of glass', 'A printer with Wi-Fi', 'A keyboard with Wi-Fi'], 0),
-  Q('What does "LAN" stand for?', ['Local Area Network', 'Large Awesome Network', 'Long Audio Network', 'Light And Noise'], 0),
-  Q('What does "WAN" stand for?', ['Wide Area Network', 'Web And Network', 'Wireless Audio Node', 'World Area Network'], 0),
-  Q('What is a typical example of a LAN?', ['Your home Wi-Fi network', 'The whole internet', 'A satellite', 'A single cable'], 0),
-  Q('What is a typical example of a WAN?', ['The internet itself', 'A single home router', 'A single phone', 'A single keyboard'], 0),
-  Q('What does a "network adapter" do?', ['Allows a device to connect to a network', 'Charges the device', 'Plays music', 'Prints documents'], 0),
-  Q('What is the "Wi-Fi card" inside a laptop?', ['Hardware that lets the laptop connect to Wi-Fi', 'A loyalty card', 'A camera', 'A keyboard'], 0),
-  Q('What is a "network port" on a device?', ['A physical socket for plugging in a network cable', 'A type of harbor', 'A speaker grill', 'A button'], 0),
-  Q('What lights typically blink on a router?', ['Status lights for power, internet, and Wi-Fi activity', 'Disco lights for fun', 'Christmas lights only', 'No lights at all'], 0),
-  Q('What is a "repeater"?', ['A device that extends the range of a wireless signal', 'A musician', 'A type of monitor', 'A keyboard'], 0),
+  // ── FIREWALLS ───────────────────────────────────────────────
+  Q('What does a firewall do?', ['Speeds up downloads', 'Filters network traffic to block unwanted or unsafe connections', 'Stores your files', 'Charges your devices'], 1),
+  Q('A firewall mainly helps with…?', ['Screen brightness', 'Battery life', 'Security — controlling what traffic is allowed', 'Printing documents'], 2),
+  Q('Which device acts as a barrier between your network and online threats?', ['A modem', 'A switch', 'A webcam', 'A firewall'], 3),
+  Q('A firewall is designed to block…?', ['Suspicious or unauthorised network traffic', 'Sunlight', 'Loud noises', 'Phone calls only'], 0),
+  Q('If a connection looks unsafe, a firewall will usually…?', ['Allow it anyway', 'Block or stop it', 'Print it', 'Save it to the cloud'], 1),
 
-  // ── PROTOCOLS (BASIC) ───────────────────────────────────────
-  Q('What is a "protocol" in networking?', ['A set of rules for how devices communicate', 'A type of cable', 'A USB stick', 'A printer'], 0),
-  Q('Which is a networking protocol?', ['HTTP', 'JPG', 'MP3', 'PDF'], 0),
-  Q('What does HTTP stand for?', ['HyperText Transfer Protocol', 'Hyper Text Travel Plane', 'Home Tube Travel Path', 'Hello To The Page'], 0),
-  Q('What does HTTPS add to HTTP?', ['Encryption for a more secure connection', 'A faster typing speed', 'A bigger keyboard', 'A new color'], 0),
-  Q('What does the "S" in HTTPS stand for?', ['Secure', 'Speed', 'Server', 'Simple'], 0),
-  Q('What does "DNS" do?', ['Translates website names into IP addresses', 'Stores photos', 'Plays music', 'Sends email'], 0),
-  Q('What does "DNS" stand for?', ['Domain Name System', 'Dynamic Network Service', 'Data Node Server', 'Digital Name Service'], 0),
-  Q('What does "FTP" usually do?', ['Transfers files between computers', 'Plays videos', 'Sends emails only', 'Edits photos'], 0),
-  Q('What does "SMTP" mainly do?', ['Sends email', 'Receives video', 'Hosts websites', 'Charges phones'], 0),
-  Q('Which protocol is used to send email?', ['SMTP', 'HTTP', 'FTP', 'SSH'], 0),
-  Q('Which protocol is used to fetch web pages?', ['HTTP/HTTPS', 'SMTP', 'FTP', 'POP3'], 0),
-  Q('What does "POP3" or "IMAP" relate to?', ['Receiving email from a server', 'Streaming video', 'Wi-Fi setup', 'Cell tower handoff'], 0),
-  Q('What does "TCP/IP" describe?', ['The basic rules for sending data over the internet', 'A type of cable', 'A music format', 'A new printer'], 0),
-  Q('What is the difference between TCP and UDP, simply?', ['TCP is reliable, UDP is faster but less reliable', 'They are identical', 'TCP is wireless, UDP is wired', 'Both are only for email'], 0),
-  Q('What is a "packet" in networking?', ['A small chunk of data sent over a network', 'A snack', 'A parcel of clothes', 'A piece of paper'], 0),
-  Q('Why is data split into packets?', ['Easier to send, route, and recover than one big chunk', 'For decoration', 'To make the network slower', 'To save battery'], 0),
-  Q('What does a "ping" do?', ['Checks if a device is reachable on a network', 'Plays a sound only', 'Charges your phone', 'Updates apps'], 0),
-  Q('What does "ARP" relate to in networking?', ['Mapping IP addresses to hardware (MAC) addresses', 'Audio Recording Protocol', 'A new web browser', 'A type of cable'], 0),
-  Q('What does "DHCP" do?', ['Automatically assigns IP addresses to devices on a network', 'Plays music', 'Sends email', 'Updates the OS'], 0),
-  Q('What does "DHCP" stand for?', ['Dynamic Host Configuration Protocol', 'Direct Host Connection Protocol', 'Domain Host Control Protocol', 'Dynamic Hypertext Config Protocol'], 0),
+  // ── MODEMS / ACCESS POINTS / WI-FI ──────────────────────────
+  Q('What does a modem do?', ['Connects devices on your local network', 'Blocks online threats', 'Connects your home to your internet service provider', 'Balances traffic across servers'], 2),
+  Q('What does a wireless access point provide?', ['Wired power', 'Extra storage', 'A louder sound', 'Wi-Fi so devices can connect without cables'], 3),
+  Q('How does Wi-Fi let devices connect?', ['Wirelessly, using radio signals', 'Only with cables', 'Using sunlight', 'Using sound waves'], 0),
+  Q('What does the Wi-Fi symbol on your phone show?', ['Battery level', 'Wireless signal strength', 'Storage space', 'Volume'], 1),
+  Q('A stronger Wi-Fi signal usually means…?', ['A dead battery', 'A broken phone', 'Faster, more reliable internet', 'Less storage'], 2),
+  Q('What is a "hotspot"?', ['A hot meal', 'A warm room', 'A speaker', 'A device or phone that shares its internet'], 3),
+  Q('What does a Wi-Fi extender do?', ['Increases the range of your Wi-Fi', 'Charges your devices', 'Stores your files', 'Prints pages'], 0),
 
-  // ── IP ADDRESSES, DOMAINS & PORTS ───────────────────────────
-  Q('What is an "IP address"?', ['A unique number identifying a device on a network', 'A password', 'A web browser', 'A search engine'], 0),
-  Q('How many bits in an IPv4 address?', ['32 bits', '16 bits', '64 bits', '128 bits'], 0),
-  Q('What does an IPv4 address typically look like?', ['Four numbers separated by dots (e.g. 192.168.1.1)', 'A long word', 'A photo', 'A symbol'], 0),
-  Q('What is "IPv6" for?', ['A newer addressing scheme with many more addresses', 'A faster Wi-Fi', 'A type of printer', 'A music format'], 0),
-  Q('What is a "private IP address"?', ['An address used only inside a local network', 'A famous person\'s address', 'An email address', 'A home address'], 0),
-  Q('What is a "public IP address"?', ['The address your network uses on the internet', 'Your phone number', 'Your email', 'Your name'], 0),
-  Q('What is "127.0.0.1" known as?', ['The loopback address (your own device)', 'A famous server', 'The Wi-Fi password', 'Your phone number'], 0),
-  Q('What is a "domain name"?', ['A human-friendly name for a website (e.g. example.com)', 'A street address', 'A phone number', 'A username'], 0),
-  Q('What does ".com" usually indicate?', ['A common top-level domain, often for commercial sites', 'A music format', 'A printer name', 'A type of cable'], 0),
-  Q('What does a domain name need to work?', ['DNS resolution to an IP address', 'Just a typewriter', 'A printer', 'Sunlight'], 0),
-  Q('What is a "subdomain"?', ['A prefix on a domain like "blog.example.com"', 'A submarine domain', 'A backup site', 'A new browser'], 0),
-  Q('What does "MAC address" mean?', ['A hardware identifier for a network device', 'A type of computer', 'An email format', 'A music tag'], 0),
-  Q('Is a MAC address the same as an IP address?', ['No — MAC identifies hardware; IP identifies on a network', 'Yes identical', 'Both are file types', 'Both are passwords'], 0),
-  Q('What is a network "port" number for?', ['Identifies a specific service on a device (like a door)', 'Charging a device', 'A real ship harbor', 'A type of cable'], 0),
-  Q('What port number is commonly used for HTTP?', ['80', '443', '21', '22'], 0),
-  Q('What port number is commonly used for HTTPS?', ['443', '80', '21', '22'], 0),
-  Q('What port is commonly used for SSH?', ['22', '80', '443', '110'], 0),
-  Q('What is a "subnet"?', ['A division of a larger network', 'A new website', 'A musical note', 'A type of cable'], 0),
-  Q('Roughly how many devices can a typical /24 subnet host?', ['About 254 usable addresses', '2 only', '1 million', 'Unlimited'], 0),
-  Q('What is "NAT" used for?', ['Letting many devices share one public IP', 'Cleaning networks', 'Charging routers', 'Playing music'], 0),
+  // ── SERVERS / CLIENTS / LAN / WAN ───────────────────────────
+  Q('What is a server?', ['A waiter in a restaurant', 'A computer that provides data or services to other computers', 'A type of cable', 'A phone charger'], 1),
+  Q('What is a client device?', ['A bank customer', 'A printer cable', 'A device that requests data from a server, like a laptop', 'A power outlet'], 2),
+  Q('When you open a website, your device acts as the…?', ['Server', 'Router', 'Cable', 'Client requesting the page'], 3),
+  Q('What does LAN stand for?', ['Local Area Network', 'Large Audio Node', 'Long Access Number', 'Light And Noise'], 0),
+  Q('What is a typical example of a LAN?', ['The whole internet', 'Your home or office network', 'A satellite in space', 'A single cable'], 1),
+  Q('What does WAN stand for?', ['Wireless Audio Network', 'Web Access Node', 'Wide Area Network', 'World Audio Net'], 2),
+  Q('The internet is a huge example of a…?', ['LAN', 'USB stick', 'Printer', 'WAN (wide area network)'], 3),
 
-  // ── NETWORK SECURITY (basic) ────────────────────────────────
-  Q('What is a "firewall"?', ['A barrier that filters network traffic by rules', 'A real wall on fire', 'A printer', 'A keyboard'], 0),
-  Q('What does a firewall help protect against?', ['Unwanted network traffic and certain attacks', 'Hot weather', 'Pets', 'Power cuts'], 0),
-  Q('What does a "VPN" do, simply?', ['Creates a private, encrypted tunnel for your internet traffic', 'Makes phones louder', 'Cleans the screen', 'Charges the phone'], 0),
-  Q('Why do people use a VPN?', ['Privacy and to access region-restricted content', 'To speed up the kettle', 'To save battery', 'To make calls cheaper'], 0),
-  Q('What does "encryption" do for network data?', ['Scrambles it so only the right person can read it', 'Makes it travel slower', 'Prints it on paper', 'Adds music to it'], 0),
-  Q('What does the padlock icon in the browser address bar mean?', ['Your connection to that site is encrypted', 'The site is free', 'The site is fast', 'The site has photos'], 0),
-  Q('What is a "secure connection"?', ['One where data is encrypted between you and the server', 'A wired connection only', 'A connection without ads', 'A faster connection'], 0),
-  Q('What is "two-factor authentication"?', ['Logging in with a password plus a second verification step', 'Using two phones', 'Using two passwords', 'Logging in twice'], 0),
-  Q('What is "phishing"?', ['Fake messages trying to steal your info', 'Catching fish', 'A music style', 'A type of cable'], 0),
-  Q('What is "malware"?', ['Harmful software that can damage or spy on your device', 'Mail-order software', 'A messaging app', 'A new browser'], 0),
-  Q('What is a "DDoS" attack, simply?', ['Flooding a server with traffic to overload it', 'A new file format', 'A free music app', 'A type of router'], 0),
-  Q('Why should you change the default Wi-Fi router password?', ['Defaults are well-known and easy to attack', 'Defaults are illegal', 'For decoration', 'To save battery'], 0),
-  Q('What is a "secure" Wi-Fi network?', ['One with strong encryption like WPA2 or WPA3', 'One with no password', 'A free public network', 'A wired network'], 0),
-  Q('Which Wi-Fi security is generally stronger?', ['WPA3 or WPA2', 'WEP only', 'No security', 'A sticker'], 0),
-  Q('What does "HTTPS only mode" in a browser do?', ['Forces secure connections when possible', 'Makes the browser faster', 'Mutes audio', 'Adds music'], 0),
-  Q('Is online banking on public Wi-Fi recommended?', ['Avoid it — use trusted networks or mobile data', 'Yes, it is the safest', 'Only on Sundays', 'Only at night'], 0),
-  Q('What is a "trojan" in networking?', ['Malware disguised as a useful program', 'A horse', 'A new browser', 'A search engine'], 0),
-  Q('What is "spyware"?', ['Software that secretly watches your activity', 'A new email app', 'A type of TV', 'A keyboard'], 0),
-  Q('Why update your router\'s firmware?', ['Security fixes and improvements', 'To make it noisier', 'To slow it down', 'To change its color'], 0),
-  Q('What is a "MITM" (man-in-the-middle) attack?', ['Someone secretly relaying and altering traffic between two parties', 'A type of router', 'A new phone', 'A music file'], 0),
+  // ── IP / DNS / DHCP ─────────────────────────────────────────
+  Q('What is an IP address?', ['A number that identifies a device on a network', 'A type of password', 'A website logo', 'A kind of cable'], 0),
+  Q('Why does a device need an IP address?', ['To charge faster', 'So data can be sent to the right place', 'To play music', 'To save photos'], 1),
+  Q('What does DNS do?', ['Stores your photos', 'Charges the router', 'Turns website names into IP addresses', 'Blocks viruses'], 2),
+  Q('When you type a website name, DNS helps find its…?', ['Password', 'Colour', 'Battery level', 'IP address'], 3),
+  Q('What does DHCP do on a network?', ['Automatically gives devices an IP address', 'Encrypts your emails', 'Cools the router', 'Streams video'], 0),
+  Q('Without DHCP, IP addresses would have to be…?', ['Bought online', 'Set manually on each device', 'Printed on paper', 'Sung aloud'], 1),
 
-  // ── EMAIL (as a network protocol) ────────────────────────────
-  Q('What is an email?', ['An electronic message sent over the internet', 'A handwritten letter', 'A type of stamp', 'A phone call'], 0),
-  Q('Which of these is an email service?', ['Gmail', 'Calculator', 'Notepad', 'Paint'], 0),
-  Q('What does the "@" symbol separate in an email address?', ['The username from the domain', 'Two passwords', 'Two phone numbers', 'Two files'], 0),
-  Q('Which looks like a valid email?', ['name@example.com', 'name#example', 'name.com', '@name'], 0),
-  Q('What is "spam" in email?', ['Unwanted or junk email', 'Important business email', 'A meat in your inbox', 'Drafts'], 0),
-  Q('What is an "attachment" in email?', ['A file sent with the email', 'A piece of paper', 'A signature', 'An emoji'], 0),
-  Q('What does "CC" do in email?', ['Sends a copy to additional recipients', 'Credit card details', 'Custom colors', 'Camera control'], 0),
-  Q('What does "BCC" stand for?', ['Blind Carbon Copy — recipients are hidden from others', 'Best Color Choice', 'Bright Camera Click', 'Battery Charge Check'], 0),
-  Q('What is "phishing email"?', ['Fraudulent email trying to steal info', 'Catching fish', 'A music genre', 'A type of stamp'], 0),
-  Q('What is an "auto-reply" email?', ['An automatic response sent when you are away', 'A spam email', 'An attachment', 'A search result'], 0),
-  Q('Are emails delivered nearly instantly?', ['Usually within seconds', 'Always days later', 'Only on weekdays', 'Only after midnight'], 0),
-  Q('Should you give a one-time login code to a caller?', ['No — it is a common scam', 'Yes if they sound nice', 'Only on Sundays', 'Only at noon'], 0),
-  Q('What does an email server do?', ['Stores and routes email messages', 'Cooks food', 'Charges phones', 'Plays music'], 0),
-  Q('What is the difference between IMAP and POP3, simply?', ['IMAP syncs with the server; POP3 typically downloads then deletes', 'They are identical', 'IMAP is wired, POP3 is wireless', 'IMAP is a printer'], 0),
-  Q('Why is encryption important for email?', ['Protects content from being read in transit', 'Makes email louder', 'Adds emojis', 'Sends faster'], 0),
+  // ── EVERYDAY PROTOCOLS / TERMS ──────────────────────────────
+  Q('What is HTTP used for?', ['Sending electrical power', 'Storing files locally', 'Loading web pages', 'Charging phones'], 2),
+  Q('What does the "S" in HTTPS mean?', ['Speed', 'Storage', 'Sound', 'Secure (encrypted)'], 3),
+  Q('The padlock icon in a browser means the connection is…?', ['Secure and encrypted', 'Faster', 'Free', 'Colourful'], 0),
+  Q('What is a "protocol" in networking?', ['A set of rules for how devices communicate', 'A type of cable', 'A brand of router', 'A power supply'], 0),
+  Q('What does "ping" check?', ['Battery health', 'Whether another device is reachable on the network', 'Screen size', 'How many files you have'], 1),
+  Q('What is an Ethernet cable used for?', ['Charging a phone', 'Playing audio', 'Connecting a device to a network by wire', 'Cooling a PC'], 2),
+  Q('Wired Ethernet is usually…?', ['Slower than dial-up', 'Wireless', 'Unable to connect', 'More stable than Wi-Fi'], 3),
+  Q('Fibre internet sends data using…?', ['Light through thin glass strands', 'Water in pipes', 'Metal rods', 'Sound waves'], 0),
 
-  // ── STREAMING / DATA TRANSFER ───────────────────────────────
-  Q('What is "streaming" video?', ['Watching over the internet without downloading the full file', 'Watching only downloaded files', 'A type of game', 'A new TV brand'], 0),
-  Q('Does streaming use internet data?', ['Yes, often a lot', 'No, never', 'Only on weekends', 'Only at night'], 0),
-  Q('Why does video sometimes "buffer"?', ['Slow or unstable internet connection', 'Phone weather', 'Volume too high', 'Screen size'], 0),
-  Q('What is "buffering"?', ['Loading data ahead of playback', 'A new browser', 'A search engine', 'A keyboard'], 0),
-  Q('What does "live stream" mean?', ['Broadcast in real time over the internet', 'A recorded movie', 'A printed page', 'A photo album'], 0),
-  Q('What is "casting" to a TV?', ['Sending media from your device to a smart TV over the network', 'Throwing the phone', 'Painting the TV', 'Buying a TV'], 0),
-  Q('Which is a casting standard?', ['Chromecast', 'WordCast', 'PaintCast', 'NotepadCast'], 0),
-  Q('Why might video quality change while streaming?', ['Service adapts to your current internet speed', 'Random change', 'Phone color', 'Number of pets'], 0),
-  Q('Is downloading or streaming usually faster to start?', ['Streaming starts faster, you watch as it loads', 'Downloads always faster', 'They are identical', 'Neither works'], 0),
-  Q('What is "peer-to-peer" (P2P) sharing?', ['Devices share files directly without a central server', 'A type of email', 'A printer setup', 'A music style'], 0),
-  Q('What is "bandwidth"?', ['How much data your connection can carry per second', 'The width of the router', 'The length of a cable', 'The number of pixels'], 0),
-  Q('What is "latency"?', ['The delay between sending and receiving data', 'The size of a file', 'The brightness of a screen', 'The price of internet'], 0),
-  Q('Is lower or higher latency better?', ['Lower', 'Higher', 'Same', 'Depends on weather'], 0),
-  Q('What does "Mbps" measure?', ['Megabits per second — internet speed', 'Storage', 'Battery', 'Volume'], 0),
-  Q('What is an internet "speed test"?', ['A tool that measures your current connection speeds', 'A car race', 'A new keyboard', 'A printer'], 0),
-  Q('What does "ping" report in a speed test?', ['Round-trip delay to a server', 'Storage size', 'Battery level', 'Screen brightness'], 0),
-  Q('What is "throughput"?', ['Actual data transfer rate achieved', 'Through-pass on a freeway', 'A new browser', 'A type of speaker'], 0),
-  Q('What is "uplink" vs "downlink"?', ['Uplink sends data, downlink receives data', 'They are the same', 'Both refer to power cables', 'Both are file formats'], 0),
-  Q('Why is upload usually slower than download on home internet?', ['Most ISP plans are asymmetric, prioritizing download', 'Random reason', 'Time of day', 'Weather'], 0),
+  // ── SECURITY / CLOUD / OTHER DEVICES ────────────────────────
+  Q('What does a VPN do?', ['Creates a private, encrypted connection over the internet', 'Makes the screen brighter', 'Adds storage space', 'Charges the device'], 0),
+  Q('What does "encryption" do?', ['Deletes your data', 'Scrambles data so only the right person can read it', 'Prints your data', 'Colours your data'], 1),
+  Q('Why use a strong Wi-Fi password?', ['To charge faster', 'To brighten the screen', 'To stop strangers using your network', 'For decoration'], 2),
+  Q('What is a gateway in networking?', ['A garden gate', 'A music app', 'A keyboard key', 'A device that connects two different networks'], 3),
+  Q('What is "the cloud" in computing?', ['Storage and services delivered over the internet', 'A weather forecast', 'A type of cable', 'A screen filter'], 0),
+  Q('What does a proxy server act as?', ['A power source', 'A middleman for your internet requests', 'A backup battery', 'A printer'], 1),
+  Q('What does a hub do (simply)?', ['Routes between networks', 'Blocks threats', 'Connects devices but sends data to all of them', 'Assigns IP addresses'], 2),
+  Q('In a "star" network, devices all connect to a…?', ['Satellite', 'Printer', 'Battery', 'Central switch or hub'], 3),
 
-  // ── CLOUD (network angle) ───────────────────────────────────
-  Q('What does "the cloud" mean in computing?', ['Storage and services delivered over the internet', 'Weather forecast', 'Smoke', 'A photo filter'], 0),
-  Q('Where are cloud files actually stored?', ['On remote servers run by a company', 'On your phone only', 'In the sky', 'In your printer'], 0),
-  Q('Do cloud files need internet to be accessed normally?', ['Yes, normally', 'Never', 'Only at night', 'Only when raining'], 0),
-  Q('What is "syncing" data?', ['Keeping the same files updated across multiple devices over a network', 'Singing data', 'Deleting data', 'Charging data'], 0),
-  Q('What is a "cloud backup"?', ['A copy of your data stored on the internet', 'A backup printed on paper', 'A spare cable', 'A second phone'], 0),
-  Q('What is iCloud?', ['Apple\'s cloud storage and sync service', 'A weather app', 'A search engine', 'A web browser'], 0),
-  Q('What is Google Drive?', ['Google\'s cloud storage service', 'A car', 'A web browser', 'A keyboard'], 0),
-  Q('What is OneDrive?', ['Microsoft\'s cloud storage service', 'A USB device', 'A music app', 'A type of cable'], 0),
-  Q('What does "upload to the cloud" mean?', ['Send a file from your device to remote storage', 'Print the file', 'Email the file', 'Delete the file'], 0),
-  Q('What does "download from the cloud" mean?', ['Copy a file from remote storage to your device', 'Email a file', 'Print a file', 'Delete a file'], 0),
-  Q('What is a "CDN" (Content Delivery Network)?', ['Servers spread out to deliver content faster from a location near you', 'A new music app', 'A type of cable', 'A printer'], 0),
-  Q('Why do big websites use CDNs?', ['Faster delivery, lower delay, more reliability', 'For decoration', 'To slow loading down', 'To save battery'], 0),
-  Q('What is "cloud gaming"?', ['Playing games streamed from remote servers', 'Playing games in foggy weather', 'A board game', 'A new console'], 0),
-
-  // ── WIRELESS TECH BEYOND WI-FI ──────────────────────────────
-  Q('What is Bluetooth?', ['A short-range wireless connection between devices', 'A type of toothbrush', 'A web browser', 'A search engine'], 0),
-  Q('Which uses Bluetooth?', ['Wireless headphones', 'Refrigerator door', 'Window blinds', 'Plastic spoon'], 0),
-  Q('What is the typical range of Bluetooth?', ['About 10 metres', 'Across the world', '1 millimetre', '100 kilometres'], 0),
-  Q('What does it mean to "pair" two Bluetooth devices?', ['Connect them so they can talk to each other wirelessly', 'Stick them together', 'Wash them', 'Charge them'], 0),
-  Q('What is "NFC" used for on a phone?', ['Short-distance wireless tap actions like contactless pay', 'Long-distance video calls', 'GPS tracking', 'Charging the phone'], 0),
-  Q('What does "NFC" stand for?', ['Near Field Communication', 'Network Free Channel', 'New Format Card', 'Noise From Computer'], 0),
-  Q('What is a "QR code"?', ['A scannable square pattern that often contains a link', 'A type of music', 'A printer page', 'A keyboard shortcut'], 0),
-  Q('What can a QR code commonly do?', ['Open a website or share network info', 'Cook food', 'Wash clothes', 'Charge devices'], 0),
-  Q('What does "infrared" let your old TV remote do?', ['Send simple line-of-sight signals to the TV', 'Stream HD movies', 'Charge the TV', 'Update apps'], 0),
-  Q('What is "Wi-Fi Direct"?', ['Direct Wi-Fi connection between two devices without a router', 'Wi-Fi via cable', 'A type of phone call', 'A printer cable'], 0),
-
-  // ── EVERYDAY NETWORKING SCENARIOS ───────────────────────────
-  Q('Your Wi-Fi is connected but websites do not load. A common fix?', ['Restart the router and modem', 'Throw the phone', 'Pour water on the router', 'Buy a new TV'], 0),
-  Q('What does "restarting your router" often help with?', ['Clears glitches and reconnects to your ISP', 'Cleans the floor', 'Charges your phone', 'Updates your apps'], 0),
-  Q('Your phone shows "connected, no internet". What does that mean?', ['You are on Wi-Fi but the network has no internet right now', 'The phone is broken', 'The battery is empty', 'The screen is locked'], 0),
-  Q('Why might one app fail to load while others work?', ['That specific service or server is down', 'Your phone is broken', 'You have no battery', 'You have no SIM'], 0),
-  Q('What does "no internet" usually mean on Wi-Fi?', ['Your router has no link to the ISP', 'The phone is dead', 'You have no contacts', 'You have no apps'], 0),
-  Q('Why do speed tests differ from your ISP\'s advertised speed?', ['Distance, Wi-Fi, devices, and test server location all affect it', 'Weather is the only factor', 'They are always identical', 'They are random'], 0),
-  Q('How can you improve Wi-Fi at home?', ['Reposition the router or add a mesh/extender', 'Hide it in a metal box', 'Wrap it in foil', 'Submerge it in water'], 0),
-  Q('Why does a Wi-Fi password matter?', ['Stops unauthorized devices from using your network', 'Decoration', 'Makes the kettle boil', 'Changes battery life'], 0),
-  Q('If you forget your Wi-Fi password, where can you usually find it?', ['Often printed on a sticker on the router or in router settings', 'On a milk carton', 'In a recipe book', 'On a weather app'], 0),
-  Q('Why is a wired connection good for gaming or video calls?', ['More stable, lower delay than Wi-Fi typically', 'It is colder', 'It looks nicer', 'It is louder'], 0),
-  Q('What is a "DNS lookup"?', ['The process of finding the IP address for a domain name', 'A scientific experiment', 'A keyboard shortcut', 'A type of email'], 0),
-  Q('When you change Wi-Fi, what happens to your IP address?', ['You typically get a new local IP from the new network', 'Your IP stays forever', 'You lose all photos', 'Your phone explodes'], 0),
-  Q('What is a "captive portal" on public Wi-Fi?', ['A login page that appears before you get internet access', 'A weather page', 'A printer page', 'A music page'], 0),
-  Q('What can cause two Wi-Fi networks to interfere?', ['Using the same channel or band nearby', 'Different brands of routers always', 'Sunlight only', 'Number of pets'], 0),
-  Q('What does "5 GHz" Wi-Fi typically offer compared to "2.4 GHz"?', ['Faster speeds but shorter range', 'Slower speeds and longer range', 'Identical performance', 'No internet'], 0),
-
-  // ── BONUS TERMS ─────────────────────────────────────────────
-  Q('What is a "data packet header"?', ['Info attached to a packet, like source and destination addresses', 'A type of hat', 'A new keyboard', 'A printer'], 0),
-  Q('What does "broadcast" mean in networking?', ['Sending data to all devices on the network', 'A TV channel only', 'A type of cable', 'A new browser'], 0),
-  Q('What is a "unicast" message?', ['Data sent to one specific device', 'Data sent to everyone', 'A type of phone call', 'A photo'], 0),
-  Q('What is a "multicast" message?', ['Data sent to a specific group of devices', 'A movie cast', 'A printer feature', 'A new song'], 0),
-  Q('What does "downlink speed" usually refer to?', ['How fast data comes from the internet to you', 'How fast you send data', 'How big your phone is', 'How fast you type'], 0),
-  Q('What does "uplink speed" usually refer to?', ['How fast data goes from you to the internet', 'How fast you receive data', 'How big your screen is', 'How fast you charge'], 0),
-  Q('What is a "proxy server"?', ['A server that acts as a middleman for your requests', 'A robot person', 'A backup phone', 'A printer'], 0),
-  Q('Why might someone use a proxy server?', ['Privacy, content access, or caching', 'To save battery', 'To clean the screen', 'To charge faster'], 0),
-  Q('What does "OSI model" refer to in networking?', ['A framework describing 7 layers of network communication', 'A new TV', 'A music format', 'A type of router'], 0),
-  Q('How many layers does the OSI model have?', ['7', '5', '3', '12'], 0),
-  Q('Which OSI layer is the "Physical" layer?', ['Layer 1', 'Layer 7', 'Layer 4', 'Layer 2'], 0),
-  Q('Which layer is the Application layer in OSI?', ['Layer 7', 'Layer 1', 'Layer 4', 'Layer 2'], 0),
-  Q('What is "Ethernet"?', ['A standard for wired local networks', 'A type of paint', 'A new browser', 'A search engine'], 0),
-  Q('What is "Wi-Fi 5" also known as?', ['802.11ac', '802.11n', '802.11g', '802.11b'], 0),
-  Q('What is "Wi-Fi 6" also known as?', ['802.11ax', '802.11ac', '802.11n', '802.11b'], 0),
-  Q('What is a "VLAN"?', ['A virtual local area network that separates traffic logically', 'A new music app', 'A real submarine', 'A type of cable'], 0),
-  Q('What is a "topology" in networking?', ['How devices are arranged and connected', 'A type of pizza', 'A weather term', 'A music style'], 0),
-  Q('What is a "star topology"?', ['Devices connect to a central hub or switch', 'A constellation', 'A famous person\'s house', 'A type of cable'], 0),
-  Q('What is a "mesh topology"?', ['Every device connects to many others for redundancy', 'A type of net', 'A new fabric', 'A song'], 0),
-  Q('What is "load balancing"?', ['Distributing network traffic across multiple servers', 'Lifting weights', 'A type of cable', 'A new keyboard'], 0),
-  Q('What is "Quality of Service" (QoS)?', ['Prioritizing certain network traffic over others', 'A restaurant service', 'A printer setting', 'A music genre'], 0),
-  Q('What is a "tunnel" in networking?', ['A secure path that encapsulates data inside other protocols', 'A road tunnel', 'A type of cable', 'A web browser'], 0),
-  Q('What is a "handshake" in networking?', ['Initial exchange to set up a connection between two devices', 'A real handshake', 'A music app', 'A type of router'], 0),
-  Q('What is "TCP handshake" sometimes called?', ['Three-way handshake', 'One-way greeting', 'Email signature', 'A type of cable'], 0),
-  Q('What does a "DNS cache" do?', ['Remembers recent DNS lookups for faster repeat access', 'Stores music', 'Stores photos', 'Stores videos'], 0),
-  Q('Why are network cables sometimes labeled "Cat5e" or "Cat6"?', ['They indicate the cable\'s speed and quality category', 'They are cat-themed', 'They are different colors only', 'They are decorative'], 0),
-  Q('What is "PoE" (Power over Ethernet)?', ['Sending electricity along the network cable to power devices', 'A type of music', 'A new browser', 'A printer brand'], 0),
-  Q('What is the difference between Wi-Fi and the internet?', ['Wi-Fi is the local wireless link; internet is the global network', 'They are the same thing', 'Wi-Fi is wired', 'Internet is wireless only'], 0),
-  Q('Can you have Wi-Fi without internet?', ['Yes — a local Wi-Fi network can exist without internet', 'No, never', 'Only on weekends', 'Only with payment'], 0),
-  Q('What is a "static IP" address?', ['An IP that does not change over time', 'A noisy IP', 'A photo IP', 'A music IP'], 0),
-  Q('What is a "dynamic IP" address?', ['An IP that can change over time, assigned by DHCP', 'A noisy IP', 'A photo IP', 'A music IP'], 0),
-  Q('What is "port forwarding" used for?', ['Letting outside traffic reach a specific device on your network', 'Forwarding emails', 'Cooking food', 'Charging phones'], 0),
-  Q('Why does Wi-Fi use channels?', ['So multiple networks nearby can avoid interfering with each other', 'For decoration', 'To save power', 'To play music'], 0),
-  Q('What is a "captive portal" often used for?', ['Asking you to agree to terms before joining a public Wi-Fi network', 'A weather forecast', 'A printer page', 'A music page'], 0),
-  Q('What is "geo-blocking"?', ['Restricting access to content based on location', 'A type of router', 'A new music app', 'A camera filter'], 0),
-  Q('What is the typical default IP range for a home router?', ['192.168.x.x', '1.1.1.1', '10.10.10.10', '127.127.127.127'], 0),
-  Q('What does "1.1.1.1" sometimes refer to?', ['A popular public DNS service', 'Your phone number', 'A model of phone', 'A type of cable'], 0),
-  Q('What does "8.8.8.8" sometimes refer to?', ['Google\'s public DNS server', 'A famous IP', 'Your home IP', 'A photo album'], 0),
-  Q('What is a "subnet mask" used for?', ['Defining which part of an IP is the network vs. the host', 'A face covering', 'A type of cable', 'A music app'], 0),
-  Q('What is "ICMP" used for?', ['Network diagnostic messages like ping replies', 'Streaming videos', 'Sending email', 'A music format'], 0),
-  Q('What is "traceroute" used for?', ['Showing the path packets take across the network', 'A delivery service', 'A photo filter', 'A music app'], 0),
-  Q('What is "wireshark" (in general terms)?', ['A tool that captures and inspects network traffic', 'A real shark', 'A music app', 'A type of cable'], 0),
-  Q('What is "SSL/TLS"?', ['The protocols that secure most encrypted connections on the web', 'A music format', 'A type of cable', 'A new printer'], 0),
+  // ── PERFORMANCE / EVERYDAY ──────────────────────────────────
+  Q('What is bandwidth?', ['How much data a connection can carry', 'The colour of the router', 'The length of a cable', 'The size of the screen'], 0),
+  Q('What is latency?', ['The size of a file', 'The delay before data arrives', 'The screen brightness', 'The price of internet'], 1),
+  Q('Lower latency is usually…?', ['Worse', 'The same', 'Better (less delay)', 'Impossible'], 2),
+  Q('What does "Mbps" measure?', ['Storage', 'Battery', 'Volume', 'Internet speed'], 3),
+  Q('What does "download" mean?', ['Getting a file from the internet to your device', 'Sending a file out from your device', 'Deleting a file', 'Printing a file'], 0),
+  Q('What does "upload" mean?', ['Receiving a file', 'Sending a file from your device to the internet', 'Charging a file', 'Deleting a file'], 1),
+  Q('What is "streaming"?', ['Printing media', 'Saving everything to a USB first', 'Watching or listening over the internet without downloading it all first', 'A type of cable'], 2),
+  Q('What does "online" mean?', ['Out of battery', 'Switched off', 'Locked', 'Connected to the internet'], 3),
+  Q('What is a "data packet"?', ['A small chunk of data sent over a network', 'A snack', 'A paper parcel', 'A spare battery'], 0),
+  Q('What does a network "port" act like?', ['A real ship harbour', 'A doorway for a specific kind of connection', 'A power outlet only', 'A camera'], 1),
 ];
 
 /* ─── Per-stall content partitioning ───────────────────────────────────────
- * Each stall plays a different slice of the shared content so the four booths
- * feel distinct without authoring four full content sets.
- *  - Quiz: a DISJOINT round-robin split (273 Qs → ~68 per stall, no overlap).
+ * Each stall plays a different slice of the shared content so the three booths
+ * feel distinct without authoring three full content sets.
+ *  - Quiz: a DISJOINT round-robin split (~66 Qs → ~22 per stall, no overlap),
+ *    and each round draws 5 at random with options reshuffled per play.
  *  - Word search: an OVERLAPPING 25-word window per stall. The list is only 50
  *    words, and a 10-word grid needs a comfortable pool, so we offset windows
- *    (distinct sets) rather than quartering it (which would starve the grid).
+ *    rather than cutting it into smaller disjoint slices (which would starve
+ *    the grid).
+ *
+ * The set of REAL stalls (codes, names) lives in the Supabase `stalls` table —
+ * this list only drives content partitioning. Keep the two in sync: a slug here
+ * with no DB row is unreachable, and a DB stall whose slug is missing here falls
+ * back to stall-1's content (stallIndex → 0).
  */
-export const STALL_SLUGS = ['stall-1', 'stall-2', 'stall-3', 'stall-4'];
+export const STALL_SLUGS = ['stall-1', 'stall-2', 'stall-3'];
 
 export function stallIndex(slug) {
   const i = STALL_SLUGS.indexOf(slug);
@@ -337,9 +139,38 @@ export function stallQuiz(slug) {
 export function stallKeywords(slug) {
   const idx = stallIndex(slug);
   const L = NETWORK_KEYWORDS.length;
-  const start = Math.floor((idx * L) / STALL_SLUGS.length); // 0, 12, 25, 37
+  const start = Math.floor((idx * L) / STALL_SLUGS.length); // 0, 16, 33
   const windowSize = Math.ceil(L / 2);                      // 25
   const out = [];
   for (let k = 0; k < windowSize; k++) out.push(NETWORK_KEYWORDS[(start + k) % L]);
   return [...new Set(out)];
+}
+
+// Fisher–Yates: an unbiased shuffle. (sort(() => Math.random() - 0.5) is NOT
+// uniform — it skews toward leaving elements near their original position.)
+export function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Randomise a question's option order and remap `correct` to the new index, so
+// the right answer never sits in a fixed slot. Without this, an authoring habit
+// of "correct is option A" would let players win by always tapping the top one.
+function shuffleOptions(q) {
+  const order = shuffle(q.options.map((_, i) => i));
+  return {
+    ...q,
+    options: order.map(i => q.options[i]),
+    correct: order.indexOf(q.correct),
+  };
+}
+
+// One quiz round: `count` random questions from the stall's slice, each with its
+// options shuffled. This is the only function the Quiz component should consume.
+export function quizRound(slug, count = 5) {
+  return shuffle(stallQuiz(slug)).slice(0, count).map(shuffleOptions);
 }

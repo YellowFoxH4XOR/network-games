@@ -18,4 +18,10 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Vercel serverless functions run on Node, not in the browser — they use
+    // `process.env`, so give them the Node global set.
+    files: ['api/**/*.js'],
+    languageOptions: { globals: globals.node },
+  },
 ])

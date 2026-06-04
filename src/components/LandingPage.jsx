@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { readJSON } from '../lib/storage.js';
 
 function TiltCard({ children, style, onClick, disabled }) {
   const ref = useRef(null);
@@ -47,8 +48,8 @@ export default function LandingPage({ username, stall, onBack, onSelectGame }) {
   const slug     = stall?.slug || 'stall-1';
   const quizKey  = 'sns_' + username + '_' + slug + '_quiz';
   const wsKey    = 'sns_' + username + '_' + slug + '_ws';
-  const quizData = localStorage.getItem(quizKey) ? JSON.parse(localStorage.getItem(quizKey)) : null;
-  const wsData   = localStorage.getItem(wsKey)   ? JSON.parse(localStorage.getItem(wsKey))   : null;
+  const quizData = readJSON(quizKey);
+  const wsData   = readJSON(wsKey);
   const total    = (quizData?.score || 0) + (wsData?.score || 0);
   const bothDone = quizData && wsData;
 
@@ -288,10 +289,10 @@ export default function LandingPage({ username, stall, onBack, onSelectGame }) {
                       : <span className="dot dot-a" style={{ width: 10, height: 10 }}></span>}
                   </div>
                   <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.55, marginBottom: 12 }}>
-                    Find 10 networking terms hidden in a 12 × 12 grid. Any direction.
+                    Find 10 networking terms hidden in a 10 × 10 grid. Any direction.
                   </p>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    <span className="tag tag-dim">12 × 12</span>
+                    <span className="tag tag-dim">10 × 10</span>
                     <span className="tag tag-dim">5 MIN</span>
                     <span className="tag tag-dim">All Directions</span>
                     {wsData && <span className="tag tag-cyan">✓ DONE</span>}

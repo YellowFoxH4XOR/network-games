@@ -28,6 +28,10 @@ export default async function handler(req, res) {
   }
   // Normalize to lowercase so 'Akki' and 'akki' are the same player
   username = username.toLowerCase();
+  // 'admin' is reserved for the password-gated admin path — never a player.
+  if (username === 'admin') {
+    return res.status(400).json({ error: 'Invalid username' });
+  }
   if (!fingerprint || typeof fingerprint !== 'string' || fingerprint.length > 64) {
     return res.status(400).json({ error: 'Invalid fingerprint' });
   }

@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { stallKeywords } from '../data.js';
+import { stallKeywords, shuffle } from '../data.js';
 import TopBar from './TopBar.jsx';
 import { saveScore } from '../lib/saveScore.js';
 import { useCountUp } from '../lib/useCountUp.js';
+import { readJSON } from '../lib/storage.js';
+import { WORD_POINTS, wordsearchTimeBonus } from '../lib/scoring.js';
 
 const GRID_SIZE  = 10;
 const WORD_COUNT = 10;
@@ -29,9 +31,10 @@ const DIRS = [
 function genPuzzle(keywords) {
   const grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
 
-  // Random subset → different words every game.
+  // Random subset → different words every game. (Fisher–Yates, not a biased
+  // comparator sort.)
   const valid = keywords.filter(w => w.length <= GRID_SIZE);
-  const shuffled = [...valid].sort(() => Math.random() - 0.5);
+  const shuffled = shuffle(valid);
   const candidates = shuffled.slice(0, Math.min(WORD_COUNT * 3, shuffled.length));
   // Place longest first — they're hardest to fit, so they need first pick.
   candidates.sort((a, b) => b.length - a.length);
@@ -123,16 +126,20 @@ function selCells(s, e) {
 }
 
 /* ── Confetti burst component (CSS only) ── */
+// Pieces are generated once at module load (not during render) so the random
+// values stay pure — the burst looks the same each time, which nobody notices.
+const CONFETTI_PIECES = Array.from({ length: 24 }, (_, i) => ({
+  id: i,
+  color: WORD_COLORS[i % WORD_COLORS.length],
+  angle: (Math.random() * 360),
+  distance: 120 + Math.random() * 180,
+  delay: Math.random() * 0.15,
+  size: 6 + Math.random() * 6,
+  rotation: Math.random() * 720 - 360,
+}));
+
 function Confetti() {
-  const pieces = useMemo(() => Array.from({ length: 24 }, (_, i) => ({
-    id: i,
-    color: WORD_COLORS[i % WORD_COLORS.length],
-    angle: (Math.random() * 360),
-    distance: 120 + Math.random() * 180,
-    delay: Math.random() * 0.15,
-    size: 6 + Math.random() * 6,
-    rotation: Math.random() * 720 - 360,
-  })), []);
+  const pieces = CONFETTI_PIECES;
 
   return (
     <div style={{
@@ -176,12 +183,20 @@ export default function WordSearch({ username, stall, onBack }) {
   const slug = stall?.slug || 'stall-1';
   const key = 'sns_' + (username || 'anon') + '_' + slug + '_ws';
 
-  const [done, setDone]           = useState(false);
-  const [prevScore, setPrevScore] = useState(0);
-  const [prevFound, setPrevFound] = useState(0);
-  const [prevTotal, setPrevTotal] = useState(0);
+  // Decided once at mount (the component mounts fresh per navigation): a cached
+  // result means this stall is already played; otherwise build a fresh puzzle.
+  const [game] = useState(() => {
+    const cached = readJSON(key);
+    return {
+      done:      !!cached,
+      prevScore: cached?.score || 0,
+      prevFound: cached?.found || 0,
+      prevTotal: cached?.total || 0,
+      pz:        cached ? null : genPuzzle(stallKeywords(slug)),
+    };
+  });
+  const { done, prevScore, prevFound, prevTotal, pz } = game;
 
-  const [pz, setPz]         = useState(null);
   const [found, setFound]   = useState({});
   // fCells stores { color, order, foundAt } per cell so we can stagger reveal animations
   const [fCells, setFCells] = useState({});
@@ -201,23 +216,6 @@ export default function WordSearch({ username, stall, onBack }) {
   const animScore = useCountUp(score, 500);
 
   useEffect(() => {
-    const s = localStorage.getItem(key);
-    if (s) {
-      const d = JSON.parse(s);
-      setDone(true); setPrevScore(d.score || 0);
-      setPrevFound(d.found || 0); setPrevTotal(d.total || 0);
-    }
-  }, [key]);
-
-  const init = useCallback(() => {
-    setPz(genPuzzle(stallKeywords(slug))); setFound({}); setFCells({});
-    setDs(null); setDe(null); setSel(false);
-    setTime(GAME_TIME); setScore(0); setGState('playing');
-  }, [slug]);
-
-  useEffect(() => { if (!done) init(); }, [init, done]);
-
-  useEffect(() => {
     if (gState !== 'playing' || done) return;
     tRef.current = setInterval(() => {
       setTime(p => {
@@ -227,19 +225,6 @@ export default function WordSearch({ username, stall, onBack }) {
     }, 1000);
     return () => clearInterval(tRef.current);
   }, [gState, done]);
-
-  useEffect(() => {
-    if (!pz || gState === 'finished') return;
-    if (Object.keys(found).length === pz.words.length && pz.words.length > 0) {
-      clearInterval(tRef.current);
-      setScore(s => s + Math.floor(time / 10));
-      setTimeout(() => {
-        setGState('finished');
-        setCelebrate(true);
-        setTimeout(() => setCelebrate(false), 1800);
-      }, 800);
-    }
-  }, [found, pz]);
 
   useEffect(() => {
     if (gState !== 'finished' || !pz || savedRef.current) return;
@@ -284,16 +269,28 @@ export default function WordSearch({ username, stall, onBack }) {
       const now = performance.now();
       orderedCells.forEach((c, i) => { nc[`${c.r},${c.c}`] = { color: col, order: i, foundAt: now }; });
       setFCells(nc);
-      setScore(s => s + 10);
       setFlash(col);
       setLastFoundWord(m);
       setTimeout(() => setFlash(null), 700);
       setTimeout(() => setLastFoundWord(null), 1000);
+      // Score the word here; if it's the last one, add the time bonus and finish
+      // after a beat so the reveal animation plays. (Doing this on the event,
+      // not in an effect watching `found`, keeps state updates out of render.)
+      const isLast = ci + 1 === pz.words.length;
+      setScore(s => s + WORD_POINTS + (isLast ? wordsearchTimeBonus(time) : 0));
+      if (isLast) {
+        clearInterval(tRef.current);
+        setTimeout(() => {
+          setGState('finished');
+          setCelebrate(true);
+          setTimeout(() => setCelebrate(false), 1800);
+        }, 800);
+      }
     } else if (cells.length > 1) {
       setShake(true); setTimeout(() => setShake(false), 420);
     }
     setSel(false); setDs(null); setDe(null);
-  }, [sel, ds, de, pz, found, fCells]);
+  }, [sel, ds, de, pz, found, fCells, time]);
 
   useEffect(() => {
     const up = () => { if (sel) onUp(); };
