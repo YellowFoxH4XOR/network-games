@@ -19,6 +19,10 @@ export default async function handler(req, res) {
   }
   // Codes are matched case-insensitively and trimmed so "stall1" == "STALL1 ".
   code = code.trim();
+  // Escape ILIKE metacharacters: without this, a probe like "S%" would match
+  // ANY code starting with "S", leaking every stall code one guess at a time.
+  // Backslash is Postgres's default ILIKE escape character.
+  const safeCode = code.replace(/([\\%_])/g, '\\$1');
 
   try {
     const supabase = createClient(
@@ -29,7 +33,7 @@ export default async function handler(req, res) {
     const { data: stall, error } = await supabase
       .from('stalls')
       .select('slug, name')
-      .ilike('code', code)
+      .ilike('code', safeCode)
       .maybeSingle();
     if (error) throw error;
 

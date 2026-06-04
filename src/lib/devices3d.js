@@ -95,9 +95,9 @@ export const DEVICES = [
 ];
 
 /**
- * Per-stall device ordering. With only three devices and four stalls there
- * can't be a fully unique set per stall, so each stall leads with a different
- * device (rotated order) to give the visualization some per-stall flavor.
+ * Per-stall device ordering. With three devices and three stalls, each stall
+ * leads with a different device (rotated order) to give the visualization some
+ * per-stall flavor — same three devices, just a different starting one.
  */
 export function getStallDevices(slug) {
   const r = stallIndex(slug) % DEVICES.length;

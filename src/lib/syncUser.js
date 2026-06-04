@@ -4,7 +4,9 @@ const ADMIN_USERNAME = 'admin';
 
 function clearAllSns() {
   Object.keys(localStorage)
-    .filter(k => k.startsWith('sns_'))
+    // Keep sns_fp: it's the device identity. Wiping it would regenerate the
+    // fingerprint on next visit, defeating the one-attempt-per-device gate.
+    .filter(k => k.startsWith('sns_') && k !== 'sns_fp')
     .forEach(k => localStorage.removeItem(k));
   sessionStorage.removeItem('sns_admin_token');
 }
@@ -43,9 +45,8 @@ export async function syncUser() {
   const stallName = localStorage.getItem('sns_stall_name') || '';
   if (!stall) return { kind: 'fresh' };
 
-  // fingerprint + stall → /api/me
+  // fingerprint + stall → /api/me  (getFingerprint already persists sns_fp)
   const fp = await getFingerprint();
-  localStorage.setItem('sns_fp', fp);
 
   let data;
   try {
