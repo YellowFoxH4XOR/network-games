@@ -72,6 +72,82 @@ function StallSwitcher({ current, onSubmit, onClose }) {
   );
 }
 
+/* ── Modal listing the game rules ── */
+function RulesModal({ onClose }) {
+  const sections = [
+    {
+      title: 'NETWORK QUIZ',
+      color: 'var(--green)',
+      rules: [
+        '5 random multiple-choice questions',
+        '30 seconds per question — no answer scores 0',
+        'Correct answer: 10 pts + speed bonus (faster = more)',
+        'Max 100 pts',
+      ],
+    },
+    {
+      title: 'WORD SEARCH',
+      color: 'var(--cyan)',
+      rules: [
+        'Find 10 networking terms in a 10 × 10 grid',
+        'Words run in any direction',
+        '5-minute timer · 10 pts per word',
+        'Finish early for a time bonus — max 130 pts',
+      ],
+    },
+    {
+      title: 'GENERAL',
+      color: 'var(--text2)',
+      rules: [
+        'One attempt per challenge — scores are permanent',
+        'Scores count toward your stall’s leaderboard',
+        'Check RANKS for per-stall and overall standings',
+      ],
+    },
+  ];
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        background: 'color-mix(in oklch, var(--ink) 38%, transparent)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 22,
+        animation: 'fadeIn 0.2s var(--ease-out)',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="glass-strong"
+        style={{ width: '100%', maxWidth: 400, padding: 22, maxHeight: '85dvh', overflowY: 'auto', animation: 'stampIn 0.4s var(--ease-spring)' }}
+      >
+        <div className="label" style={{ marginBottom: 14 }}>Rules</div>
+        {sections.map(({ title, color, rules }) => (
+          <div key={title} style={{ marginBottom: 16 }}>
+            <span className="mono" style={{ fontSize: 10, fontWeight: 800, color, letterSpacing: '0.1em' }}>{title}</span>
+            <ul style={{ margin: '7px 0 0', paddingLeft: 0, listStyle: 'none' }}>
+              {rules.map(r => (
+                <li key={r} style={{
+                  fontSize: 13, color: 'var(--text2)', lineHeight: 1.5,
+                  padding: '3px 0 3px 14px', position: 'relative',
+                }}>
+                  <span style={{ position: 'absolute', left: 0, color }}>▸</span>
+                  {r}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <button onClick={onClose} style={{
+          width: '100%', padding: '12px', borderRadius: 0, fontSize: 14, fontWeight: 800,
+          background: 'var(--green)', border: '2px solid var(--ink)', color: 'var(--ink)',
+          boxShadow: 'var(--shadow-sm)', cursor: 'pointer',
+        }}>Got it</button>
+      </div>
+    </div>
+  );
+}
+
 function TiltCard({ children, style, onClick, disabled }) {
   const ref = useRef(null);
 
@@ -117,6 +193,7 @@ function ScoreBadge({ score, color }) {
 
 export default function LandingPage({ username, stall, onSelectGame, onChangeStall }) {
   const [switching, setSwitching] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const slug     = stall?.slug || 'stall-1';
   const quizKey  = 'sns_' + username + '_' + slug + '_quiz';
   const wsKey    = 'sns_' + username + '_' + slug + '_ws';
@@ -134,6 +211,7 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
           onClose={() => setSwitching(false)}
         />
       )}
+      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
       {/* Header */}
       <div style={{
         padding: '18px 22px 0',
@@ -170,6 +248,24 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => setShowRules(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 13px', borderRadius: 0, cursor: 'pointer',
+              background: 'var(--bg2)', border: '1px solid var(--b1)',
+              boxShadow: 'var(--shadow-sm)',
+              transition: 'all 0.2s var(--ease-out)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg2)'; }}
+          >
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="1.5" width="10" height="11" stroke="var(--green)" strokeWidth="1.4" strokeLinejoin="round"/>
+              <path d="M4.5 4.5h5M4.5 7h5M4.5 9.5h3" stroke="var(--green)" strokeWidth="1.2" strokeLinecap="round"/>
+            </svg>
+            <span className="mono" style={{ fontSize: 9, color: 'var(--green-dim)', fontWeight: 700, letterSpacing: '0.1em' }}>RULES</span>
+          </button>
           <button
             onClick={() => onSelectGame('leaderboard')}
             style={{
