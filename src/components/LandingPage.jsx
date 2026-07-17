@@ -24,7 +24,8 @@ function StallSwitcher({ current, onSubmit, onClose }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'color-mix(in oklch, var(--ink) 38%, transparent)',
+        background: 'color-mix(in oklch, var(--ink) 62%, transparent)',
+        backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 22,
         animation: 'fadeIn 0.2s var(--ease-out)',
       }}
@@ -48,7 +49,7 @@ function StallSwitcher({ current, onSubmit, onClose }) {
           autoComplete="off" autoCapitalize="characters" spellCheck="false" maxLength={32} autoFocus
           style={{
             width: '100%', padding: '14px 16px',
-            background: 'var(--bg2)', border: '1px solid var(--b2)', borderRadius: 0,
+            background: 'var(--bg)', border: '1px solid var(--b2)', borderRadius: 'var(--r-md)',
             fontSize: 16, color: 'var(--text)', fontFamily: "'JetBrains Mono', monospace",
             letterSpacing: '0.12em', boxShadow: 'var(--shadow-sm)',
           }}
@@ -58,13 +59,13 @@ function StallSwitcher({ current, onSubmit, onClose }) {
         )}
         <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
           <button type="button" onClick={onClose} style={{
-            flex: 1, padding: '12px', borderRadius: 0, fontSize: 14, fontWeight: 700,
-            background: 'var(--bg2)', border: '2px solid var(--ink)', color: 'var(--text2)', cursor: 'pointer',
+            flex: 1, padding: '12px', borderRadius: 'var(--r-md)', fontSize: 14, fontWeight: 600,
+            background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer',
           }}>Cancel</button>
           <button type="submit" disabled={busy} style={{
-            flex: 1, padding: '12px', borderRadius: 0, fontSize: 14, fontWeight: 800,
-            background: 'var(--green)', border: '2px solid var(--ink)', color: 'var(--ink)',
-            boxShadow: 'var(--shadow-sm)', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1,
+            flex: 1, padding: '12px', borderRadius: 'var(--r-md)', fontSize: 14, fontWeight: 700,
+            background: 'var(--grad-green)', border: 'none', color: 'var(--on-accent)',
+            boxShadow: '0 8px 24px -8px var(--green-glow2)', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1,
           }}>{busy ? 'Switching…' : 'Switch →'}</button>
         </div>
       </form>
@@ -111,7 +112,8 @@ function RulesModal({ onClose }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'color-mix(in oklch, var(--ink) 38%, transparent)',
+        background: 'color-mix(in oklch, var(--ink) 62%, transparent)',
+        backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 22,
         animation: 'fadeIn 0.2s var(--ease-out)',
       }}
@@ -139,9 +141,9 @@ function RulesModal({ onClose }) {
           </div>
         ))}
         <button onClick={onClose} style={{
-          width: '100%', padding: '12px', borderRadius: 0, fontSize: 14, fontWeight: 800,
-          background: 'var(--green)', border: '2px solid var(--ink)', color: 'var(--ink)',
-          boxShadow: 'var(--shadow-sm)', cursor: 'pointer',
+          width: '100%', padding: '12px', borderRadius: 'var(--r-md)', fontSize: 14, fontWeight: 700,
+          background: 'var(--grad-green)', border: 'none', color: 'var(--on-accent)',
+          boxShadow: '0 8px 24px -8px var(--green-glow2)', cursor: 'pointer',
         }}>Got it</button>
       </div>
     </div>
@@ -233,7 +235,7 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
                 title="Change stall code"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 5,
-                  padding: '3px 8px', borderRadius: 0, cursor: 'pointer',
+                  padding: '3px 10px', borderRadius: 'var(--r-full)', cursor: 'pointer',
                   background: 'var(--green-glow)', border: '1px solid color-mix(in oklch, var(--green) 35%, transparent)',
                 }}
               >
@@ -252,13 +254,13 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
             onClick={() => setShowRules(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 13px', borderRadius: 0, cursor: 'pointer',
-              background: 'var(--bg2)', border: '1px solid var(--b1)',
-              boxShadow: 'var(--shadow-sm)',
+              padding: '7px 14px', borderRadius: 'var(--r-full)', cursor: 'pointer',
+              background: 'var(--s1)', border: '1px solid var(--b1)',
+              backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
               transition: 'all 0.2s var(--ease-out)',
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--s1)'; }}
           >
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <rect x="2" y="1.5" width="10" height="11" stroke="var(--green)" strokeWidth="1.4" strokeLinejoin="round"/>
@@ -270,13 +272,13 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
             onClick={() => onSelectGame('leaderboard')}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 13px', borderRadius: 0, cursor: 'pointer',
-              background: 'var(--bg2)', border: '1px solid var(--b1)',
-              boxShadow: 'var(--shadow-sm)',
+              padding: '7px 14px', borderRadius: 'var(--r-full)', cursor: 'pointer',
+              background: 'var(--s1)', border: '1px solid var(--b1)',
+              backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
               transition: 'all 0.2s var(--ease-out)',
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--s1)'; }}
           >
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M3 2h8v3a4 4 0 01-8 0V2z" stroke="var(--green)" strokeWidth="1.4" strokeLinejoin="round"/>
@@ -287,9 +289,9 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
           </button>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 7,
-            padding: '6px 12px', borderRadius: 0,
-            background: 'var(--bg2)', border: '1px solid var(--b1)',
-            boxShadow: 'var(--shadow-sm)',
+            padding: '6px 13px', borderRadius: 'var(--r-full)',
+            background: 'var(--s1)', border: '1px solid var(--b1)',
+            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
           }}>
             <span className="dot dot-g" style={{ width: 6, height: 6 }}></span>
             <span className="mono" style={{ fontSize: 9, color: 'var(--green-dim)', fontWeight: 700, letterSpacing: '0.1em' }}>ONLINE</span>
@@ -301,7 +303,7 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
       {(quizData || wsData) && (
         <div style={{ padding: '18px 22px 0', animation: 'fadeUp 0.5s var(--ease-out) 0.08s both' }}>
           <div className="grad-border">
-            <div style={{ background: 'var(--bg2)', borderRadius: 0.5, padding: '18px 20px' }}>
+            <div style={{ background: 'var(--bg2)', borderRadius: 'calc(var(--r-lg) - 1.5px)', padding: '18px 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <span className="label">Total Score</span>
@@ -331,7 +333,7 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
               {bothDone && (
                 <div style={{
                   marginTop: 14, padding: '9px 14px',
-                  background: 'var(--green-glow)', borderRadius: 0,
+                  background: 'var(--green-glow)', borderRadius: 'var(--r-md)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   border: '1px solid color-mix(in oklch, var(--green) 22%, transparent)',
                   animation: 'fadeIn 0.5s ease',
@@ -362,9 +364,9 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
         >
           <div style={{
             background: 'var(--bg2)',
-            border: `2px solid ${quizData ? 'var(--ink)' : 'var(--green)'}`,
-            borderRadius: 0, overflow: 'hidden',
-            boxShadow: quizData ? 'var(--shadow-sm)' : 'var(--shadow)',
+            border: `1px solid ${quizData ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 45%, transparent)'}`,
+            borderRadius: 'var(--r-lg)', overflow: 'hidden',
+            boxShadow: quizData ? 'var(--shadow-sm)' : '0 0 34px var(--green-glow), var(--shadow)',
             opacity: quizData ? 0.62 : 1,
             transition: 'opacity 0.3s, box-shadow 0.3s',
           }}>
@@ -373,7 +375,7 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
             <div style={{ padding: '20px 20px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 0, flexShrink: 0,
+                  width: 52, height: 52, borderRadius: 'var(--r-md)', flexShrink: 0,
                   background: quizData ? 'var(--s2)' : 'var(--success-soft)',
                   border: `1px solid ${quizData ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 22%, transparent)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -430,9 +432,9 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
         >
           <div style={{
             background: 'var(--bg2)',
-            border: `2px solid ${wsData ? 'var(--ink)' : 'var(--cyan)'}`,
-            borderRadius: 0, overflow: 'hidden',
-            boxShadow: wsData ? 'var(--shadow-sm)' : 'var(--shadow)',
+            border: `1px solid ${wsData ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 45%, transparent)'}`,
+            borderRadius: 'var(--r-lg)', overflow: 'hidden',
+            boxShadow: wsData ? 'var(--shadow-sm)' : '0 0 34px var(--cyan-glow), var(--shadow)',
             opacity: wsData ? 0.62 : 1,
             transition: 'opacity 0.3s, box-shadow 0.3s',
           }}>
@@ -441,7 +443,7 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
             <div style={{ padding: '20px 20px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 0, flexShrink: 0,
+                  width: 52, height: 52, borderRadius: 'var(--r-md)', flexShrink: 0,
                   background: wsData ? 'var(--s2)' : 'var(--cyan-glow)',
                   border: `1px solid ${wsData ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 22%, transparent)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

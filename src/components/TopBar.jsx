@@ -17,14 +17,13 @@ export default function TopBar({ onBack, title, right }) {
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
           color: 'var(--text2)', fontSize: 13, fontWeight: 600,
-          padding: '8px 12px', borderRadius: 0,
-          background: 'var(--bg2)', border: '1px solid var(--b1)',
-          boxShadow: 'var(--shadow-sm)',
+          padding: '8px 14px', borderRadius: 'var(--r-full)',
+          background: 'var(--s1)', border: '1px solid var(--b1)',
           cursor: 'pointer',
           transition: 'all 0.2s var(--ease-out)',
         }}
         onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; e.currentTarget.style.color = 'var(--text)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg2)'; e.currentTarget.style.color = 'var(--text2)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'var(--s1)'; e.currentTarget.style.color = 'var(--text2)'; }}
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

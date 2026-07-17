@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* ─── Kill the Vercel Toolbar ─── */
 vercel-toolbar,
@@ -15,20 +15,22 @@ vercel-live-feedback,
 }
 
 :root {
-  /* ─── Surface (NEXTEC warm cream) ─── */
-  --bg:       #fff5ef;          /* warm off-white */
-  --bg2:      #fffbf8;          /* lighter card surface */
-  --bg3:      #f4e7de;          /* warm sunken shade */
-  --chrome:   color-mix(in oklch, var(--bg2) 90%, transparent);
+  color-scheme: dark;
+
+  /* ─── Surface (deep space navy) ─── */
+  --bg:       #070a13;          /* page — near-black blue */
+  --bg2:      #0d1322;          /* card surface */
+  --bg3:      #131b30;          /* raised / sunken accents */
+  --chrome:   color-mix(in oklch, var(--bg) 78%, transparent);
   --s1:       color-mix(in oklch, var(--text) 4%, transparent);
   --s2:       color-mix(in oklch, var(--text) 7%, transparent);
-  --s3:       color-mix(in oklch, var(--text) 11%, transparent);
-  --b1:       color-mix(in oklch, var(--text) 16%, transparent);  /* subtle dividers */
-  --b2:       color-mix(in oklch, var(--text) 45%, transparent);
-  --b3:       var(--text);                                        /* solid ink */
+  --s3:       color-mix(in oklch, var(--text) 12%, transparent);
+  --b1:       color-mix(in oklch, var(--text) 12%, transparent);  /* subtle borders */
+  --b2:       color-mix(in oklch, var(--text) 26%, transparent);
+  --b3:       color-mix(in oklch, var(--text) 55%, transparent);
 
-  /* Solid ink — brutalist outlines + hard offset shadows */
-  --ink:      #0d0d0f;
+  /* Ink — dark text on bright accent fills, modal scrims */
+  --ink:      #04070f;
 
   /* Legacy aliases */
   --glass:          var(--s1);
@@ -36,47 +38,52 @@ vercel-live-feedback,
   --glass-border:   var(--b1);
   --glass-border2:  var(--b2);
 
-  /* ─── Accent palette (NEXTEC blocks) ───
-     Quiz semantics preserved: teal = success/correct/primary action,
+  /* ─── Accent palette (neon arcade) ───
+     Quiz semantics preserved: mint = success/correct/primary action,
      coral-red = wrong/danger, so the two never collide. */
-  --green:       #3a9fa7;   /* teal → success / correct / CTA */
-  --green-dim:   #2f8088;
-  --green-glow:  color-mix(in oklch, var(--green) 16%, transparent);
-  --green-glow2: color-mix(in oklch, var(--green) 28%, transparent);
-  --cyan:        #6f98c8;   /* NEXTEC blue */
-  --cyan-glow:   color-mix(in oklch, var(--cyan) 15%, transparent);
-  --blue:        #6f98c8;
-  --violet:      #8a6fb0;   /* warm violet that fits the block palette */
-  --red:         #c54536;   /* coral-red → wrong / danger */
-  --red-glow:    color-mix(in oklch, var(--red) 14%, transparent);
-  --amber:       #e0995b;   /* warm amber → warning */
-  --amber-glow:  color-mix(in oklch, var(--amber) 17%, transparent);
-  --on-accent:   #fff5ef;
-  --brand:       #3a9fa7;   /* highlighted words in brand teal */
-  --success-soft: color-mix(in oklch, var(--green) 12%, transparent);
-  --danger-soft:  color-mix(in oklch, var(--red) 12%, transparent);
+  --green:       #35e0aa;   /* mint → success / correct / CTA */
+  --green-dim:   #8af0cf;   /* lighter mint for text/labels on dark */
+  --green-glow:  color-mix(in oklch, var(--green) 18%, transparent);
+  --green-glow2: color-mix(in oklch, var(--green) 32%, transparent);
+  --cyan:        #55c8ff;
+  --cyan-glow:   color-mix(in oklch, var(--cyan) 16%, transparent);
+  --blue:        #7aa5ff;
+  --violet:      #a88bfa;
+  --red:         #ff6d6d;   /* coral-red → wrong / danger */
+  --red-glow:    color-mix(in oklch, var(--red) 16%, transparent);
+  --amber:       #ffbf5e;   /* warm amber → warning */
+  --amber-glow:  color-mix(in oklch, var(--amber) 18%, transparent);
+  --on-accent:   #04120d;
+  --brand:       var(--green);
+  --success-soft: color-mix(in oklch, var(--green) 13%, transparent);
+  --danger-soft:  color-mix(in oklch, var(--red) 13%, transparent);
   --warning-soft: color-mix(in oklch, var(--amber) 14%, transparent);
 
-  /* ─── Text (near-black ink) ───
-     Tiers darkened from the original greys to clear WCAG AA (4.5:1) on the
-     cream bg — outdoor phone use needs the extra contrast (mobile research). */
-  --text:  #0d0d0f;   /* ~18:1  */
-  --text2: #3a3a3d;   /* ~9:1   */
-  --text3: #595a5d;   /* ~6:1   (was #6b6b6e) */
-  --text4: #6f7074;   /* ~4.5:1 (was #9a9a9d, which failed at ~2.5:1) */
+  /* ─── Text ─── */
+  --text:  #eef2fb;
+  --text2: #b9c2d8;
+  --text3: #8a94ad;
+  --text4: #5f6980;
 
-  /* ─── Gradients (recolored to NEXTEC palette; used sparingly) ─── */
-  --grad-main:  linear-gradient(135deg, var(--red) 0%, var(--violet) 52%, var(--cyan) 100%);
-  --grad-green: linear-gradient(135deg, var(--green), var(--green-dim));
+  /* ─── Radii ─── */
+  --r-xs:   8px;
+  --r-sm:   11px;
+  --r-md:   14px;
+  --r-lg:   20px;
+  --r-xl:   26px;
+  --r-full: 999px;
+
+  /* ─── Gradients ─── */
+  --grad-main:  linear-gradient(120deg, var(--green) 0%, var(--cyan) 52%, var(--violet) 100%);
+  --grad-green: linear-gradient(135deg, var(--green), var(--cyan));
   --grad-hot:   linear-gradient(135deg, var(--red), var(--amber));
 
-  /* ─── Shadows (HARD offset, zero blur — the NEXTEC signature) ─── */
-  --shadow:     4px 4px 0 0 var(--ink);
-  --shadow-sm:  3px 3px 0 0 var(--ink);
-  --shadow-lg:  8px 8px 0 0 var(--ink);
-  /* Tiny soft halos kept only for LED-dot accents */
-  --glow-green: 0 0 16px color-mix(in oklch, var(--green) 30%, transparent);
-  --glow-cyan:  0 0 16px color-mix(in oklch, var(--cyan) 30%, transparent);
+  /* ─── Shadows (soft, layered depth) ─── */
+  --shadow:     0 14px 34px -14px rgba(2, 5, 14, 0.85), 0 2px 10px rgba(2, 5, 14, 0.5);
+  --shadow-sm:  0 4px 16px -6px rgba(2, 5, 14, 0.7);
+  --shadow-lg:  0 28px 70px -20px rgba(2, 5, 14, 0.95), 0 6px 22px rgba(2, 5, 14, 0.55);
+  --glow-green: 0 0 22px var(--green-glow2);
+  --glow-cyan:  0 0 22px color-mix(in oklch, var(--cyan) 32%, transparent);
 
   /* ─── Easing ─── */
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
@@ -95,7 +102,7 @@ vercel-live-feedback,
 }
 html { scroll-behavior: smooth; }
 html, body {
-  font-family: 'Poppins', -apple-system, system-ui, sans-serif;
+  font-family: 'Space Grotesk', -apple-system, system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100dvh;
@@ -106,74 +113,79 @@ html, body {
 }
 #root { position: relative; z-index: 1; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
-/* Brutalist press: nudge toward the hard shadow instead of scaling */
-button:active { transform: translate(2px, 2px) !important; }
+button:active { transform: scale(0.965) !important; }
+input {
+  font-family: inherit;
+  caret-color: var(--green);
+}
 input:focus {
   outline: none;
-  border-color: var(--green) !important;
-  box-shadow: 4px 4px 0 0 var(--green);
+  border-color: color-mix(in oklch, var(--green) 65%, transparent) !important;
+  box-shadow: 0 0 0 3px var(--green-glow), var(--shadow-sm);
 }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: var(--b2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--b3); }
 ::selection { background: var(--green-glow2); color: var(--text); }
 
-/* ─── Background wash ─── */
+/* ─── Background aurora ─── */
 .orb {
   position: absolute;
   pointer-events: none;
-  opacity: 0.4;   /* faint warm wash — brutalist bg stays flat & cream */
+  border-radius: 50%;
 }
 .orb-1 {
-  inset: -18% -10% auto -10%;
-  height: 54vh;
-  background:
-    linear-gradient(135deg,
-      color-mix(in oklch, var(--green) 16%, transparent),
-      color-mix(in oklch, var(--cyan) 10%, transparent) 48%,
-      transparent 78%);
-  filter: blur(42px);
-  transform: rotate(-2deg);
+  width: 68vmax; height: 68vmax;
+  top: -30vmax; left: -18vmax;
+  background: radial-gradient(circle at 40% 40%,
+    color-mix(in oklch, var(--green) 15%, transparent) 0%,
+    color-mix(in oklch, var(--cyan) 8%, transparent) 45%,
+    transparent 70%);
+  filter: blur(48px);
+  animation: drift 26s ease-in-out infinite alternate;
 }
 .orb-2 {
-  inset: auto -18% -24% -18%;
-  height: 48vh;
-  background:
-    linear-gradient(45deg,
-      transparent,
-      color-mix(in oklch, var(--blue) 8%, transparent) 42%,
-      color-mix(in oklch, var(--violet) 7%, transparent));
-  filter: blur(50px);
+  width: 62vmax; height: 62vmax;
+  bottom: -28vmax; right: -20vmax;
+  background: radial-gradient(circle at 60% 60%,
+    color-mix(in oklch, var(--violet) 14%, transparent) 0%,
+    color-mix(in oklch, var(--blue) 8%, transparent) 48%,
+    transparent 72%);
+  filter: blur(54px);
+  animation: drift 32s ease-in-out infinite alternate-reverse;
 }
 .orb-3 {
   inset: 0;
+  border-radius: 0;
   background:
-    linear-gradient(180deg,
-      transparent 0%,
-      color-mix(in oklch, var(--bg3) 55%, transparent) 62%,
-      color-mix(in oklch, var(--cyan) 7%, transparent) 100%);
+    radial-gradient(ellipse 120% 70% at 50% -10%,
+      color-mix(in oklch, var(--cyan) 6%, transparent) 0%,
+      transparent 60%),
+    linear-gradient(180deg, transparent 55%, rgba(2, 4, 10, 0.6) 100%);
 }
-@media (max-width: 480px) {
-  .orb-1 { height: 44vh; }
-  .orb-2 { height: 38vh; }
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(5vmax, 3vmax) scale(1.08); }
 }
 
-/* Soft noise grain — adds tactility on light bg */
+/* Soft noise grain — kills banding on the dark gradients */
 .grain {
   position: absolute; inset: -50%;
   width: 200%; height: 200%;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.022;
+  opacity: 0.035;
   pointer-events: none;
 }
 
 /* Subtle dot grid */
 .dot-grid {
   position: absolute; inset: 0;
-  background-image: radial-gradient(circle 0.5px, color-mix(in oklch, var(--text) 10%, transparent) 0%, transparent 100%);
-  background-size: 30px 30px;
-  opacity: 0.38;
+  background-image: radial-gradient(circle 1px, color-mix(in oklch, var(--text) 9%, transparent) 0%, transparent 100%);
+  background-size: 28px 28px;
+  opacity: 0.5;
   pointer-events: none;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 100%);
 }
 
 /* ─── Animations ─── */
@@ -212,7 +224,7 @@ input:focus {
 }
 @keyframes glowPulse {
   0%,100% { box-shadow: 0 0 12px var(--green-glow); }
-  50%     { box-shadow: 0 0 24px var(--green-glow2); }
+  50%     { box-shadow: 0 0 28px var(--green-glow2); }
 }
 @keyframes countUp {
   from { opacity:0; transform:translateY(6px); }
@@ -258,28 +270,28 @@ input:focus {
   }
 }
 
-/* ─── Confident-polish motion (Awwwards-style, brutalist) ───
-   Fast (150–350ms), hard easing, nothing loops forever, never blocks a tap.
+/* ─── Motion polish ───
+   Fast (150–350ms), smooth easing, nothing blocks a tap.
    All of it is disabled by the prefers-reduced-motion block at the bottom. */
 
-/* Kinetic heading reveal — text wipes up from behind a hard clip mask */
+/* Kinetic heading reveal — text wipes up from behind a clip mask */
 @keyframes revealUp {
   from { clip-path: inset(0 0 102% 0); transform: translateY(0.3em); }
   to   { clip-path: inset(0 0 -8% 0);  transform: translateY(0); }
 }
 .reveal-up { animation: revealUp 0.55s var(--ease-out) both; }
 
-/* Sharp directional screen transitions (used by App.jsx nav) */
+/* Directional screen transitions (used by App.jsx nav) */
 @keyframes screenIn {
-  from { opacity: 0; transform: translateY(16px); clip-path: inset(0 0 7% 0); }
-  to   { opacity: 1; transform: translateY(0);     clip-path: inset(0 0 0 0); }
+  from { opacity: 0; transform: translateY(16px) scale(0.99); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0); }
 }
 @keyframes screenOut {
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-10px); }
 }
 
-/* Result stamp — lands like a rubber stamp, then settles */
+/* Result stamp — lands, then settles */
 @keyframes stampIn {
   0%   { opacity: 0; transform: scale(1.35) translateY(-6px); }
   55%  { opacity: 1; transform: scale(0.94); }
@@ -287,48 +299,57 @@ input:focus {
 }
 .stamp-in { animation: stampIn 0.5s var(--ease-spring) both; }
 
-/* Tactile interaction: hover nudges toward the cursor, press sinks into the
-   hard shadow. Hover gated to real pointers so touch devices don't stick. */
+/* Tactile interaction: hover lifts, press sinks.
+   Hover gated to real pointers so touch devices don't stick. */
 button { transition: transform 0.16s var(--ease-out); }
 @media (hover: hover) {
-  button:hover:not(:disabled) { transform: translate(-1.5px, -1.5px); }
+  button:hover:not(:disabled) { transform: translateY(-1.5px); }
 }
 
-/* ─── Glass surfaces (subtle on light bg) ─── */
+/* ─── Glass surfaces ─── */
 .glass {
-  background: var(--bg2);
-  border: 2px solid var(--ink);
-  border-radius: 0;
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(180deg,
+    color-mix(in oklch, var(--text) 6%, transparent),
+    color-mix(in oklch, var(--text) 2.5%, transparent));
+  border: 1px solid var(--b1);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--text) 7%, transparent), var(--shadow-sm);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 .glass-strong {
-  background: var(--bg2);
-  border: 2px solid var(--ink);
-  border-radius: 0;
-  box-shadow: var(--shadow);
+  background: linear-gradient(180deg,
+    color-mix(in oklch, var(--text) 8%, var(--bg2)),
+    color-mix(in oklch, var(--text) 3%, var(--bg2)));
+  border: 1px solid var(--b2);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--text) 9%, transparent), var(--shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 /* Gradient border */
 .grad-border {
-  position: relative; border-radius: 0; padding: 2px;
+  position: relative; border-radius: var(--r-lg); padding: 1.5px;
   background: linear-gradient(135deg,
-    color-mix(in oklch, var(--green) 48%, transparent) 0%,
-    color-mix(in oklch, var(--cyan) 42%, transparent) 56%,
-    color-mix(in oklch, var(--blue) 36%, transparent) 100%);
+    color-mix(in oklch, var(--green) 55%, transparent) 0%,
+    color-mix(in oklch, var(--cyan) 45%, transparent) 56%,
+    color-mix(in oklch, var(--violet) 40%, transparent) 100%);
+  box-shadow: 0 0 34px color-mix(in oklch, var(--green) 10%, transparent), var(--shadow);
 }
-.grad-border > * { border-radius: 0; }
+.grad-border > * { border-radius: calc(var(--r-lg) - 1.5px); }
 
 /* ─── LED dots ─── */
 .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block; }
-.dot-g { background:var(--green); box-shadow: 0 0 8px var(--green-glow2); }
-.dot-a { background:var(--amber); box-shadow: 0 0 8px var(--amber-glow); animation: pulse 2s ease infinite; }
-.dot-r { background:var(--red);   box-shadow: 0 0 8px var(--red-glow); }
+.dot-g { background:var(--green); box-shadow: 0 0 10px var(--green); }
+.dot-a { background:var(--amber); box-shadow: 0 0 10px var(--amber); animation: pulse 2s ease infinite; }
+.dot-r { background:var(--red);   box-shadow: 0 0 10px var(--red); }
 .dot-dim { background:var(--text4); }
 
 /* Pulse ring decoration */
 .led-pulse {
   position: relative; width: 10px; height: 10px; border-radius: 50%;
-  background: var(--green); box-shadow: 0 0 8px var(--green-glow2);
+  background: var(--green); box-shadow: 0 0 10px var(--green);
 }
 .led-pulse::after {
   content: ''; position: absolute; inset: -3px;
@@ -345,13 +366,16 @@ button { transition: transform 0.16s var(--ease-out); }
   color: var(--text3);
 }
 .grad-text {
-  color: var(--brand);
+  background: var(--grad-main);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .display {
-  font-size: 56px;
-  font-weight: 900;
-  letter-spacing: 0;
-  line-height: 0.95;
+  font-size: 54px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
 }
 @media (max-width: 420px) {
   .display { font-size: 44px; }
@@ -360,14 +384,14 @@ button { transition: transform 0.16s var(--ease-out); }
 /* ─── Tag pills ─── */
 .tag {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px; border-radius: 0;
-  font-size: 10px; font-weight: 700;
+  padding: 4px 11px; border-radius: var(--r-full);
+  font-size: 10px; font-weight: 600;
   font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .tag-dim   { background: var(--s2); color: var(--text2); border: 1px solid var(--b1); }
-.tag-green { background: var(--green-glow); color: var(--green-dim); border: 1px solid color-mix(in oklch, var(--green) 25%, transparent); }
-.tag-cyan  { background: var(--cyan-glow); color: var(--cyan); border: 1px solid color-mix(in oklch, var(--cyan) 25%, transparent); }
+.tag-green { background: var(--green-glow); color: var(--green); border: 1px solid color-mix(in oklch, var(--green) 30%, transparent); }
+.tag-cyan  { background: var(--cyan-glow); color: var(--cyan); border: 1px solid color-mix(in oklch, var(--cyan) 30%, transparent); }
 
 /* ─── Card hover lift ─── */
 .tilt-card {
@@ -376,9 +400,9 @@ button { transition: transform 0.16s var(--ease-out); }
   will-change: transform;
 }
 @media (hover: hover) {
-  .tilt-card:hover { transform: translate(-3px, -3px); }
+  .tilt-card:hover { transform: translateY(-3px); }
 }
-.tilt-card:active { transform: translate(2px, 2px); }
+.tilt-card:active { transform: scale(0.985); }
 .lift-card {
   transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
 }
@@ -410,13 +434,13 @@ button { transition: transform 0.16s var(--ease-out); }
 /* ─── Cursor glow (desktop only) ─── */
 .cursor-glow {
   position: fixed;
-  width: 320px; height: 320px;
+  width: 340px; height: 340px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in oklch, var(--green) 10%, transparent) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in oklch, var(--green) 7%, transparent) 0%, transparent 70%);
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  filter: blur(20px);
+  filter: blur(18px);
 }
 @media (hover: none), (pointer: coarse) {
   .cursor-glow { display: none !important; }

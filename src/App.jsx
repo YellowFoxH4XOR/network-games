@@ -17,8 +17,8 @@ function BootingScreen() {
     <div className="screen-centered" style={{ alignItems: 'center', gap: 18, padding: 24, position: 'relative' }}>
       <div className="scan-line" />
       <div style={{
-        width: 64, height: 64, borderRadius: 0, background: 'var(--bg2)',
-        border: '1px solid var(--b1)', boxShadow: 'var(--shadow-sm)',
+        width: 64, height: 64, borderRadius: 'var(--r-lg)', background: 'var(--bg2)',
+        border: '1px solid var(--b1)', boxShadow: 'var(--glow-green), var(--shadow-sm)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         animation: 'float 3s ease-in-out infinite',
       }}>
@@ -35,7 +35,7 @@ function BootingScreen() {
       <div style={{ display: 'flex', gap: 6 }}>
         {[0,1,2].map(i => (
           <div key={i} style={{
-            width: 6, height: 6, borderRadius: 0, background: 'var(--green)',
+            width: 6, height: 6, borderRadius: '50%', background: 'var(--green)',
             animation: `pulse 1.2s ease ${i * 0.2}s infinite`,
           }}/>
         ))}

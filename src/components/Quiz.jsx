@@ -44,7 +44,7 @@ function ProgressNode({ index, current, answer }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
       <div style={{
-        width: 32, height: 32, borderRadius: 0,
+        width: 32, height: 32, borderRadius: 'var(--r-xs)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: active ? 'var(--s3)' : past ? (correct ? 'var(--success-soft)' : 'var(--danger-soft)') : 'var(--s1)',
         border: `1.5px solid ${active ? 'var(--b3)' : past ? (correct ? 'color-mix(in oklch, var(--green) 30%, transparent)' : 'color-mix(in oklch, var(--red) 30%, transparent)') : 'var(--b1)'}`,
@@ -64,7 +64,7 @@ const S = {
   page: { display: 'flex', flexDirection: 'column', gap: 16, minHeight: '100dvh', paddingBottom: 36 },
   backFull: {
     width: '100%', padding: '16px', background: 'var(--s2)',
-    border: '1px solid var(--b1)', borderRadius: 0,
+    border: '1px solid var(--b1)', borderRadius: 'var(--r-md)',
     color: 'var(--text2)', fontSize: 14, fontWeight: 600,
     fontFamily: 'inherit', textAlign: 'center', cursor: 'pointer',
     transition: 'all 0.2s',
@@ -152,7 +152,7 @@ export default function Quiz({ username, stall, onBack }) {
         <div style={{ padding: '0 24px', animation: 'fadeUp 0.5s var(--ease-out)' }}>
           <div className="glass" style={{ padding: '44px 28px', textAlign: 'center' }}>
             <div style={{
-              width: 72, height: 72, borderRadius: 0, background: 'var(--s2)',
+              width: 72, height: 72, borderRadius: 'var(--r-lg)', background: 'var(--s2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
               border: '1px solid var(--b2)',
             }}>
@@ -163,7 +163,7 @@ export default function Quiz({ username, stall, onBack }) {
             </div>
             <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 6, color: 'var(--text2)', letterSpacing: '-0.02em' }}>Already Completed</div>
             <div className="label" style={{ marginBottom: 32 }}>One attempt per player — your score is final</div>
-            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', background: 'var(--green-glow)', borderRadius: 0, padding: '20px 44px', border: '1px solid color-mix(in oklch, var(--green) 18%, transparent)' }}>
+            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', background: 'var(--green-glow)', borderRadius: 'var(--r-lg)', padding: '20px 44px', border: '1px solid color-mix(in oklch, var(--green) 18%, transparent)' }}>
               <span className="mono" style={{ fontSize: 52, fontWeight: 700, color: 'var(--green)', lineHeight: 1, letterSpacing: '-0.04em' }}>{prevScore}</span>
               <span className="label" style={{ color: 'var(--green)', marginTop: 6, opacity: 0.8 }}>Points Scored</span>
             </div>
@@ -188,12 +188,12 @@ export default function Quiz({ username, stall, onBack }) {
 
           {/* Score hero */}
           <div className="grad-border" style={{ marginBottom: 16 }}>
-            <div style={{ background: 'var(--bg2)', borderRadius: 0, padding: '28px 24px', textAlign: 'center' }}>
+            <div style={{ background: 'var(--bg2)', borderRadius: 'calc(var(--r-lg) - 1.5px)', padding: '28px 24px', textAlign: 'center' }}>
               {/* LED result row */}
               <div className="stagger" style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 20 }}>
                 {answers.map((a, i) => (
                   <div key={i} style={{
-                    width: 36, height: 36, borderRadius: 0,
+                    width: 36, height: 36, borderRadius: 'var(--r-xs)',
                     background: a.sel === a.cor ? 'var(--green-glow)' : 'var(--danger-soft)',
                     border: `1px solid ${a.sel === a.cor ? 'color-mix(in oklch, var(--green) 25%, transparent)' : 'color-mix(in oklch, var(--red) 25%, transparent)'}`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -229,7 +229,7 @@ export default function Quiz({ username, stall, onBack }) {
               const ok = a.sel === a.cor;
               return (
                 <div key={i} style={{
-                  padding: '14px 16px', borderRadius: 0,
+                  padding: '14px 16px', borderRadius: 'var(--r-md)',
                   background: ok ? 'color-mix(in oklch, var(--green) 5%, var(--bg2))' : 'color-mix(in oklch, var(--red) 5%, var(--bg2))',
                   border: `1px solid ${ok ? 'color-mix(in oklch, var(--green) 16%, transparent)' : 'color-mix(in oklch, var(--red) 16%, transparent)'}`,
                 }}>
@@ -281,9 +281,10 @@ export default function Quiz({ username, stall, onBack }) {
       <div style={{ padding: '0 24px' }}>
         <div style={{
           background: 'var(--s2)', border: '1px solid var(--b2)',
-          borderRadius: 0, padding: '24px 20px',
+          borderRadius: 'var(--r-lg)', padding: '24px 20px',
           animation: 'scaleIn 0.3s var(--ease-out)',
           boxShadow: 'var(--shadow)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <span className="label" style={{ color: 'var(--green)' }}>Q{idx + 1} OF 5</span>
@@ -322,7 +323,7 @@ export default function Quiz({ username, stall, onBack }) {
                 display: 'flex', alignItems: 'center', gap: 14,
                 padding: '16px 18px', width: '100%', textAlign: 'left',
                 background: bg, border: `1.5px solid ${border}`,
-                borderRadius: 0, color: textC, fontSize: 15,
+                borderRadius: 'var(--r-md)', color: textC, fontSize: 15,
                 minHeight: 56, transition: 'all 0.22s var(--ease-out)',
                 boxShadow: shadow, fontFamily: 'inherit', cursor: 'pointer',
               }}
@@ -330,7 +331,7 @@ export default function Quiz({ username, stall, onBack }) {
               onMouseLeave={e => { if (!showFb) e.currentTarget.style.background = bg; }}
             >
               <span className="mono" style={{
-                width: 34, height: 34, borderRadius: 0, flexShrink: 0,
+                width: 34, height: 34, borderRadius: 'var(--r-xs)', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontWeight: 700, fontSize: 13,
                 background: showFb && isCorrect ? 'var(--green-glow)' : 'var(--s2)',
@@ -359,7 +360,7 @@ export default function Quiz({ username, stall, onBack }) {
         const isTimeout = last?.timedOut;
         return (
           <div style={{
-            margin: '0 24px', padding: '16px 20px', borderRadius: 0,
+            margin: '0 24px', padding: '16px 20px', borderRadius: 'var(--r-md)',
             background: isRight ? 'var(--success-soft)' : isTimeout ? 'var(--warning-soft)' : 'var(--danger-soft)',
             border: `1px solid ${isRight ? 'color-mix(in oklch, var(--green) 22%, transparent)' : isTimeout ? 'color-mix(in oklch, var(--amber) 24%, transparent)' : 'color-mix(in oklch, var(--red) 22%, transparent)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',

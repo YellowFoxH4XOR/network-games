@@ -81,21 +81,21 @@ function MagneticBtn({ children, type = 'button', loading }) {
         style={{
           width: '100%', padding: '17px 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          background: 'var(--green)',
-          border: '2px solid var(--ink)',
-          borderRadius: 0,
-          fontSize: 16, fontWeight: 800, color: 'var(--ink)',
+          background: 'var(--grad-green)',
+          border: 'none',
+          borderRadius: 'var(--r-md)',
+          fontSize: 16, fontWeight: 700, color: 'var(--on-accent)',
           letterSpacing: '-0.01em',
-          boxShadow: '6px 6px 0 0 var(--ink)',
+          boxShadow: '0 12px 32px -10px var(--green-glow2), inset 0 1px 0 rgba(255,255,255,0.28)',
           transition: 'transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out)',
           cursor: loading ? 'wait' : 'pointer',
           opacity: loading ? 0.7 : 1,
         }}
         onMouseEnter={e => {
-          e.currentTarget.style.boxShadow = '8px 8px 0 0 var(--ink)';
+          e.currentTarget.style.boxShadow = '0 16px 44px -10px var(--green-glow2), 0 0 26px var(--green-glow), inset 0 1px 0 rgba(255,255,255,0.28)';
         }}
         onMouseLeave={e => {
-          e.currentTarget.style.boxShadow = '6px 6px 0 0 var(--ink)';
+          e.currentTarget.style.boxShadow = '0 12px 32px -10px var(--green-glow2), inset 0 1px 0 rgba(255,255,255,0.28)';
         }}
       >
         {loading ? (
@@ -238,9 +238,9 @@ export default function WelcomeScreen({ onContinue }) {
       <div style={{ textAlign: 'center', marginBottom: 20, animation: 'fadeDown 0.6s var(--ease-out)' }}>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '6px 14px', borderRadius: 0,
-          background: 'var(--bg2)', border: '1px solid var(--b1)',
-          boxShadow: 'var(--shadow-sm)',
+          padding: '7px 15px', borderRadius: 'var(--r-full)',
+          background: 'var(--s1)', border: '1px solid var(--b1)',
+          backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
         }}>
           <span className="dot dot-g" style={{ width: 6, height: 6 }}></span>
           <span className="label" style={{ color: 'var(--green-dim)', fontSize: 9 }}>
@@ -299,7 +299,7 @@ export default function WelcomeScreen({ onContinue }) {
                 width: '100%', padding: '15px 18px',
                 paddingRight: locked ? 44 : 18,
                 background: 'var(--bg2)', border: '1px solid var(--b2)',
-                borderRadius: 0, fontSize: 16,
+                borderRadius: 'var(--r-md)', fontSize: 16,
                 color: locked ? 'var(--text2)' : 'var(--text)',
                 fontFamily: "'JetBrains Mono', monospace",
                 boxShadow: 'var(--shadow-sm)',
@@ -350,7 +350,7 @@ export default function WelcomeScreen({ onContinue }) {
               style={{
                 width: '100%', padding: '15px 18px',
                 background: 'var(--bg2)', border: '1px solid var(--b2)',
-                borderRadius: 0, fontSize: 16, color: 'var(--text)',
+                borderRadius: 'var(--r-md)', fontSize: 16, color: 'var(--text)',
                 fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.12em',
                 boxShadow: 'var(--shadow-sm)',
                 transition: 'border-color 0.25s, box-shadow 0.25s',
@@ -372,8 +372,8 @@ export default function WelcomeScreen({ onContinue }) {
               autoFocus
               style={{
                 width: '100%', padding: '15px 18px',
-                background: 'var(--bg2)', border: '2px solid var(--ink)',
-                borderRadius: 0, fontSize: 16, color: 'var(--text)',
+                background: 'var(--bg2)', border: '1px solid var(--b2)',
+                borderRadius: 'var(--r-md)', fontSize: 16, color: 'var(--text)',
                 fontFamily: "'JetBrains Mono', monospace",
                 boxShadow: 'var(--shadow-sm)',
                 transition: 'border-color 0.25s, box-shadow 0.25s',

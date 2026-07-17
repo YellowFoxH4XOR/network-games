@@ -27,7 +27,7 @@ function RankRow({ rank, username, score, color, tag, delay = 0 }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 14,
-      padding: '13px 16px', borderRadius: 0,
+      padding: '13px 16px', borderRadius: 'var(--r-md)',
       background: isTop3 ? tint(8) : 'var(--s1)',
       border: `1px solid ${isTop3 ? tint(20) : 'var(--b1)'}`,
       animation: `fadeUp 0.4s var(--ease-out) ${delay}s both`,
@@ -35,7 +35,7 @@ function RankRow({ rank, username, score, color, tag, delay = 0 }) {
     }}>
       {/* Rank */}
       <div style={{
-        width: 32, height: 32, borderRadius: 0, flexShrink: 0,
+        width: 32, height: 32, borderRadius: 'var(--r-xs)', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: isTop3 ? tint(18) : 'var(--s2)',
         border: `1px solid ${isTop3 ? tint(30) : 'var(--b1)'}`,
@@ -91,11 +91,11 @@ function Board({ title, subtitle, rows, total, color, icon, loading, stallNames,
         padding: '16px 20px',
         background: tint(8),
         border: `1px solid ${tint(20)}`,
-        borderRadius: 0,
+        borderRadius: 'var(--r-lg)',
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <div style={{
-          width: 40, height: 40, borderRadius: 0,
+          width: 40, height: 40, borderRadius: 'var(--r-md)',
           background: tint(15), border: `1px solid ${tint(25)}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 20,
@@ -116,7 +116,7 @@ function Board({ title, subtitle, rows, total, color, icon, loading, stallNames,
         <div style={{ padding: '32px', textAlign: 'center' }}>
           <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
             {[0,1,2].map(i => (
-              <div key={i} style={{ width: 6, height: 6, borderRadius: 0, background: color, animation: `pulse 1.2s ease ${i * 0.2}s infinite` }}/>
+              <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: color, animation: `pulse 1.2s ease ${i * 0.2}s infinite` }}/>
             ))}
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function AdminView({ onLogout }) {
   const scopeLabel = scope === 'all' ? 'ALL STALLS' : (stallNames[scope] || scope).toUpperCase();
 
   const btn = {
-    padding: '8px 14px', borderRadius: 0, fontSize: 12, fontWeight: 700,
+    padding: '8px 16px', borderRadius: 'var(--r-full)', fontSize: 12, fontWeight: 700,
     cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
   };
 
@@ -293,7 +293,7 @@ export default function AdminView({ onLogout }) {
               {!confirmShuffle ? (
                 <button
                   onClick={() => setConfirmShuffle(true)}
-                  style={{ ...btn, background: 'var(--bg2)', border: '2px solid var(--ink)', color: 'var(--text)', boxShadow: 'var(--shadow-sm)' }}
+                  style={{ ...btn, background: 'var(--s2)', border: '1px solid var(--b2)', color: 'var(--text)' }}
                 >
                   ⟳ Shuffle codes
                 </button>
@@ -302,7 +302,7 @@ export default function AdminView({ onLogout }) {
                   <button
                     onClick={shuffleCodes}
                     disabled={shuffling}
-                    style={{ ...btn, background: 'var(--red)', border: '2px solid var(--ink)', color: 'var(--bg2)', opacity: shuffling ? 0.7 : 1, cursor: shuffling ? 'wait' : 'pointer' }}
+                    style={{ ...btn, background: 'var(--red)', border: 'none', color: 'var(--ink)', boxShadow: '0 8px 22px -8px var(--red-glow)', opacity: shuffling ? 0.7 : 1, cursor: shuffling ? 'wait' : 'pointer' }}
                   >
                     {shuffling ? 'Shuffling…' : 'Confirm — old codes stop working'}
                   </button>
@@ -320,7 +320,7 @@ export default function AdminView({ onLogout }) {
               {stalls.map(s => (
                 <div key={s.slug} style={{
                   padding: '14px 16px', background: 'var(--bg2)',
-                  border: '2px solid var(--ink)', borderRadius: 0,
+                  border: '1px solid var(--b2)', borderRadius: 'var(--r-lg)',
                   boxShadow: 'var(--shadow-sm)', textAlign: 'center',
                 }}>
                   <div className="label" style={{ marginBottom: 8 }}>{s.name}</div>
@@ -341,7 +341,7 @@ export default function AdminView({ onLogout }) {
 
         {/* Stall scope selector */}
         {stalls.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 14, padding: '4px', background: 'var(--s1)', borderRadius: 0, border: '1px solid var(--b1)' }}>
+          <div style={{ display: 'flex', gap: 4, marginBottom: 14, padding: '4px', background: 'var(--s1)', borderRadius: 'var(--r-full)', border: '1px solid var(--b1)' }}>
             {[{ slug: 'all', name: 'All stalls' }, ...stalls].map(s => (
               <button
                 key={s.slug}
@@ -350,7 +350,7 @@ export default function AdminView({ onLogout }) {
                   flex: 1, padding: '9px 8px',
                   background: scope === s.slug ? 'var(--s3)' : 'transparent',
                   border: scope === s.slug ? '1px solid var(--b2)' : '1px solid transparent',
-                  borderRadius: 0, cursor: 'pointer',
+                  borderRadius: 'var(--r-full)', cursor: 'pointer',
                   color: scope === s.slug ? 'var(--text)' : 'var(--text3)',
                   fontSize: 12, fontWeight: 700, fontFamily: 'inherit',
                   transition: 'all 0.2s var(--ease-out)',
@@ -375,7 +375,7 @@ export default function AdminView({ onLogout }) {
             ].map(({ label, value, color }) => (
               <div key={label} style={{
                 padding: '14px 16px', background: 'var(--s2)',
-                border: '1px solid var(--b1)', borderRadius: 0, textAlign: 'center',
+                border: '1px solid var(--b1)', borderRadius: 'var(--r-md)', textAlign: 'center',
               }}>
                 <div className="mono" style={{ fontSize: 28, fontWeight: 700, color, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</div>
                 <div className="label" style={{ marginTop: 6 }}>{label}</div>
@@ -385,7 +385,7 @@ export default function AdminView({ onLogout }) {
         )}
 
         {/* Tab switcher */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, padding: '4px', background: 'var(--s1)', borderRadius: 0, border: '1px solid var(--b1)' }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 20, padding: '4px', background: 'var(--s1)', borderRadius: 'var(--r-full)', border: '1px solid var(--b1)' }}>
           {tabs.map(t => (
             <button
               key={t.id}
@@ -394,7 +394,7 @@ export default function AdminView({ onLogout }) {
                 flex: 1, padding: '10px 8px',
                 background: tab === t.id ? 'var(--s3)' : 'transparent',
                 border: tab === t.id ? `1px solid var(--b2)` : '1px solid transparent',
-                borderRadius: 0, cursor: 'pointer',
+                borderRadius: 'var(--r-full)', cursor: 'pointer',
                 color: tab === t.id ? 'var(--text)' : 'var(--text3)',
                 fontSize: 12, fontWeight: 700, fontFamily: 'inherit',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,

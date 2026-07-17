@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import TopBar from './TopBar.jsx';
 
 const RANK_COLOR = {
-  1: 'var(--green)',
+  1: 'var(--amber)',
   2: 'var(--cyan)',
-  3: 'var(--blue)',
+  3: 'var(--violet)',
 };
 
 function Row({ entry, isMe }) {
@@ -12,10 +12,10 @@ function Row({ entry, isMe }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 14,
-      padding: '13px 16px', borderRadius: 0,
+      padding: '13px 16px', borderRadius: 'var(--r-md)',
       background: isMe ? 'var(--green-glow)' : 'var(--bg2)',
       border: `1px solid ${isMe ? 'color-mix(in oklch, var(--green) 32%, transparent)' : 'var(--b1)'}`,
-      boxShadow: 'var(--shadow-sm)',
+      boxShadow: isMe ? '0 0 24px var(--green-glow), var(--shadow-sm)' : 'var(--shadow-sm)',
     }}>
       <span className="mono" style={{
         width: 30, textAlign: 'center', flexShrink: 0,
@@ -42,12 +42,12 @@ function Toggle({ mode, setMode }) {
     <button
       onClick={() => setMode(key)}
       style={{
-        flex: 1, padding: '9px 10px', borderRadius: 0, cursor: 'pointer',
-        fontSize: 12, fontWeight: 800, letterSpacing: '0.02em',
-        background: mode === key ? 'var(--green)' : 'var(--bg2)',
-        color: mode === key ? 'var(--ink)' : 'var(--text2)',
-        border: '2px solid var(--ink)',
-        boxShadow: mode === key ? 'var(--shadow-sm)' : 'none',
+        flex: 1, padding: '10px 10px', borderRadius: 'var(--r-full)', cursor: 'pointer',
+        fontSize: 12, fontWeight: 700, letterSpacing: '0.02em',
+        background: mode === key ? 'var(--grad-green)' : 'transparent',
+        color: mode === key ? 'var(--on-accent)' : 'var(--text2)',
+        border: 'none',
+        boxShadow: mode === key ? '0 6px 18px -6px var(--green-glow2)' : 'none',
         transition: 'background 0.15s, color 0.15s',
       }}
     >
@@ -55,7 +55,11 @@ function Toggle({ mode, setMode }) {
     </button>
   );
   return (
-    <div style={{ display: 'flex', gap: 8 }}>
+    <div style={{
+      display: 'flex', gap: 4, padding: 4,
+      background: 'var(--s1)', border: '1px solid var(--b1)',
+      borderRadius: 'var(--r-full)',
+    }}>
       {opt('stall', 'This stall')}
       {opt('overall', 'Overall')}
     </div>
