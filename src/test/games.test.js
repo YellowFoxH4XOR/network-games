@@ -31,7 +31,8 @@ describe('client and server agree on each stall’s line-up', () => {
 describe('stallRunsGame', () => {
   it('accepts a game the stall offers', () => {
     expect(stallRunsGame('stall-3', 'memory')).toBe(true);
-    expect(stallRunsGame('stall-1', 'quiz')).toBe(true);
+    expect(stallRunsGame('stall-2', 'quiz')).toBe(true);
+    expect(stallRunsGame('stall-1', 'spin')).toBe(true);
   });
 
   it('rejects a game the stall does not offer, which is the forged-score path', () => {
@@ -39,7 +40,9 @@ describe('stallRunsGame', () => {
     // honest player at their booth can earn.
     expect(stallRunsGame('stall-1', 'memory')).toBe(false);
     expect(stallRunsGame('stall-1', 'ztp')).toBe(false);
+    expect(stallRunsGame('stall-1', 'quiz')).toBe(false);
     expect(stallRunsGame('stall-3', 'quiz')).toBe(false);
+    expect(stallRunsGame('stall-2', 'spin')).toBe(false);
   });
 
   it('lets a stall added to the DB later still score, rather than locking it out', () => {
@@ -50,8 +53,16 @@ describe('stallRunsGame', () => {
 
 describe('stallGames', () => {
   it('returns the configured line-up', () => {
-    expect(stallGames('stall-3')).toEqual(['memory', 'ztp']);
+    expect(stallGames('stall-1')).toEqual(['spin']);
     expect(stallGames('stall-2')).toEqual(['quiz', 'wordsearch']);
+    expect(stallGames('stall-3')).toEqual(['memory', 'ztp']);
+  });
+
+  it('gives every stall a line-up no other stall runs', () => {
+    // Each booth is meant to feel distinct; overlapping line-ups would also let
+    // one player bank the same game twice by walking to another stall.
+    const all = Object.values(STALL_GAMES).flat();
+    expect(new Set(all).size).toBe(all.length);
   });
 
   it('falls back to stall-1’s line-up for an unknown slug', () => {

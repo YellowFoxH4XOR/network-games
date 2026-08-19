@@ -7,6 +7,8 @@ import {
   stallKeywords,
   quizRound,
   shuffle,
+  SPIN_TOPICS,
+  spinQuestion,
 } from './data.js';
 
 describe('quiz question data', () => {
@@ -81,6 +83,41 @@ describe('per-stall content partitioning', () => {
 
   it('falls back to stall-1 content for an unknown slug', () => {
     expect(stallQuiz('does-not-exist')).toEqual(stallQuiz('stall-1'));
+  });
+});
+
+describe('spin wheel topics', () => {
+  it('has 8 topics, each pool drawn from the main question bank', () => {
+    expect(SPIN_TOPICS).toHaveLength(8);
+    for (const t of SPIN_TOPICS) {
+      expect(t.label).toBeTruthy();
+      expect(t.questions.length).toBeGreaterThan(0);
+      for (const q of t.questions) {
+        expect(QUIZ_QUESTIONS).toContain(q);
+      }
+    }
+  });
+
+  it('spinQuestion serves a question from the landed topic with options intact', () => {
+    for (let t = 0; t < SPIN_TOPICS.length; t++) {
+      const q = spinQuestion(t);
+      const src = SPIN_TOPICS[t].questions.find(s => s.question === q.question);
+      expect(src, 'question should come from the topic pool').toBeTruthy();
+      // Options are shuffled but must be the same set, with `correct` remapped.
+      expect([...q.options].sort()).toEqual([...src.options].sort());
+      expect(q.options[q.correct]).toBe(src.options[src.correct]);
+    }
+  });
+
+  it('spinQuestion skips excluded questions until the pool is exhausted', () => {
+    const pool = SPIN_TOPICS[0].questions;
+    const allButOne = pool.slice(1).map(q => q.question);
+    for (let i = 0; i < 20; i++) {
+      expect(spinQuestion(0, allButOne).question).toBe(pool[0].question);
+    }
+    // Fully exhausted → falls back to the whole pool rather than crashing.
+    const all = pool.map(q => q.question);
+    expect(pool.map(q => q.question)).toContain(spinQuestion(0, all).question);
   });
 });
 

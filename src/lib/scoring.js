@@ -32,12 +32,18 @@ export const ZTP_SHOTS = 5;
 export const ZTP_GOAL_POINTS = 40;
 export const ZTP_PENALTY = 10;
 
+// Spin wheel: 3 spins; each lands on a networking topic and asks one question
+// from it, scored exactly like a quiz question (10 + speed bonus).
+export const SPIN_ROUNDS = 3;
+export const SPIN_SECONDS_PER_Q = 30;
+
 // The maximum an honest player can score — answer every question instantly,
 // find every word with the full clock left, sink every shot. These must match
 // MAX_SCORE in api/score.js, or a forged score could out-rank honest play.
 export const QUIZ_MAX = QUIZ_QUESTIONS_PER_ROUND * quizPoints(QUIZ_SECONDS_PER_Q); // 100
 export const WORDSEARCH_MAX = WORD_COUNT * WORD_POINTS + wordsearchTimeBonus(WORDSEARCH_SECONDS); // 130
 export const ZTP_MAX = ZTP_SHOTS * ZTP_GOAL_POINTS; // 200
+export const SPIN_MAX = SPIN_ROUNDS * quizPoints(SPIN_SECONDS_PER_Q); // 60
 // Memory's own formula has no natural 200 ceiling — a perfect combo run scores
 // 15×(1+2+3+4+4+4+4+4) = 390 in base points alone — so the game clamps to this
 // value as it accumulates. Without the clamp the server rejects the honest

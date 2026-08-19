@@ -12,6 +12,9 @@ import {
   ZTP_MAX,
   ZTP_SHOTS,
   ZTP_GOAL_POINTS,
+  SPIN_MAX,
+  SPIN_ROUNDS,
+  SPIN_SECONDS_PER_Q,
 } from './scoring.js';
 import { MAX_SCORE } from '../../api/_games.js';
 
@@ -48,6 +51,9 @@ describe('honest maxima match the server caps', () => {
   it('ztp max is 200', () => {
     expect(ZTP_MAX).toBe(200);
   });
+  it('spin wheel max is 60', () => {
+    expect(SPIN_MAX).toBe(60);
+  });
 
   it('every game the client knows has a matching server cap', () => {
     expect(MAX_SCORE).toEqual({
@@ -55,6 +61,7 @@ describe('honest maxima match the server caps', () => {
       wordsearch: WORDSEARCH_MAX,
       memory: MEMORY_MAX,
       ztp: ZTP_MAX,
+      spin: SPIN_MAX,
     });
   });
 });
@@ -84,5 +91,11 @@ describe('memory scoring needs its clamp', () => {
 describe('ztp maximum is reachable and exact', () => {
   it('is every shot scoring a goal', () => {
     expect(ZTP_SHOTS * ZTP_GOAL_POINTS).toBe(ZTP_MAX);
+  });
+});
+
+describe('spin maximum is reachable and exact', () => {
+  it('is every spin answered instantly, scored like a quiz question', () => {
+    expect(SPIN_ROUNDS * quizPoints(SPIN_SECONDS_PER_Q)).toBe(SPIN_MAX);
   });
 });

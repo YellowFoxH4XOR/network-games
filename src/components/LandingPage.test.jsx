@@ -2,7 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import LandingPage from './LandingPage.jsx';
 
-const STALL = { slug: 'stall-1', name: 'Stall 1' };
+// Stall 2 runs the quiz pair; stall 1 runs the wheel; stall 3 the arcade games.
+const STALL = { slug: 'stall-2', name: 'Stall 2' };
+const STALL1 = { slug: 'stall-1', name: 'Stall 1' };
 const STALL3 = { slug: 'stall-3', name: 'Stall 3' };
 
 // LandingPage is now the screen players land on straight after login (the
@@ -18,7 +20,7 @@ describe('LandingPage (root screen after login)', () => {
   });
 
   it('greys out a completed game: shows its score and ignores clicks', () => {
-    localStorage.setItem('sns_tester_stall-1_quiz', JSON.stringify({ score: 42, playedAt: 1 }));
+    localStorage.setItem('sns_tester_stall-2_quiz', JSON.stringify({ score: 42, playedAt: 1 }));
     const onSelectGame = vi.fn();
     render(<LandingPage username="tester" stall={STALL} onSelectGame={onSelectGame} onChangeStall={vi.fn()} />);
 
@@ -31,6 +33,23 @@ describe('LandingPage (root screen after login)', () => {
     expect(screen.getAllByText('PLAY NOW')).toHaveLength(1);
     fireEvent.click(screen.getByText('Word Search'));
     expect(onSelectGame).toHaveBeenCalledWith('wordsearch');
+  });
+
+  it('offers stall 1 the wheel alone, and reads as complete once it is played', () => {
+    const onSelectGame = vi.fn();
+    const { unmount } = render(<LandingPage username="tester" stall={STALL1} onSelectGame={onSelectGame} onChangeStall={vi.fn()} />);
+    expect(screen.getAllByText('PLAY NOW')).toHaveLength(1);
+    expect(screen.queryByText('Network Quiz')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('Spin Wheel'));
+    expect(onSelectGame).toHaveBeenCalledWith('spin');
+    unmount();
+
+    // A single-game stall counts as fully complete on that one result.
+    localStorage.setItem('sns_tester_stall-1_spin', JSON.stringify({ score: 40, playedAt: 1 }));
+    render(<LandingPage username="tester" stall={STALL1} onSelectGame={vi.fn()} onChangeStall={vi.fn()} />);
+    expect(screen.getByText('✓ DONE')).toBeInTheDocument();
+    expect(screen.queryByText('PLAY NOW')).not.toBeInTheDocument();
+    expect(screen.getByText('All stall challenges completed')).toBeInTheDocument();
   });
 
   // Stall 3 runs an entirely different pair of games. Before the line-up moved

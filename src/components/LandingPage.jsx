@@ -63,6 +63,33 @@ const GAME_DEFS = {
       'Finish early for a time bonus — max 130 pts',
     ],
   },
+  spin: {
+    route: 'spin',
+    title: 'Spin Wheel',
+    chip: 'SPIN',
+    color: 'var(--amber)',
+    glow: 'var(--amber-glow)',
+    iconBg: 'var(--warning-soft)',
+    bar: 'var(--grad-hot)',
+    playColor: 'var(--amber)',
+    doneTag: 'tag-amber',
+    desc: 'Spin the wheel of 8 networking topics — answer one question on whatever it lands.',
+    tags: ['3 SPINS', '8 TOPICS', '30s / Q'],
+    footer: '8 TOPICS ON THE WHEEL · 1 QUESTION PER SPIN',
+    icon: (c) => (
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="11" stroke={c} strokeWidth="1.6"/>
+        <path d="M13 2v22M2 13h22M5.2 5.2l15.6 15.6M20.8 5.2L5.2 20.8" stroke={c} strokeWidth="1" opacity="0.6"/>
+        <circle cx="13" cy="13" r="3.5" fill={c}/>
+      </svg>
+    ),
+    rules: [
+      'Spin the wheel of 8 networking topics, 3 times',
+      'Each spin asks 1 question from the topic it lands on',
+      '30 seconds per question — no answer scores 0',
+      'Correct answer: 10 pts + speed bonus — max 60',
+    ],
+  },
   memory: {
     route: 'memory',
     title: 'Network Memory Match',
