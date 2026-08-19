@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { isValidSlug } from './_stalls.js';
+import { GAMES } from './_games.js';
 
 function noCache(res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
@@ -56,8 +57,9 @@ export default async function handler(req, res) {
       knownDevice:  true,             // this device is known (in some stall)
       username,
       playedStalls,
-      quiz:         null,
-      wordsearch:   null,
+      // One entry per known game, so every game's completion survives a
+      // localStorage wipe — the client's one-attempt gate is rebuilt from this.
+      ...Object.fromEntries(GAMES.map((g) => [g, null])),
     };
 
     if (registeredHere) {
@@ -68,7 +70,7 @@ export default async function handler(req, res) {
         .eq('stall', stall);
       if (scoresError) throw scoresError;
       for (const s of (scores ?? [])) {
-        if (s.game === 'quiz' || s.game === 'wordsearch') {
+        if (GAMES.includes(s.game)) {
           out[s.game] = { score: s.score };
         }
       }

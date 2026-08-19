@@ -1,5 +1,126 @@
 import { useRef, useState } from 'react';
 import { readJSON } from '../lib/storage.js';
+import { stallGames, gameStorageKey } from '../data.js';
+
+/* ── Everything the landing page needs to present one game, keyed by the game id
+      used in the scores table. Which of these a stall shows comes from
+      stallGames() — the line-up lives in src/data.js, not in slug comparisons
+      scattered through the markup below. ── */
+const GAME_DEFS = {
+  quiz: {
+    route: 'quiz',
+    title: 'Network Quiz',
+    chip: 'QUIZ',
+    color: 'var(--green)',
+    glow: 'var(--green-glow)',
+    iconBg: 'var(--success-soft)',
+    bar: 'var(--grad-green)',
+    playColor: 'var(--green-dim)',
+    doneTag: 'tag-green',
+    desc: '5 random questions on protocols, ports & OSI fundamentals.',
+    tags: ['5 MCQ', '30s / Q', 'Time Bonus'],
+    icon: (c) => (
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="11" stroke={c} strokeWidth="1.6"/>
+        <path d="M10.5 10.2C10.5 8.8 11.6 7.7 13 7.7s2.5 1.1 2.5 2.5c0 1.5-1.5 2.2-2.5 3.3" stroke={c} strokeWidth="1.6" strokeLinecap="round"/>
+        <circle cx="13" cy="17.5" r="1.2" fill={c}/>
+      </svg>
+    ),
+    rules: [
+      '5 random multiple-choice questions',
+      '30 seconds per question — no answer scores 0',
+      'Correct answer: 10 pts + speed bonus (faster = more)',
+      'Max 100 pts',
+    ],
+  },
+  wordsearch: {
+    route: 'wordsearch',
+    title: 'Word Search',
+    chip: 'SEARCH',
+    color: 'var(--cyan)',
+    glow: 'var(--cyan-glow)',
+    iconBg: 'var(--cyan-glow)',
+    bar: 'linear-gradient(135deg, var(--cyan), var(--blue))',
+    playColor: 'var(--cyan)',
+    doneTag: 'tag-cyan',
+    desc: 'Find 10 networking terms hidden in a 10 × 10 grid. Any direction.',
+    tags: ['10 × 10', '5 MIN', 'All Directions'],
+    footer: '50 NETWORKING KEYWORDS · RANDOMLY GENERATED',
+    icon: (c) => (
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="3" width="20" height="20" rx="5" stroke={c} strokeWidth="1.6"/>
+        <line x1="3" y1="10" x2="23" y2="10" stroke={c} strokeWidth="0.6" opacity="0.4"/>
+        <line x1="3" y1="16" x2="23" y2="16" stroke={c} strokeWidth="0.6" opacity="0.4"/>
+        <line x1="10" y1="3" x2="10" y2="23" stroke={c} strokeWidth="0.6" opacity="0.4"/>
+        <line x1="16" y1="3" x2="16" y2="23" stroke={c} strokeWidth="0.6" opacity="0.4"/>
+        <line x1="5" y1="7" x2="21" y2="21" stroke={c} strokeWidth="2" strokeLinecap="round" opacity="0.65"/>
+      </svg>
+    ),
+    rules: [
+      'Find 10 networking terms in a 10 × 10 grid',
+      'Words run in any direction',
+      '5-minute timer · 10 pts per word',
+      'Finish early for a time bonus — max 130 pts',
+    ],
+  },
+  memory: {
+    route: 'memory',
+    title: 'Network Memory Match',
+    chip: 'MEMORY',
+    color: 'var(--green)',
+    glow: 'var(--green-glow)',
+    iconBg: 'var(--success-soft)',
+    bar: 'var(--grad-green)',
+    playColor: 'var(--green-dim)',
+    doneTag: 'tag-green',
+    desc: 'Match network infrastructure cards before the time runs out!',
+    tags: ['4 × 4 Grid', 'Combo Multipliers', '60s Speed'],
+    footer: '8 PAIRS OF NETWORK GEAR · DEALT AT RANDOM',
+    icon: (c) => (
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="3" width="9" height="9" rx="2" stroke={c} strokeWidth="1.6" fill="none"/>
+        <rect x="14" y="3" width="9" height="9" rx="2" stroke={c} strokeWidth="1.6" fill="none"/>
+        <rect x="3" y="14" width="9" height="9" rx="2" stroke={c} strokeWidth="1.6" fill="none"/>
+        <rect x="14" y="14" width="9" height="9" rx="2" stroke={c} strokeWidth="1.6" fill="var(--green-glow)"/>
+      </svg>
+    ),
+    rules: [
+      '4 × 4 grid of network infrastructure items',
+      '60 seconds countdown timer',
+      'Combo multipliers + speed clear bonus',
+      'Max 200 pts',
+    ],
+  },
+  ztp: {
+    route: 'ztp',
+    title: 'ZTP Basketball',
+    chip: 'ZTP BALL',
+    color: 'var(--cyan)',
+    glow: 'var(--cyan-glow)',
+    iconBg: 'var(--cyan-glow)',
+    bar: 'linear-gradient(135deg, var(--cyan), var(--blue))',
+    playColor: 'var(--cyan)',
+    doneTag: 'tag-cyan',
+    desc: 'Slingshot provisioning actions into the correct ZTP stage hoops!',
+    tags: ['4 Stages', 'Slingshot Aim', '5 Shots'],
+    footer: 'AIM FOR THE RIGHT STAGE · MISS THE HOOPS AND SCORE NOTHING',
+    icon: (c) => (
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="10" stroke={c} strokeWidth="1.6" fill="none" />
+        <path d="M 3 13 Q 13 6 23 13" fill="none" stroke={c} strokeWidth="1" />
+        <path d="M 3 13 Q 13 20 23 13" fill="none" stroke={c} strokeWidth="1" />
+        <line x1="13" y1="3" x2="13" y2="23" stroke={c} strokeWidth="1" />
+      </svg>
+    ),
+    rules: [
+      'Slingshot 5 provisioning actions into 4 stage hoops',
+      '40 pts per correct goal',
+      '−10 pts for landing in the wrong stage hoop',
+      'Between the hoops is an airball — 0 pts, no penalty',
+      'Max 200 pts',
+    ],
+  },
+};
 
 /* ── Modal to switch stalls by entering a new code ── */
 function StallSwitcher({ current, onSubmit, onClose }) {
@@ -73,59 +194,14 @@ function StallSwitcher({ current, onSubmit, onClose }) {
   );
 }
 
-/* ── Modal listing the game rules ── */
-function RulesModal({ stallSlug, onClose }) {
-  const sections = stallSlug === 'stall-3' ? [
-    {
-      title: 'MEMORY MATCH',
-      color: 'var(--green)',
-      rules: [
-        '4 × 4 Grid of network infrastructure items',
-        '60 seconds countdown timer',
-        'Combo multipliers + speed clear bonus',
-        'Max 200 pts',
-      ],
-    },
-    {
-      title: 'ZTP BASKETBALL',
-      color: 'var(--cyan)',
-      rules: [
-        'Slingshot 5 provisioning actions into 4 stage hoops',
-        '40 pts per correct goal',
-        '-10 pts penalty for wrong stage hoop',
-        'Max 200 pts',
-      ],
-    },
-    {
-      title: 'GENERAL',
-      color: 'var(--text2)',
-      rules: [
-        'One attempt per challenge — scores are permanent',
-        'Scores count toward your stall’s leaderboard',
-        'Check RANKS for per-stall and overall standings',
-      ],
-    },
-  ] : [
-    {
-      title: 'NETWORK QUIZ',
-      color: 'var(--green)',
-      rules: [
-        '5 random multiple-choice questions',
-        '30 seconds per question — no answer scores 0',
-        'Correct answer: 10 pts + speed bonus (faster = more)',
-        'Max 100 pts',
-      ],
-    },
-    {
-      title: 'WORD SEARCH',
-      color: 'var(--cyan)',
-      rules: [
-        'Find 10 networking terms in a 10 × 10 grid',
-        'Words run in any direction',
-        '5-minute timer · 10 pts per word',
-        'Finish early for a time bonus — max 130 pts',
-      ],
-    },
+/* ── Modal listing the rules for THIS stall's games ── */
+function RulesModal({ games, onClose }) {
+  const sections = [
+    ...games.map(g => ({
+      title: GAME_DEFS[g].title.toUpperCase(),
+      color: GAME_DEFS[g].color,
+      rules: GAME_DEFS[g].rules,
+    })),
     {
       title: 'GENERAL',
       color: 'var(--text2)',
@@ -223,26 +299,90 @@ function ScoreBadge({ score, color }) {
   );
 }
 
+/* ── One challenge card, driven entirely by its GAME_DEFS entry. `data` is the
+      cached result read once by the parent, so every part of the card agrees on
+      whether the game is done. ── */
+function GameCard({ def, data, onPlay, delay }) {
+  const done = !!data;
+  const iconColor = done ? 'var(--text4)' : def.color;
+  return (
+    <TiltCard
+      disabled={done}
+      onClick={onPlay}
+      style={{ animation: `fadeUp 0.6s var(--ease-out) ${delay}s both` }}
+    >
+      <div style={{
+        background: 'var(--bg2)',
+        border: `1px solid ${done ? 'var(--b1)' : `color-mix(in oklch, ${def.color} 45%, transparent)`}`,
+        borderRadius: 'var(--r-lg)', overflow: 'hidden',
+        boxShadow: done ? 'var(--shadow-sm)' : `0 0 34px ${def.glow}, var(--shadow)`,
+        opacity: done ? 0.62 : 1,
+        transition: 'opacity 0.3s, box-shadow 0.3s',
+      }}>
+        {!done && <div style={{ height: 3, background: def.bar }} />}
+
+        <div style={{ padding: '20px 20px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 'var(--r-md)', flexShrink: 0,
+              background: done ? 'var(--s2)' : def.iconBg,
+              border: `1px solid ${done ? 'var(--b1)' : `color-mix(in oklch, ${def.color} 22%, transparent)`}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {def.icon(iconColor)}
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+                <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: done ? 'var(--text2)' : 'var(--text)' }}>
+                  {def.title}
+                </span>
+                {done
+                  ? <ScoreBadge score={data.score} color={def.color} />
+                  : <span className="dot dot-a" style={{ width: 10, height: 10 }}></span>}
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.55, marginBottom: 12 }}>
+                {def.desc}
+              </p>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {def.tags.map(t => <span key={t} className="tag tag-dim">{t}</span>)}
+                {done && <span className={`tag ${def.doneTag}`}>✓ DONE</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {!done && (
+          <div style={{
+            padding: '11px 20px', borderTop: `1px solid color-mix(in oklch, ${def.color} 12%, transparent)`,
+            background: `color-mix(in oklch, ${def.color} 5%, var(--bg2))`,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span className="mono" style={{ fontSize: 11, color: def.playColor, fontWeight: 800, letterSpacing: '0.1em' }}>PLAY NOW</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke={def.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        )}
+      </div>
+    </TiltCard>
+  );
+}
+
 export default function LandingPage({ username, stall, onSelectGame, onChangeStall }) {
   const [switching, setSwitching] = useState(false);
   const [showRules, setShowRules] = useState(false);
-  const slug     = stall?.slug || 'stall-1';
-  const quizKey  = 'sns_' + username + '_' + slug + '_quiz';
-  const wsKey    = 'sns_' + username + '_' + slug + '_ws';
-  const quizData = readJSON(quizKey);
-  const wsData   = readJSON(wsKey);
+  const slug  = stall?.slug || 'stall-1';
+  const games = stallGames(slug);
 
-  const memKey   = 'sns_' + username + '_' + slug + '_memory';
-  const ztpKey   = 'sns_' + username + '_' + slug + '_ztp';
-  const memData  = readJSON(memKey);
-  const ztpData  = readJSON(ztpKey);
-
-  const total    = slug === 'stall-3'
-    ? (memData?.score || 0) + (ztpData?.score || 0)
-    : (quizData?.score || 0) + (wsData?.score || 0);
-
-  const hasAnyDone = slug === 'stall-3' ? (memData || ztpData) : (quizData || wsData);
-  const bothDone   = slug === 'stall-3' ? (memData && ztpData) : (quizData && wsData);
+  // Read each cached result once, here, and pass it down. Re-reading inside the
+  // markup means a card's border, badge and footer can disagree with each other.
+  const gameData  = Object.fromEntries(
+    games.map(g => [g, readJSON(gameStorageKey(username, slug, g))])
+  );
+  const total     = games.reduce((sum, g) => sum + (gameData[g]?.score || 0), 0);
+  const anyDone   = games.some(g => gameData[g]);
+  const allDone   = games.every(g => gameData[g]);
 
   return (
     <div className="screen" style={{ padding: '0 0 32px' }}>
@@ -253,7 +393,7 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
           onClose={() => setSwitching(false)}
         />
       )}
-      {showRules && <RulesModal stallSlug={slug} onClose={() => setShowRules(false)} />}
+      {showRules && <RulesModal games={games} onClose={() => setShowRules(false)} />}
       {/* Header */}
       <div style={{
         padding: '18px 22px 0',
@@ -362,7 +502,7 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
       </div>
 
       {/* Score summary */}
-      {hasAnyDone && (
+      {anyDone && (
         <div style={{ padding: '18px 22px 0', animation: 'fadeUp 0.5s var(--ease-out) 0.08s both' }}>
           <div className="grad-border">
             <div style={{ background: 'var(--bg2)', borderRadius: 'calc(var(--r-lg) - 1.5px)', padding: '18px 20px' }}>
@@ -374,40 +514,26 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start' }}>
-                  {slug === 'stall-3' ? [
-                    { label: 'MEMORY', done: !!memData, score: memData?.score, color: 'var(--green)' },
-                    { label: 'ZTP BALL', done: !!ztpData, score: ztpData?.score, color: 'var(--cyan)' },
-                  ].map(({ label, done, score, color }) => (
-                    <div key={label} style={{ textAlign: 'center' }}>
-                      <span style={{
-                        width: 10, height: 10, borderRadius: '50%',
-                        background: done ? color : 'var(--text4)',
-                        boxShadow: done ? `0 0 10px ${color}` : 'none',
-                        display: 'block', margin: '0 auto 5px',
-                        transition: 'all 0.3s',
-                      }}/>
-                      <span className="label" style={{ fontSize: 9 }}>{label}</span>
-                      {done && <div className="mono" style={{ fontSize: 11, color, fontWeight: 700, marginTop: 2 }}>{score}</div>}
-                    </div>
-                  )) : [
-                    { label: 'QUIZ',   done: !!quizData, score: quizData?.score, color: 'var(--green)' },
-                    { label: 'SEARCH', done: !!wsData,   score: wsData?.score,   color: 'var(--cyan)' },
-                  ].map(({ label, labelText, done, score, color }) => (
-                    <div key={label} style={{ textAlign: 'center' }}>
-                      <span style={{
-                        width: 10, height: 10, borderRadius: '50%',
-                        background: done ? color : 'var(--text4)',
-                        boxShadow: done ? `0 0 10px ${color}` : 'none',
-                        display: 'block', margin: '0 auto 5px',
-                        transition: 'all 0.3s',
-                      }}/>
-                      <span className="label" style={{ fontSize: 9 }}>{label}</span>
-                      {done && <div className="mono" style={{ fontSize: 11, color, fontWeight: 700, marginTop: 2 }}>{score}</div>}
-                    </div>
-                  ))}
+                  {games.map(g => {
+                    const def  = GAME_DEFS[g];
+                    const done = !!gameData[g];
+                    return (
+                      <div key={g} style={{ textAlign: 'center' }}>
+                        <span style={{
+                          width: 10, height: 10, borderRadius: '50%',
+                          background: done ? def.color : 'var(--text4)',
+                          boxShadow: done ? `0 0 10px ${def.color}` : 'none',
+                          display: 'block', margin: '0 auto 5px',
+                          transition: 'all 0.3s',
+                        }}/>
+                        <span className="label" style={{ fontSize: 9 }}>{def.chip}</span>
+                        {done && <div className="mono" style={{ fontSize: 11, color: def.color, fontWeight: 700, marginTop: 2 }}>{gameData[g].score}</div>}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-              {bothDone && (
+              {allDone && (
                 <div style={{
                   marginTop: 14, padding: '9px 14px',
                   background: 'var(--green-glow)', borderRadius: 'var(--r-md)',
@@ -438,288 +564,15 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
 
       {/* Cards */}
       <div style={{ padding: '0 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {slug === 'stall-3' ? (
-          <>
-            {/* Stall 3 Game 1: Network Memory Match */}
-            <TiltCard
-              disabled={!!readJSON('sns_' + username + '_' + slug + '_memory')}
-              onClick={() => onSelectGame('memory')}
-              style={{ animation: 'fadeUp 0.6s var(--ease-out) 0.18s both' }}
-            >
-              <div style={{
-                background: 'var(--bg2)',
-                border: `1px solid ${readJSON('sns_' + username + '_' + slug + '_memory') ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 45%, transparent)'}`,
-                borderRadius: 'var(--r-lg)', overflow: 'hidden',
-                boxShadow: readJSON('sns_' + username + '_' + slug + '_memory') ? 'var(--shadow-sm)' : '0 0 34px var(--green-glow), var(--shadow)',
-                opacity: readJSON('sns_' + username + '_' + slug + '_memory') ? 0.62 : 1,
-                transition: 'opacity 0.3s, box-shadow 0.3s',
-              }}>
-                {!readJSON('sns_' + username + '_' + slug + '_memory') && <div style={{ height: 3, background: 'var(--grad-green)' }} />}
-
-                <div style={{ padding: '20px 20px 18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: 'var(--r-md)', flexShrink: 0,
-                      background: readJSON('sns_' + username + '_' + slug + '_memory') ? 'var(--s2)' : 'var(--success-soft)',
-                      border: `1px solid ${readJSON('sns_' + username + '_' + slug + '_memory') ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 22%, transparent)'}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                        <rect x="3" y="3" width="9" height="9" rx="2" stroke="var(--green)" strokeWidth="1.6" fill="none"/>
-                        <rect x="14" y="3" width="9" height="9" rx="2" stroke="var(--green)" strokeWidth="1.6" fill="none"/>
-                        <rect x="3" y="14" width="9" height="9" rx="2" stroke="var(--green)" strokeWidth="1.6" fill="none"/>
-                        <rect x="14" y="14" width="9" height="9" rx="2" stroke="var(--green)" strokeWidth="1.6" fill="var(--green-glow)"/>
-                      </svg>
-                    </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-                        <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: readJSON('sns_' + username + '_' + slug + '_memory') ? 'var(--text2)' : 'var(--text)' }}>
-                          Network Memory Match
-                        </span>
-                        {readJSON('sns_' + username + '_' + slug + '_memory')
-                          ? <ScoreBadge score={readJSON('sns_' + username + '_' + slug + '_memory').score} color="var(--green)" />
-                          : <span className="dot dot-a" style={{ width: 10, height: 10 }}></span>}
-                      </div>
-                      <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.55, marginBottom: 12 }}>
-                        Match network infrastructure cards before the time runs out!
-                      </p>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <span className="tag tag-dim">4 × 4 Grid</span>
-                        <span className="tag tag-dim">Combo Multipliers</span>
-                        <span className="tag tag-dim">60s Speed</span>
-                        {readJSON('sns_' + username + '_' + slug + '_memory') && <span className="tag tag-green">✓ DONE</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {!readJSON('sns_' + username + '_' + slug + '_memory') && (
-                  <div style={{
-                    padding: '11px 20px', borderTop: '1px solid color-mix(in oklch, var(--green) 12%, transparent)',
-                    background: 'color-mix(in oklch, var(--green) 5%, var(--bg2))',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  }}>
-                    <span className="mono" style={{ fontSize: 11, color: 'var(--green-dim)', fontWeight: 800, letterSpacing: '0.1em' }}>PLAY NOW</span>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                )}
-              </div>
-            </TiltCard>
-
-            {/* Stall 3 Game 2: ZTP Basketball */}
-            <TiltCard
-              disabled={!!readJSON('sns_' + username + '_' + slug + '_ztp')}
-              onClick={() => onSelectGame('ztp')}
-              style={{ animation: 'fadeUp 0.6s var(--ease-out) 0.26s both' }}
-            >
-              <div style={{
-                background: 'var(--bg2)',
-                border: `1px solid ${readJSON('sns_' + username + '_' + slug + '_ztp') ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 45%, transparent)'}`,
-                borderRadius: 'var(--r-lg)', overflow: 'hidden',
-                boxShadow: readJSON('sns_' + username + '_' + slug + '_ztp') ? 'var(--shadow-sm)' : '0 0 34px var(--cyan-glow), var(--shadow)',
-                opacity: readJSON('sns_' + username + '_' + slug + '_ztp') ? 0.62 : 1,
-                transition: 'opacity 0.3s, box-shadow 0.3s',
-              }}>
-                {!readJSON('sns_' + username + '_' + slug + '_ztp') && <div style={{ height: 3, background: 'linear-gradient(135deg, var(--cyan), var(--blue))' }} />}
-
-                <div style={{ padding: '20px 20px 18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: 'var(--r-md)', flexShrink: 0,
-                      background: readJSON('sns_' + username + '_' + slug + '_ztp') ? 'var(--s2)' : 'var(--cyan-glow)',
-                      border: `1px solid ${readJSON('sns_' + username + '_' + slug + '_ztp') ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 22%, transparent)'}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                        <circle cx="13" cy="13" r="10" stroke="var(--cyan)" strokeWidth="1.6" fill="none" />
-                        <path d="M 3 13 Q 13 6 23 13" fill="none" stroke="var(--cyan)" strokeWidth="1" />
-                        <path d="M 3 13 Q 13 20 23 13" fill="none" stroke="var(--cyan)" strokeWidth="1" />
-                        <line x1="13" y1="3" x2="13" y2="23" stroke="var(--cyan)" strokeWidth="1" />
-                      </svg>
-                    </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-                        <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: readJSON('sns_' + username + '_' + slug + '_ztp') ? 'var(--text2)' : 'var(--text)' }}>
-                          ZTP Basketball
-                        </span>
-                        {readJSON('sns_' + username + '_' + slug + '_ztp')
-                          ? <ScoreBadge score={readJSON('sns_' + username + '_' + slug + '_ztp').score} color="var(--cyan)" />
-                          : <span className="dot dot-a" style={{ width: 10, height: 10 }}></span>}
-                      </div>
-                      <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.55, marginBottom: 12 }}>
-                        Slingshot provisioning actions into the correct ZTP stage hoops!
-                      </p>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <span className="tag tag-dim">4 Stages</span>
-                        <span className="tag tag-dim">Slingshot Aim</span>
-                        <span className="tag tag-dim">5 Shots</span>
-                        {readJSON('sns_' + username + '_' + slug + '_ztp') && <span className="tag tag-cyan">✓ DONE</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {!readJSON('sns_' + username + '_' + slug + '_ztp') && (
-                  <div style={{
-                    padding: '11px 20px', borderTop: '1px solid color-mix(in oklch, var(--cyan) 12%, transparent)',
-                    background: 'color-mix(in oklch, var(--cyan) 5%, var(--bg2))',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  }}>
-                    <span className="mono" style={{ fontSize: 11, color: 'var(--cyan)', fontWeight: 800, letterSpacing: '0.1em' }}>PLAY NOW</span>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                )}
-              </div>
-            </TiltCard>
-          </>
-        ) : (
-          <>
-            {/* Standard Stalls: Quiz */}
-            <TiltCard
-              disabled={!!quizData}
-              onClick={() => onSelectGame('quiz')}
-              style={{ animation: 'fadeUp 0.6s var(--ease-out) 0.18s both' }}
-            >
-              <div style={{
-                background: 'var(--bg2)',
-                border: `1px solid ${quizData ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 45%, transparent)'}`,
-                borderRadius: 'var(--r-lg)', overflow: 'hidden',
-                boxShadow: quizData ? 'var(--shadow-sm)' : '0 0 34px var(--green-glow), var(--shadow)',
-                opacity: quizData ? 0.62 : 1,
-                transition: 'opacity 0.3s, box-shadow 0.3s',
-              }}>
-                {!quizData && <div style={{ height: 3, background: 'var(--grad-green)' }} />}
-
-                <div style={{ padding: '20px 20px 18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: 'var(--r-md)', flexShrink: 0,
-                      background: quizData ? 'var(--s2)' : 'var(--success-soft)',
-                      border: `1px solid ${quizData ? 'var(--b1)' : 'color-mix(in oklch, var(--green) 22%, transparent)'}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                        <circle cx="13" cy="13" r="11" stroke={quizData ? 'var(--text4)' : 'var(--green)'} strokeWidth="1.6"/>
-                        <path d="M10.5 10.2C10.5 8.8 11.6 7.7 13 7.7s2.5 1.1 2.5 2.5c0 1.5-1.5 2.2-2.5 3.3" stroke={quizData ? 'var(--text4)' : 'var(--green)'} strokeWidth="1.6" strokeLinecap="round"/>
-                        <circle cx="13" cy="17.5" r="1.2" fill={quizData ? 'var(--text4)' : 'var(--green)'}/>
-                      </svg>
-                    </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-                        <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: quizData ? 'var(--text2)' : 'var(--text)' }}>
-                          Network Quiz
-                        </span>
-                        {quizData
-                          ? <ScoreBadge score={quizData.score} color="var(--green)" />
-                          : <span className="dot dot-a" style={{ width: 10, height: 10 }}></span>}
-                      </div>
-                      <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.55, marginBottom: 12 }}>
-                        5 random questions on protocols, ports &amp; OSI fundamentals.
-                      </p>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <span className="tag tag-dim">5 MCQ</span>
-                        <span className="tag tag-dim">30s / Q</span>
-                        <span className="tag tag-dim">Time Bonus</span>
-                        {quizData && <span className="tag tag-green">✓ DONE</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {!quizData && (
-                  <div style={{
-                    padding: '11px 20px', borderTop: '1px solid color-mix(in oklch, var(--green) 12%, transparent)',
-                    background: 'color-mix(in oklch, var(--green) 5%, var(--bg2))',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  }}>
-                    <span className="mono" style={{ fontSize: 11, color: 'var(--green-dim)', fontWeight: 800, letterSpacing: '0.1em' }}>PLAY NOW</span>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                )}
-              </div>
-            </TiltCard>
-
-            {/* Standard Stalls: Word Search */}
-            <TiltCard
-              disabled={!!wsData}
-              onClick={() => onSelectGame('wordsearch')}
-              style={{ animation: 'fadeUp 0.6s var(--ease-out) 0.26s both' }}
-            >
-              <div style={{
-                background: 'var(--bg2)',
-                border: `1px solid ${wsData ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 45%, transparent)'}`,
-                borderRadius: 'var(--r-lg)', overflow: 'hidden',
-                boxShadow: wsData ? 'var(--shadow-sm)' : '0 0 34px var(--cyan-glow), var(--shadow)',
-                opacity: wsData ? 0.62 : 1,
-                transition: 'opacity 0.3s, box-shadow 0.3s',
-              }}>
-                {!wsData && <div style={{ height: 3, background: 'linear-gradient(135deg, var(--cyan), var(--blue))' }} />}
-
-                <div style={{ padding: '20px 20px 18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: 'var(--r-md)', flexShrink: 0,
-                      background: wsData ? 'var(--s2)' : 'var(--cyan-glow)',
-                      border: `1px solid ${wsData ? 'var(--b1)' : 'color-mix(in oklch, var(--cyan) 22%, transparent)'}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                        <rect x="3" y="3" width="20" height="20" rx="5" stroke={wsData ? 'var(--text4)' : 'var(--cyan)'} strokeWidth="1.6"/>
-                        <line x1="3" y1="10" x2="23" y2="10" stroke={wsData ? 'var(--text4)' : 'var(--cyan)'} strokeWidth="0.6" opacity="0.4"/>
-                        <line x1="3" y1="16" x2="23" y2="16" stroke={wsData ? 'var(--text4)' : 'var(--cyan)'} strokeWidth="0.6" opacity="0.4"/>
-                        <line x1="10" y1="3" x2="10" y2="23" stroke={wsData ? 'var(--text4)' : 'var(--cyan)'} strokeWidth="0.6" opacity="0.4"/>
-                        <line x1="16" y1="3" x2="16" y2="23" stroke={wsData ? 'var(--text4)' : 'var(--cyan)'} strokeWidth="0.6" opacity="0.4"/>
-                        <line x1="5" y1="7" x2="21" y2="21" stroke={wsData ? 'var(--text4)' : 'var(--cyan)'} strokeWidth="2" strokeLinecap="round" opacity="0.65"/>
-                      </svg>
-                    </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-                        <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: wsData ? 'var(--text2)' : 'var(--text)' }}>
-                          Word Search
-                        </span>
-                        {wsData
-                          ? <ScoreBadge score={wsData.score} color="var(--cyan)" />
-                          : <span className="dot dot-a" style={{ width: 10, height: 10 }}></span>}
-                      </div>
-                      <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.55, marginBottom: 12 }}>
-                        Find 10 networking terms hidden in a 10 × 10 grid. Any direction.
-                      </p>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <span className="tag tag-dim">10 × 10</span>
-                        <span className="tag tag-dim">5 MIN</span>
-                        <span className="tag tag-dim">All Directions</span>
-                        {wsData && <span className="tag tag-cyan">✓ DONE</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {!wsData && (
-                  <div style={{
-                    padding: '11px 20px', borderTop: '1px solid color-mix(in oklch, var(--cyan) 12%, transparent)',
-                    background: 'color-mix(in oklch, var(--cyan) 5%, var(--bg2))',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  }}>
-                    <span className="mono" style={{ fontSize: 11, color: 'var(--cyan)', fontWeight: 800, letterSpacing: '0.1em' }}>PLAY NOW</span>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                )}
-              </div>
-            </TiltCard>
-          </>
-        )}
+        {games.map((g, i) => (
+          <GameCard
+            key={g}
+            def={GAME_DEFS[g]}
+            data={gameData[g]}
+            onPlay={() => onSelectGame(GAME_DEFS[g].route)}
+            delay={0.18 + i * 0.08}
+          />
+        ))}
       </div>
 
       <div className="mono" style={{
@@ -727,7 +580,10 @@ export default function LandingPage({ username, stall, onSelectGame, onChangeSta
         padding: '24px 22px 0', letterSpacing: '0.08em', lineHeight: 1.8,
         animation: 'fadeIn 0.6s ease 0.4s both',
       }}>
-        50 NETWORKING KEYWORDS · RANDOMLY GENERATED<br/>
+        {/* Only the blurbs for games this stall actually runs. */}
+        {games.map(g => GAME_DEFS[g].footer).filter(Boolean).map(line => (
+          <span key={line}>{line}<br/></span>
+        ))}
         ONE ATTEMPT PER CHALLENGE · SCORES ARE PERMANENT
       </div>
     </div>

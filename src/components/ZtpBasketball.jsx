@@ -4,6 +4,9 @@ import { saveScore } from '../lib/saveScore.js';
 import { useCountUp } from '../lib/useCountUp.js';
 import { readJSON } from '../lib/storage.js';
 import { BasketballGraphic } from './BasketballGraphic.jsx';
+import { shuffle } from '../data.js';
+import { ZTP_SHOTS, ZTP_GOAL_POINTS, ZTP_PENALTY, ZTP_MAX } from '../lib/scoring.js';
+import { hoopIndexAt } from '../lib/ztpHoops.js';
 
 // 4 Categories (Baskets / Hoops)
 export const STAGES = [
@@ -35,14 +38,12 @@ export const ZTP_OPTIONS_POOL = [
   { text: 'Email Notification', stageId: 'secure' },
 ];
 
-function shuffleArray(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
+// The ball lands in the hoop it is nearest, and only if it came down inside that
+// hoop's rim — otherwise it's an airball. See src/lib/ztpHoops.js.
+const hoopHitAt = (targetX, courtWidth) => {
+  const idx = hoopIndexAt(targetX, courtWidth);
+  return idx === null ? null : STAGES[idx];
+};
 
 export default function ZtpBasketball({ username, stall, onBack }) {
   const slug = stall?.slug || 'stall-3';
@@ -50,7 +51,7 @@ export default function ZtpBasketball({ username, stall, onBack }) {
 
   const [game] = useState(() => {
     const cached = readJSON(key);
-    const roundPool = shuffleArray(ZTP_OPTIONS_POOL).slice(0, 5);
+    const roundPool = shuffle(ZTP_OPTIONS_POOL).slice(0, ZTP_SHOTS);
     return {
       done: !!cached,
       prevScore: cached?.score || 0,
@@ -71,7 +72,8 @@ export default function ZtpBasketball({ username, stall, onBack }) {
 
   const showToastMsg = (msg, type) => {
     setToast({ msg, type, id: Date.now() });
-    setTimeout(() => setToast(null), 1800);
+    clearTimeout(toastRef.current);
+    toastRef.current = setTimeout(() => setToast(null), 1800);
   };
 
   // Slingshot Pull State (Screen relative offsets)
@@ -81,6 +83,15 @@ export default function ZtpBasketball({ username, stall, onBack }) {
   const courtRef = useRef(null);
   const savedRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
+  const resolveRef = useRef(null);
+  const toastRef = useRef(null);
+
+  // Pending shot-resolution and toast timers must not outlive the component, or
+  // they fire setState after unmount when a player leaves mid-flight.
+  useEffect(() => () => {
+    clearTimeout(resolveRef.current);
+    clearTimeout(toastRef.current);
+  }, []);
 
   const animScore = useCountUp(score, 400);
   const currentAction = pool[currentIndex];
@@ -90,10 +101,13 @@ export default function ZtpBasketball({ username, stall, onBack }) {
   useEffect(() => {
     if (gState !== 'finished' || savedRef.current) return;
     savedRef.current = true;
+    // Clamp defensively: the server rejects (not clamps) anything outside
+    // [0, ZTP_MAX], and a rejected score never reaches the leaderboard.
+    const safeScore = Math.min(ZTP_MAX, Math.max(0, score));
     localStorage.setItem(key, JSON.stringify({
-      score, goals, misses, penalties, playedAt: Date.now()
+      score: safeScore, goals, misses, penalties, playedAt: Date.now()
     }));
-    saveScore(username, slug, 'ztp', score);
+    saveScore(username, slug, 'ztp', safeScore);
   }, [gState, score, goals, misses, penalties, key, username, slug]);
 
   const handleMouseDown = (e) => {
@@ -136,24 +150,12 @@ export default function ZtpBasketball({ username, stall, onBack }) {
     const ballStartY = courtRect.height * 0.72 + pullY * 0.5;
 
     // Direct trajectory calculation: Smooth horizontal aiming across all 4 hoops
-    const hoopWidth = courtRect.width / 4;
     // Map pullX angle directly across court width with full reach to outer corner hoops
     const aimRatio = (-pullX / 100); // -1.0 to +1.0
     const targetX = Math.max(15, Math.min(courtRect.width - 15, (courtRect.width / 2) + (aimRatio * (courtRect.width * 0.48))));
     const targetY = 80; // Altitude line of the hoop rim net
 
-    // Hoop collision: Check distance to nearest hoop center
-    let hitStage = null;
-
-    STAGES.forEach((stage, idx) => {
-      const hoopCenterX = idx * hoopWidth + hoopWidth / 2;
-      const distX = Math.abs(targetX - hoopCenterX);
-      
-      // Physical Overlap: Check if shot lands within stage hoop rim column (55% of hoop column width)
-      if (distX <= hoopWidth * 0.55) {
-        hitStage = stage;
-      }
-    });
+    const hitStage = hoopHitAt(targetX, courtRect.width);
 
     const isMatch = hitStage && hitStage.id === currentAction.stageId;
     const flightDuration = 700;
@@ -171,19 +173,19 @@ export default function ZtpBasketball({ username, stall, onBack }) {
       isMatch,
     });
 
-    setTimeout(() => {
+    resolveRef.current = setTimeout(() => {
       if (isMatch) {
         // 5 Shots * 40 pts = 200 MAX SCORE
-        setScore(s => s + 40);
+        setScore(s => s + ZTP_GOAL_POINTS);
         setGoals(g => g + 1);
-        setHistory(h => [{ action: currentAction.text, type: 'goal', pts: 40 }, ...h]);
-        showToastMsg(`🏀 GOAL! +40 PTS`, 'goal');
+        setHistory(h => [{ action: currentAction.text, type: 'goal', pts: ZTP_GOAL_POINTS }, ...h]);
+        showToastMsg(`🏀 GOAL! +${ZTP_GOAL_POINTS} PTS`, 'goal');
       } else if (hitStage) {
         // Penalty ONLY when physically touching the wrong hoop rim
-        setScore(s => Math.max(0, s - 10));
+        setScore(s => Math.max(0, s - ZTP_PENALTY));
         setPenalties(p => p + 1);
-        setHistory(h => [{ action: currentAction.text, type: 'penalty', pts: -10, wrong: hitStage.name }, ...h]);
-        showToastMsg(`⚠️ PENALTY (-10 PTS) - ${hitStage.name}`, 'penalty');
+        setHistory(h => [{ action: currentAction.text, type: 'penalty', pts: -ZTP_PENALTY, wrong: hitStage.name }, ...h]);
+        showToastMsg(`⚠️ PENALTY (-${ZTP_PENALTY} PTS) - ${hitStage.name}`, 'penalty');
       } else {
         // Miss when shot airballs or doesn't touch any hoop
         setMisses(m => m + 1);
@@ -207,7 +209,6 @@ export default function ZtpBasketball({ username, stall, onBack }) {
     const startX = courtRect.width / 2 + drag.pullX * 0.5;
     const startY = courtRect.height * 0.70 + drag.pullY * 0.5;
 
-    const hoopWidth = courtRect.width / 4;
     const aimRatio = (-drag.pullX / 100);
     const targetX = Math.max(15, Math.min(courtRect.width - 15, (courtRect.width / 2) + (aimRatio * (courtRect.width * 0.48))));
     const targetY = 80;

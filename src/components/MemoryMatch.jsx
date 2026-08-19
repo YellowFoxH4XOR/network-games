@@ -3,6 +3,13 @@ import TopBar from './TopBar.jsx';
 import { saveScore } from '../lib/saveScore.js';
 import { useCountUp } from '../lib/useCountUp.js';
 import { readJSON } from '../lib/storage.js';
+import { shuffle } from '../data.js';
+import {
+  MEMORY_MAX,
+  MEMORY_COMBO_CAP,
+  memoryPairPoints,
+  memoryClearBonus,
+} from '../lib/scoring.js';
 
 // 8 Pairs = 16 Cards (4x4 Grid)
 const NETWORK_ITEMS = [
@@ -115,17 +122,12 @@ const NETWORK_ITEMS = [
 const GAME_TIME = 60; // 60s countdown
 
 function shuffleDeck() {
-  const cards = [];
-  NETWORK_ITEMS.forEach((item) => {
-    cards.push({ uid: item.id + '_1', itemId: item.id, ...item });
-    cards.push({ uid: item.id + '_2', itemId: item.id, ...item });
-  });
-  // Fisher-Yates Shuffle
-  for (let i = cards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [cards[i], cards[j]] = [cards[j], cards[i]];
-  }
-  return cards;
+  return shuffle(
+    NETWORK_ITEMS.flatMap((item) => [
+      { uid: item.id + '_1', itemId: item.id, ...item },
+      { uid: item.id + '_2', itemId: item.id, ...item },
+    ])
+  );
 }
 
 export default function MemoryMatch({ username, stall, onBack }) {
@@ -137,11 +139,10 @@ export default function MemoryMatch({ username, stall, onBack }) {
     return {
       done: !!cached,
       prevScore: cached?.score || 0,
-      prevTime: cached?.timeTaken || 0,
       deck: cached ? [] : shuffleDeck(),
     };
   });
-  const { done, prevScore, prevTime, deck } = game;
+  const { done, prevScore, deck } = game;
 
   const [flipped, setFlipped] = useState([]); // [index1, index2]
   const [matched, setMatched] = useState([]); // [itemId1, itemId2, ...]
@@ -153,6 +154,34 @@ export default function MemoryMatch({ username, stall, onBack }) {
   const [lockBoard, setLockBoard] = useState(false);
   const timerRef = useRef(null);
   const savedRef = useRef(false);
+  const winRef = useRef(null);
+  const mismatchRef = useRef(null);
+
+  // Writes the result exactly once. Called the moment the outcome is known —
+  // on the win, or when the clock runs out — so no completed game is lost to a
+  // pending animation timeout.
+  const finish = useCallback((finalScore, pairs) => {
+    if (savedRef.current) return;
+    savedRef.current = true;
+    const safeScore = Math.min(MEMORY_MAX, Math.max(0, finalScore));
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        score: safeScore,
+        pairs,
+        timeTaken: GAME_TIME - time,
+        playedAt: Date.now(),
+      })
+    );
+    saveScore(username, slug, 'memory', safeScore);
+  }, [key, time, username, slug]);
+
+  // Clear pending animation timers on unmount so they can't fire setState on an
+  // unmounted component.
+  useEffect(() => () => {
+    clearTimeout(winRef.current);
+    clearTimeout(mismatchRef.current);
+  }, []);
 
   const animScore = useCountUp(score, 400);
 
@@ -172,22 +201,12 @@ export default function MemoryMatch({ username, stall, onBack }) {
     return () => clearInterval(timerRef.current);
   }, [gState, done]);
 
-  // Save score on game over
+  // Save on game over. The win path already persisted via finish(); this covers
+  // the clock running out, and finish() is idempotent.
   useEffect(() => {
-    if (gState !== 'finished' || savedRef.current) return;
-    savedRef.current = true;
-    const timeTaken = GAME_TIME - time;
-    localStorage.setItem(
-      key,
-      JSON.stringify({
-        score,
-        pairs: pairsCount,
-        timeTaken,
-        playedAt: Date.now(),
-      })
-    );
-    saveScore(username, slug, 'memory', score);
-  }, [gState, score, pairsCount, time, key, username, slug]);
+    if (gState !== 'finished') return;
+    finish(score, pairsCount);
+  }, [gState, score, pairsCount, finish]);
 
   const handleCardClick = (index) => {
     if (lockBoard || gState !== 'playing' || done) return;
@@ -208,10 +227,13 @@ export default function MemoryMatch({ username, stall, onBack }) {
         setMatched((prev) => [...prev, card1.itemId]);
         setPairsCount(newPairs);
 
-        // Scoring: 8 pairs * 20 pts base * combo multiplier + speed bonus -> max ~200 pts
-        const addedScore = 15 * combo + Math.floor(time / 4);
-        setScore((s) => s + addedScore);
-        setCombo((c) => Math.min(c + 1, 4));
+        // Every accrual is clamped to MEMORY_MAX, not just the win path: a
+        // combo run can pass 200 well before the board is cleared, and the
+        // server rejects (rather than clamps) anything above its cap.
+        const addedScore = memoryPairPoints(combo, time);
+        let runningScore = Math.min(MEMORY_MAX, score + addedScore);
+        setScore(runningScore);
+        setCombo((c) => Math.min(c + 1, MEMORY_COMBO_CAP));
 
         setFlipped([]);
         setLockBoard(false);
@@ -219,15 +241,18 @@ export default function MemoryMatch({ username, stall, onBack }) {
         // Check Win Condition
         if (newPairs === NETWORK_ITEMS.length) {
           clearInterval(timerRef.current);
-          // Speed clear bonus up to 200 max cap
-          const clearBonus = Math.floor(time * 0.8);
-          setScore((s) => Math.min(200, s + clearBonus));
-          setTimeout(() => setGState('finished'), 500);
+          runningScore = Math.min(MEMORY_MAX, runningScore + memoryClearBonus(time));
+          setScore(runningScore);
+          // Persist as soon as the win is decided. The 500ms delay below is
+          // only the screen transition; saving after it would lose a finished
+          // game if the player navigated away inside that window.
+          finish(runningScore, newPairs);
+          winRef.current = setTimeout(() => setGState('finished'), 500);
         }
       } else {
         // MISMATCH
         setCombo(1); // Reset combo
-        setTimeout(() => {
+        mismatchRef.current = setTimeout(() => {
           setFlipped([]);
           setLockBoard(false);
         }, 900);

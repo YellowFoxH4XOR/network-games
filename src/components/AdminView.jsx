@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 const MEDAL = ['🥇', '🥈', '🥉'];
 
 const EMPTY_ONE = {
-  combined: [], quiz: [], wordsearch: [],
-  totalPlayers: 0, quizEntries: 0, wordsearchEntries: 0,
+  combined: [], quiz: [], wordsearch: [], memory: [], ztp: [],
+  totalPlayers: 0, quizEntries: 0, wordsearchEntries: 0, memoryEntries: 0, ztpEntries: 0,
 };
 const EMPTY_DATA = { stalls: [], boards: { all: EMPTY_ONE } };
 
@@ -416,8 +416,10 @@ export default function AdminView({ onLogout }) {
           key={`${scope}-${tab}`}
           title={`${activeTab.icon} ${activeTab.label}`}
           subtitle={`TOP 10 · ${scopeLabel}`}
-          rows={board[tab]}
-          total={tab === 'combined' ? board.totalPlayers : board[`${tab}Entries`]}
+          // An API deployed before a game existed returns no key for it, so the
+          // console must render an empty board rather than crash on undefined.
+          rows={board[tab] ?? []}
+          total={(tab === 'combined' ? board.totalPlayers : board[`${tab}Entries`]) ?? 0}
           color={activeTab.color}
           icon={activeTab.icon}
           loading={loading}

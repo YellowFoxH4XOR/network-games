@@ -1,4 +1,5 @@
 import { getFingerprint } from './fingerprint.js';
+import { GAME_KEY_SUFFIX, gameStorageKey } from '../data.js';
 
 const ADMIN_USERNAME = 'admin';
 
@@ -74,20 +75,18 @@ export async function syncUser() {
   const u = data.username;
   localStorage.setItem('sns_user', u);
 
-  if (data.quiz) {
-    localStorage.setItem(`sns_${u}_${stall}_quiz`, JSON.stringify({
-      score: data.quiz.score, playedAt: Date.now(),
-    }));
-  } else {
-    localStorage.removeItem(`sns_${u}_${stall}_quiz`);
-  }
-
-  if (data.wordsearch) {
-    localStorage.setItem(`sns_${u}_${stall}_ws`, JSON.stringify({
-      score: data.wordsearch.score, playedAt: Date.now(),
-    }));
-  } else {
-    localStorage.removeItem(`sns_${u}_${stall}_ws`);
+  // Every game, not just the original two: a game missing here keeps no cache
+  // entry after a sync, so its one-attempt gate silently re-opens and the player
+  // can replay it until the stored score ratchets up.
+  for (const game of Object.keys(GAME_KEY_SUFFIX)) {
+    const cacheKey = gameStorageKey(u, stall, game);
+    if (data[game]) {
+      localStorage.setItem(cacheKey, JSON.stringify({
+        score: data[game].score, playedAt: Date.now(),
+      }));
+    } else {
+      localStorage.removeItem(cacheKey);
+    }
   }
 
   return { kind: 'registered', username: u, stall, stallName };

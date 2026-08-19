@@ -125,6 +125,37 @@ export const QUIZ_QUESTIONS = [
  */
 export const STALL_SLUGS = ['stall-1', 'stall-2', 'stall-3'];
 
+/* Which games each stall offers, keyed by slug. This is the single definition
+ * the landing page, the rules modal and the score summary all read, so a stall's
+ * line-up is changed here rather than in a slug comparison at each use site.
+ * api/_games.js mirrors it to reject a score for a game its stall doesn't run.
+ * An unknown slug falls back to stall-1's line-up, matching stallIndex() above. */
+export const STALL_GAMES = {
+  'stall-1': ['quiz', 'wordsearch'],
+  'stall-2': ['quiz', 'wordsearch'],
+  'stall-3': ['memory', 'ztp'],
+};
+
+export function stallGames(slug) {
+  return STALL_GAMES[slug] || STALL_GAMES['stall-1'];
+}
+
+/* Where each game caches its result. Built in one place so the writer (the game)
+ * and the readers (landing page, boot sync) can't drift onto different keys —
+ * a mismatch silently re-opens a one-attempt game. `wordsearch` keeps its
+ * historical `_ws` suffix: renaming it would orphan every score already cached
+ * on a player's device. */
+export const GAME_KEY_SUFFIX = {
+  quiz: '_quiz',
+  wordsearch: '_ws',
+  memory: '_memory',
+  ztp: '_ztp',
+};
+
+export function gameStorageKey(username, slug, game) {
+  return `sns_${username}_${slug}${GAME_KEY_SUFFIX[game]}`;
+}
+
 export function stallIndex(slug) {
   const i = STALL_SLUGS.indexOf(slug);
   return i < 0 ? 0 : i;
