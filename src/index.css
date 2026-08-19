@@ -485,3 +485,19 @@ button { transition: transform 0.16s var(--ease-out); }
   }
   .orb { animation: none !important; }
 }
+
+/* ─── ZTP Basketball Mobile Layout Responsive Rules ─── */
+@media (max-width: 768px) {
+  .ztp-monitor-panel {
+    display: none !important;
+  }
+  .ztp-mobile-bottom-strip {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .ztp-mobile-bottom-strip {
+    display: none !important;
+  }
+}

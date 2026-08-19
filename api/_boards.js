@@ -39,9 +39,13 @@ export function buildBoard(rows) {
     combined,
     quiz: game('quiz'),
     wordsearch: game('wordsearch'),
+    memory: game('memory'),
+    ztp: game('ztp'),
     totalPlayers: Object.keys(totals).length,
     quizEntries: rows.filter((r) => r.game === 'quiz').length,
     wordsearchEntries: rows.filter((r) => r.game === 'wordsearch').length,
+    memoryEntries: rows.filter((r) => r.game === 'memory').length,
+    ztpEntries: rows.filter((r) => r.game === 'ztp').length,
   };
 }
 

@@ -223,12 +223,14 @@ export default function AdminView({ onLogout }) {
   };
 
   const tabs = [
-    { id: 'combined',    label: 'Combined',   icon: '🏆', color: 'var(--amber)' },
+    { id: 'combined',    label: 'Combined',    icon: '🏆', color: 'var(--amber)' },
     { id: 'quiz',        label: 'Quiz',        icon: '❓', color: 'var(--green)' },
     { id: 'wordsearch',  label: 'Word Search', icon: '🔍', color: 'var(--cyan)' },
+    { id: 'memory',      label: 'Memory',      icon: '🧠', color: 'var(--violet)' },
+    { id: 'ztp',         label: 'ZTP Ball',    icon: '🏀', color: 'var(--amber)' },
   ];
 
-  const activeTab = tabs.find(t => t.id === tab);
+  const activeTab = tabs.find(t => t.id === tab) || tabs[0];
   const stalls = data?.stalls ?? [];
   const stallNames = Object.fromEntries(stalls.map(s => [s.slug, s.name]));
   const board = data?.boards?.[scope] ?? data?.boards?.all ?? EMPTY_ONE;
@@ -365,20 +367,22 @@ export default function AdminView({ onLogout }) {
         {/* Stats strip (scoped) */}
         {data && (
           <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10,
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10,
             marginBottom: 24, animation: 'fadeUp 0.5s var(--ease-out)',
           }}>
             {[
-              { label: 'Players Scored', value: board.totalPlayers,      color: 'var(--violet)' },
-              { label: 'Quiz Entries',   value: board.quizEntries,       color: 'var(--green)' },
-              { label: 'Search Entries', value: board.wordsearchEntries, color: 'var(--cyan)' },
+              { label: 'Players Scored', value: board.totalPlayers || 0,      color: 'var(--violet)' },
+              { label: 'Quiz Entries',   value: board.quizEntries || 0,       color: 'var(--green)' },
+              { label: 'Search Entries', value: board.wordsearchEntries || 0, color: 'var(--cyan)' },
+              { label: 'Memory Entries', value: board.memoryEntries || 0,     color: 'var(--violet)' },
+              { label: 'ZTP Entries',    value: board.ztpEntries || 0,        color: 'var(--amber)' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{
                 padding: '14px 16px', background: 'var(--s2)',
                 border: '1px solid var(--b1)', borderRadius: 'var(--r-md)', textAlign: 'center',
               }}>
-                <div className="mono" style={{ fontSize: 28, fontWeight: 700, color, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</div>
-                <div className="label" style={{ marginTop: 6 }}>{label}</div>
+                <div className="mono" style={{ fontSize: 24, fontWeight: 700, color, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</div>
+                <div className="label" style={{ marginTop: 6, fontSize: 9 }}>{label}</div>
               </div>
             ))}
           </div>
