@@ -2,9 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 import { isValidSlug } from './_stalls.js';
 
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
-// Honest maxima: quiz = 5 × (10 + ⌊30/3⌋) = 100; wordsearch = 10×10 + ⌊300/10⌋ = 130.
+// Honest maxima: quiz = 100; wordsearch = 130; memory = 200; ztp = 200.
 // Capping at the real ceiling stops a forged score from out-ranking honest play.
-const MAX_SCORE = { quiz: 100, wordsearch: 130 };
+const MAX_SCORE = { quiz: 100, wordsearch: 130, memory: 200, ztp: 200 };
 const ADMIN_USERNAME = 'admin';
 
 export default async function handler(req, res) {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   if (!isValidSlug(stall)) {
     return res.status(400).json({ error: 'Invalid stall' });
   }
-  if (!['quiz', 'wordsearch'].includes(game)) {
+  if (!['quiz', 'wordsearch', 'memory', 'ztp'].includes(game)) {
     return res.status(400).json({ error: 'Invalid game' });
   }
   const n = Number(score);
