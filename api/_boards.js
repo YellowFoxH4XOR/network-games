@@ -1,6 +1,8 @@
 // Leaderboard aggregation, kept pure so it's unit-testable. The leading
 // underscore keeps Vercel from exposing this as a route; it's import-only.
 
+import { GAMES } from './_games.js';
+
 const TOP_N = 10;
 
 // Ties: higher score first; equal scores → earlier submission wins.
@@ -35,17 +37,18 @@ export function buildBoard(rows) {
     .sort((a, b) => b.score - a.score)
     .slice(0, TOP_N);
 
+  // One board and one entry count per known game, so adding a game to
+  // api/_games.js is all it takes for the console to show it.
+  const perGame = {};
+  for (const g of GAMES) {
+    perGame[g] = game(g);
+    perGame[`${g}Entries`] = rows.filter((r) => r.game === g).length;
+  }
+
   return {
     combined,
-    quiz: game('quiz'),
-    wordsearch: game('wordsearch'),
-    memory: game('memory'),
-    ztp: game('ztp'),
+    ...perGame,
     totalPlayers: Object.keys(totals).length,
-    quizEntries: rows.filter((r) => r.game === 'quiz').length,
-    wordsearchEntries: rows.filter((r) => r.game === 'wordsearch').length,
-    memoryEntries: rows.filter((r) => r.game === 'memory').length,
-    ztpEntries: rows.filter((r) => r.game === 'ztp').length,
   };
 }
 

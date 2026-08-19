@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildBoard, buildBoards } from '../../api/_boards.js';
+import { GAMES } from '../../api/_games.js';
 
 const row = (username, stall, game, score, created_at = '2026-06-04T10:00:00Z') =>
   ({ username, stall, game, score, created_at });
@@ -37,6 +38,29 @@ describe('buildBoard', () => {
   it('keeps the stall on game rows so cross-stall views can label them', () => {
     const b = buildBoard([row('akki', 'stall-2', 'quiz', 10)]);
     expect(b.quiz[0].stall).toBe('stall-2');
+  });
+
+  it('boards every known game, so the admin console never reads an undefined tab', () => {
+    // The console renders one tab per game and calls .length on the board it
+    // gets; a game missing from this object crashes the whole view.
+    const b = buildBoard([]);
+    for (const game of GAMES) {
+      expect(b[game], `${game} board missing`).toEqual([]);
+      expect(b[`${game}Entries`], `${game} entry count missing`).toBe(0);
+    }
+  });
+
+  it('ranks and counts the stall-3 games like any other', () => {
+    const rows = [
+      row('akki', 'stall-3', 'memory', 180),
+      row('bob',  'stall-3', 'memory', 200),
+      row('akki', 'stall-3', 'ztp', 120),
+    ];
+    const b = buildBoard(rows);
+    expect(b.memory.map((r) => r.username)).toEqual(['bob', 'akki']);
+    expect(b.memoryEntries).toBe(2);
+    expect(b.ztpEntries).toBe(1);
+    expect(b.combined[0]).toEqual({ username: 'akki', score: 300 });
   });
 });
 

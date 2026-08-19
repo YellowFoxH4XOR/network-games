@@ -1,10 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { isValidSlug } from './_stalls.js';
+import { MAX_SCORE, GAMES, stallRunsGame } from './_games.js';
 
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
-// Honest maxima: quiz = 100; wordsearch = 130; memory = 200; ztp = 200.
-// Capping at the real ceiling stops a forged score from out-ranking honest play.
-const MAX_SCORE = { quiz: 100, wordsearch: 130, memory: 200, ztp: 200 };
 const ADMIN_USERNAME = 'admin';
 
 export default async function handler(req, res) {
@@ -27,8 +25,13 @@ export default async function handler(req, res) {
   if (!isValidSlug(stall)) {
     return res.status(400).json({ error: 'Invalid stall' });
   }
-  if (!['quiz', 'wordsearch', 'memory', 'ztp'].includes(game)) {
+  if (!GAMES.includes(game)) {
     return res.status(400).json({ error: 'Invalid game' });
+  }
+  // A stall only accepts scores for the games it actually runs, so a score
+  // can't be posted for a game the player's booth never offered.
+  if (!stallRunsGame(stall, game)) {
+    return res.status(400).json({ error: 'Game not offered at this stall' });
   }
   const n = Number(score);
   if (!Number.isInteger(n) || n < 0 || n > MAX_SCORE[game]) {

@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import LandingPage from './LandingPage.jsx';
 
 const STALL = { slug: 'stall-1', name: 'Stall 1' };
+const STALL3 = { slug: 'stall-3', name: 'Stall 3' };
 
 // LandingPage is now the screen players land on straight after login (the
 // HomePage chooser was removed along with Visualize), so it must carry the
@@ -30,6 +31,54 @@ describe('LandingPage (root screen after login)', () => {
     expect(screen.getAllByText('PLAY NOW')).toHaveLength(1);
     fireEvent.click(screen.getByText('Word Search'));
     expect(onSelectGame).toHaveBeenCalledWith('wordsearch');
+  });
+
+  // Stall 3 runs an entirely different pair of games. Before the line-up moved
+  // into STALL_GAMES this branch had no coverage at all, because every test
+  // here pinned stall-1.
+  it('offers stall 3 its own games, not the quiz pair', () => {
+    const onSelectGame = vi.fn();
+    render(<LandingPage username="tester" stall={STALL3} onSelectGame={onSelectGame} onChangeStall={vi.fn()} />);
+    expect(screen.getAllByText('PLAY NOW')).toHaveLength(2);
+    expect(screen.queryByText('Network Quiz')).not.toBeInTheDocument();
+    expect(screen.queryByText('Word Search')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('Network Memory Match'));
+    expect(onSelectGame).toHaveBeenCalledWith('memory');
+    fireEvent.click(screen.getByText('ZTP Basketball'));
+    expect(onSelectGame).toHaveBeenCalledWith('ztp');
+  });
+
+  it('gates a completed stall-3 game and totals only that stall’s games', () => {
+    localStorage.setItem('sns_tester_stall-3_memory', JSON.stringify({ score: 150, playedAt: 1 }));
+    // A score cached for another stall's game must not leak into this total.
+    localStorage.setItem('sns_tester_stall-3_quiz', JSON.stringify({ score: 99, playedAt: 1 }));
+    const onSelectGame = vi.fn();
+    render(<LandingPage username="tester" stall={STALL3} onSelectGame={onSelectGame} onChangeStall={vi.fn()} />);
+
+    expect(screen.getByText('✓ DONE')).toBeInTheDocument();
+    expect(screen.queryByText('99')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('Network Memory Match'));
+    expect(onSelectGame).not.toHaveBeenCalledWith('memory');
+    expect(screen.getAllByText('PLAY NOW')).toHaveLength(1);
+  });
+
+  it('announces completion only when every game of the stall is played', () => {
+    localStorage.setItem('sns_tester_stall-3_memory', JSON.stringify({ score: 150, playedAt: 1 }));
+    const { unmount } = render(<LandingPage username="tester" stall={STALL3} onSelectGame={vi.fn()} onChangeStall={vi.fn()} />);
+    expect(screen.queryByText('All stall challenges completed')).not.toBeInTheDocument();
+    unmount();
+
+    localStorage.setItem('sns_tester_stall-3_ztp', JSON.stringify({ score: 40, playedAt: 1 }));
+    render(<LandingPage username="tester" stall={STALL3} onSelectGame={vi.fn()} onChangeStall={vi.fn()} />);
+    expect(screen.getByText('All stall challenges completed')).toBeInTheDocument();
+    expect(screen.getByText('Total: 190 pts')).toBeInTheDocument();
+  });
+
+  it('shows each stall only the rules for the games it runs', () => {
+    render(<LandingPage username="tester" stall={STALL3} onSelectGame={vi.fn()} onChangeStall={vi.fn()} />);
+    fireEvent.click(screen.getByText('RULES'));
+    expect(screen.getByText('ZTP BASKETBALL')).toBeInTheDocument();
+    expect(screen.queryByText('NETWORK QUIZ')).not.toBeInTheDocument();
   });
 
   it('hosts the stall switcher: the stall pill opens the modal', () => {
