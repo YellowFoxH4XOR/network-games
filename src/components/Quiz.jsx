@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { quizRound } from '../data.js';
 import TopBar from './TopBar.jsx';
-import { saveScore } from '../lib/saveScore.js';
+import { useAttempt } from '../lib/useAttempt.js';
+import { useLeaveGuard } from '../lib/useLeaveGuard.jsx';
 import { useCountUp } from '../lib/useCountUp.js';
 import { readJSON } from '../lib/storage.js';
 import { quizPoints } from '../lib/scoring.js';
@@ -99,7 +100,14 @@ export default function Quiz({ username, stall, onBack }) {
   const animScore = useCountUp(gameState === 'finished' ? score : 0, 650);
   const timerRef = useRef(null);
   const fbRef    = useRef(null);
-  const savedRef = useRef(false);
+
+  // Playing counts as the attempt: leaving early finalises at the score so far
+  // rather than handing back a fresh round.
+  const inProgress = !alreadyPlayed && gameState === 'playing';
+  const save = useAttempt({
+    key: storageKey, username, stall: slug, game: 'quiz', score, active: inProgress,
+  });
+  const [guardedBack, leaveDialog] = useLeaveGuard(onBack, inProgress, () => save({ abandoned: true }));
 
   useEffect(() => {
     if (gameState !== 'playing' || showFb || !questions.length || alreadyPlayed) return;
@@ -122,17 +130,13 @@ export default function Quiz({ username, stall, onBack }) {
     fbRef.current = setTimeout(() => {
       if (idx >= 4) {
         setGameState('finished');
-        if (!savedRef.current) {
-          savedRef.current = true;
-          localStorage.setItem(storageKey, JSON.stringify({ score, answers, playedAt: Date.now() }));
-          saveScore(username, slug, 'quiz', score);
-        }
+        save({ answers });
       } else {
         setIdx(i => i + 1); setSelected(null); setShowFb(false); setTimeLeft(30);
       }
     }, 1800);
     return () => clearTimeout(fbRef.current);
-  }, [showFb, idx, score, answers, storageKey, slug, username]);
+  }, [showFb, idx, answers, save]);
 
   const pick = (i) => {
     if (showFb || gameState !== 'playing') return;
@@ -256,8 +260,9 @@ export default function Quiz({ username, stall, onBack }) {
 
   return (
     <div style={S.page}>
+      {leaveDialog}
       <TopBar
-        onBack={onBack}
+        onBack={guardedBack}
         title="Network Quiz"
         right={
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
