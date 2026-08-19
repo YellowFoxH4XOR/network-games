@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 const MEDAL = ['🥇', '🥈', '🥉'];
 
 const EMPTY_ONE = {
-  combined: [], quiz: [], wordsearch: [], memory: [], ztp: [],
-  totalPlayers: 0, quizEntries: 0, wordsearchEntries: 0, memoryEntries: 0, ztpEntries: 0,
+  combined: [], quiz: [], wordsearch: [], memory: [], ztp: [], spin: [],
+  totalPlayers: 0, quizEntries: 0, wordsearchEntries: 0, memoryEntries: 0, ztpEntries: 0, spinEntries: 0,
 };
 const EMPTY_DATA = { stalls: [], boards: { all: EMPTY_ONE } };
 
@@ -226,6 +226,7 @@ export default function AdminView({ onLogout }) {
     { id: 'combined',    label: 'Combined',    icon: '🏆', color: 'var(--amber)' },
     { id: 'quiz',        label: 'Quiz',        icon: '❓', color: 'var(--green)' },
     { id: 'wordsearch',  label: 'Word Search', icon: '🔍', color: 'var(--cyan)' },
+    { id: 'spin',        label: 'Spin Wheel',  icon: '🎡', color: 'var(--amber)' },
     { id: 'memory',      label: 'Memory',      icon: '🧠', color: 'var(--violet)' },
     { id: 'ztp',         label: 'ZTP Ball',    icon: '🏀', color: 'var(--amber)' },
   ];
@@ -376,6 +377,7 @@ export default function AdminView({ onLogout }) {
               { label: 'Search Entries', value: board.wordsearchEntries || 0, color: 'var(--cyan)' },
               { label: 'Memory Entries', value: board.memoryEntries || 0,     color: 'var(--violet)' },
               { label: 'ZTP Entries',    value: board.ztpEntries || 0,        color: 'var(--amber)' },
+              { label: 'Spin Entries',   value: board.spinEntries || 0,       color: 'var(--amber)' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{
                 padding: '14px 16px', background: 'var(--s2)',

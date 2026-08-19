@@ -5,14 +5,15 @@
 // The leading underscore keeps Vercel from exposing this as a route.
 
 // Honest maxima: quiz = 5 × (10 + ⌊30/3⌋) = 100; wordsearch = 10×10 + ⌊300/10⌋ = 130;
-// memory = clamped in-game to 200; ztp = 5 shots × 40 = 200.
+// memory = clamped in-game to 200; ztp = 5 shots × 40 = 200;
+// spin = 3 questions scored like the quiz = 60.
 // Capping at the real ceiling stops a forged score from out-ranking honest play.
-export const MAX_SCORE = { quiz: 100, wordsearch: 130, memory: 200, ztp: 200 };
+export const MAX_SCORE = { quiz: 100, wordsearch: 130, memory: 200, ztp: 200, spin: 60 };
 
 export const GAMES = Object.keys(MAX_SCORE);
 
 export const STALL_GAMES = {
-  'stall-1': ['quiz', 'wordsearch'],
+  'stall-1': ['spin'],
   'stall-2': ['quiz', 'wordsearch'],
   'stall-3': ['memory', 'ztp'],
 };

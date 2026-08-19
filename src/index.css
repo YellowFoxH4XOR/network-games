@@ -392,6 +392,7 @@ button { transition: transform 0.16s var(--ease-out); }
 .tag-dim   { background: var(--s2); color: var(--text2); border: 1px solid var(--b1); }
 .tag-green { background: var(--green-glow); color: var(--green); border: 1px solid color-mix(in oklch, var(--green) 30%, transparent); }
 .tag-cyan  { background: var(--cyan-glow); color: var(--cyan); border: 1px solid color-mix(in oklch, var(--cyan) 30%, transparent); }
+.tag-amber { background: var(--amber-glow); color: var(--amber); border: 1px solid color-mix(in oklch, var(--amber) 30%, transparent); }
 
 /* ─── Card hover lift ─── */
 .tilt-card {

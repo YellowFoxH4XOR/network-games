@@ -5,6 +5,7 @@ import LandingPage from './components/LandingPage.jsx';
 import Quiz from './components/Quiz.jsx';
 import WordSearch from './components/WordSearch.jsx';
 import MemoryMatch from './components/MemoryMatch.jsx';
+import SpinWheel from './components/SpinWheel.jsx';
 import ZtpBasketball from './components/ZtpBasketball.jsx';
 import Leaderboard from './components/Leaderboard.jsx';
 import AdminView from './components/AdminView.jsx';
@@ -140,6 +141,7 @@ export default function App() {
         {screen === 'quiz'       && <Quiz username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'wordsearch' && <WordSearch username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'memory'     && <MemoryMatch username={user} stall={stall} onBack={() => nav('landing')} />}
+        {screen === 'spin'       && <SpinWheel username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'ztp'        && <ZtpBasketball username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'leaderboard' && <Leaderboard username={user} stall={stall} onBack={() => nav('landing')} />}
         {screen === 'admin'      && <AdminView onLogout={handleLogout} />}
