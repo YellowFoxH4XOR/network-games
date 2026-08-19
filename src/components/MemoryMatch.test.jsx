@@ -23,11 +23,16 @@ function cardEls(container) {
   );
 }
 
-// Reveals every card's identity by probing them two at a time, then returns a
-// map of card index → name. Probing costs game time (mismatches stay up 900ms)
-// but no points, which is exactly how a strong player learns the board.
+// Reveals every card's identity by probing them two at a time, which is how a
+// strong player learns the board: it costs game time (a mismatch stays up 900ms)
+// but no points.
+//
+// Returns the index → name map, plus the names that a probe happened to match
+// outright. Callers that need the board left uncleared must skip an unmatched
+// pair — skipping an already-matched one clears the board anyway.
 function learnDeck(container) {
   const names = [];
+  const alreadyMatched = new Set();
   const live = cardEls(container);
   for (let i = 0; i < live.length; i += 2) {
     fireEvent.click(live[i]);
@@ -35,8 +40,20 @@ function learnDeck(container) {
     names[i] = live[i].textContent;
     names[i + 1] = live[i + 1].textContent;
     act(() => vi.advanceTimersByTime(1000));
+    // A probe that was a pair stays face-up; a mismatch has flipped back by now.
+    if (live[i].textContent) alreadyMatched.add(names[i]);
   }
-  return names;
+  return { names, alreadyMatched };
+}
+
+// name → [indexA, indexB] for every pair on the board.
+function pairsByName(names) {
+  const byName = new Map();
+  names.forEach((name, idx) => {
+    if (!byName.has(name)) byName.set(name, []);
+    byName.get(name).push(idx);
+  });
+  return new Map([...byName].filter(([, idxs]) => idxs.length === 2));
 }
 
 describe('MemoryMatch scoring', () => {
@@ -49,19 +66,20 @@ describe('MemoryMatch scoring', () => {
     // pair at full combo (15 × 4 per pair) and let the timer expire. The base
     // points alone are far past the cap.
     const { container } = render(<MemoryMatch username="tester" stall={STALL} onBack={() => {}} />);
-    const names = learnDeck(container);
+    const { names, alreadyMatched } = learnDeck(container);
 
-    const byName = new Map();
-    names.forEach((name, idx) => {
-      if (!byName.has(name)) byName.set(name, []);
-      byName.get(name).push(idx);
-    });
-    const pairs = [...byName.values()].filter((idxs) => idxs.length === 2);
-    expect(pairs.length).toBeGreaterThanOrEqual(7);
+    const pairs = pairsByName(names);
+    expect(pairs.size).toBe(8);
 
-    // Every pair but one — leaving the board uncleared so the game can only end
-    // on the timer.
-    for (const [a, b] of pairs.slice(0, -1)) {
+    // Hold back one pair the learning phase did NOT match, so the board is
+    // genuinely left uncleared and the game can only end on the timer. Picking
+    // an already-matched pair here would clear the board and take the win path
+    // instead — the flake this replaces.
+    const holdBack = [...pairs.keys()].find((name) => !alreadyMatched.has(name));
+    expect(holdBack, 'learning matched every pair; nothing left to hold back').toBeTruthy();
+
+    for (const [name, [a, b]] of pairs) {
+      if (name === holdBack) continue;
       const live = cardEls(container);
       fireEvent.click(live[a]);
       fireEvent.click(live[b]);
@@ -82,14 +100,9 @@ describe('MemoryMatch scoring', () => {
 
   it('saves a cleared board exactly once, at the cap or below', () => {
     const { container } = render(<MemoryMatch username="tester" stall={STALL} onBack={() => {}} />);
-    const names = learnDeck(container);
+    const { names } = learnDeck(container);
 
-    const byName = new Map();
-    names.forEach((name, idx) => {
-      if (!byName.has(name)) byName.set(name, []);
-      byName.get(name).push(idx);
-    });
-    for (const [a, b] of [...byName.values()].filter((i) => i.length === 2)) {
+    for (const [, [a, b]] of pairsByName(names)) {
       const live = cardEls(container);
       fireEvent.click(live[a]);
       fireEvent.click(live[b]);
@@ -107,14 +120,9 @@ describe('MemoryMatch scoring', () => {
     // navigating away inside that window discarded a finished game — the score
     // was lost and the one-attempt gate re-opened.
     const { container, unmount } = render(<MemoryMatch username="tester" stall={STALL} onBack={() => {}} />);
-    const names = learnDeck(container);
+    const { names } = learnDeck(container);
 
-    const byName = new Map();
-    names.forEach((name, idx) => {
-      if (!byName.has(name)) byName.set(name, []);
-      byName.get(name).push(idx);
-    });
-    for (const [a, b] of [...byName.values()].filter((i) => i.length === 2)) {
+    for (const [, [a, b]] of pairsByName(names)) {
       const live = cardEls(container);
       fireEvent.click(live[a]);
       fireEvent.click(live[b]);
