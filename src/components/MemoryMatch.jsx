@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import TopBar from './TopBar.jsx';
-import { saveScore } from '../lib/saveScore.js';
+import { useAttempt } from '../lib/useAttempt.js';
+import { useLeaveGuard } from '../lib/useLeaveGuard.jsx';
 import { useCountUp } from '../lib/useCountUp.js';
 import { readJSON } from '../lib/storage.js';
 import { shuffle } from '../data.js';
@@ -153,28 +154,27 @@ export default function MemoryMatch({ username, stall, onBack }) {
   const [gState, setGState] = useState('playing');
   const [lockBoard, setLockBoard] = useState(false);
   const timerRef = useRef(null);
-  const savedRef = useRef(false);
   const winRef = useRef(null);
   const mismatchRef = useRef(null);
 
+  // Playing counts as the attempt: leaving early finalises at the score so far
+  // rather than handing back a fresh board.
+  const inProgress = !done && gState === 'playing';
+  const save = useAttempt({
+    key, username, stall: slug, game: 'memory', score, active: inProgress,
+  });
+  const [guardedBack, leaveDialog] = useLeaveGuard(onBack, inProgress, () => save({ abandoned: true }));
+
   // Writes the result exactly once. Called the moment the outcome is known —
   // on the win, or when the clock runs out — so no completed game is lost to a
-  // pending animation timeout.
+  // pending animation timeout. The win path passes its score explicitly, since
+  // the clamped total isn't in state yet at that point.
   const finish = useCallback((finalScore, pairs) => {
-    if (savedRef.current) return;
-    savedRef.current = true;
-    const safeScore = Math.min(MEMORY_MAX, Math.max(0, finalScore));
-    localStorage.setItem(
-      key,
-      JSON.stringify({
-        score: safeScore,
-        pairs,
-        timeTaken: GAME_TIME - time,
-        playedAt: Date.now(),
-      })
+    save(
+      { pairs, timeTaken: GAME_TIME - time },
+      Math.min(MEMORY_MAX, Math.max(0, finalScore)),
     );
-    saveScore(username, slug, 'memory', safeScore);
-  }, [key, time, username, slug]);
+  }, [save, time]);
 
   // Clear pending animation timers on unmount so they can't fire setState on an
   // unmounted component.
@@ -351,8 +351,9 @@ export default function MemoryMatch({ username, stall, onBack }) {
   /* ── Main Gameplay Screen ── */
   return (
     <div className="screen" style={{ paddingBottom: 36 }}>
+      {leaveDialog}
       <TopBar
-        onBack={onBack}
+        onBack={guardedBack}
         title="Network Memory Match"
         right={
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

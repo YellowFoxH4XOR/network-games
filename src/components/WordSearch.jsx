@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { stallKeywords, shuffle } from '../data.js';
 import TopBar from './TopBar.jsx';
-import { saveScore } from '../lib/saveScore.js';
+import { useAttempt } from '../lib/useAttempt.js';
+import { useLeaveGuard } from '../lib/useLeaveGuard.jsx';
 import { useCountUp } from '../lib/useCountUp.js';
 import { readJSON } from '../lib/storage.js';
 import { WORD_POINTS, wordsearchTimeBonus } from '../lib/scoring.js';
@@ -211,7 +212,14 @@ export default function WordSearch({ username, stall, onBack }) {
   const [celebrate, setCelebrate] = useState(false);
   const [lastFoundWord, setLastFoundWord] = useState(null);
   const tRef = useRef(null);
-  const savedRef = useRef(false);
+
+  // Playing counts as the attempt: leaving early finalises at the score so far
+  // rather than handing back a fresh grid.
+  const inProgress = !done && gState === 'playing';
+  const save = useAttempt({
+    key, username, stall: slug, game: 'wordsearch', score, active: inProgress,
+  });
+  const [guardedBack, leaveDialog] = useLeaveGuard(onBack, inProgress, () => save({ abandoned: true }));
 
   const animScore = useCountUp(score, 500);
 
@@ -227,14 +235,9 @@ export default function WordSearch({ username, stall, onBack }) {
   }, [gState, done]);
 
   useEffect(() => {
-    if (gState !== 'finished' || !pz || savedRef.current) return;
-    savedRef.current = true;
-    const fw = Object.keys(found).length;
-    localStorage.setItem(key, JSON.stringify({
-      score, found: fw, total: pz.words.length, playedAt: Date.now(),
-    }));
-    saveScore(username, slug, 'wordsearch', score);
-  }, [gState, score, found, pz, key, username, slug]);
+    if (gState !== 'finished' || !pz) return;
+    save({ found: Object.keys(found).length, total: pz.words.length });
+  }, [gState, found, pz, save]);
 
   const cur    = useMemo(() => (sel && ds ? selCells(ds, de || ds) : []), [sel, ds, de]);
   const cellAt = useCallback((x, y) => {
@@ -423,8 +426,9 @@ export default function WordSearch({ username, stall, onBack }) {
   /* ── Playing ── */
   return (
     <div style={W.page}>
+      {leaveDialog}
       <TopBar
-        onBack={onBack}
+        onBack={guardedBack}
         title="Word Search"
         right={
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

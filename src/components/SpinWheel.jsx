@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { SPIN_TOPICS, spinQuestion } from '../data.js';
 import TopBar from './TopBar.jsx';
-import { saveScore } from '../lib/saveScore.js';
+import { useAttempt } from '../lib/useAttempt.js';
+import { useLeaveGuard } from '../lib/useLeaveGuard.jsx';
 import { useCountUp } from '../lib/useCountUp.js';
 import { readJSON } from '../lib/storage.js';
 import { quizPoints, SPIN_ROUNDS, SPIN_SECONDS_PER_Q } from '../lib/scoring.js';
@@ -146,7 +147,14 @@ export default function SpinWheel({ username, stall, onBack }) {
   const landRef  = useRef(null);
   const timerRef = useRef(null);
   const fbRef    = useRef(null);
-  const savedRef = useRef(false);
+
+  // Playing counts as the attempt: leaving early finalises at the score so far
+  // rather than handing back a fresh set of spins.
+  const inProgress = !alreadyPlayed && phase !== 'finished';
+  const save = useAttempt({
+    key: storageKey, username, stall: slug, game: 'spin', score, active: inProgress,
+  });
+  const [guardedBack, leaveDialog] = useLeaveGuard(onBack, inProgress, () => save({ abandoned: true }));
 
   const spin = () => {
     const t = Math.floor(Math.random() * SPIN_TOPICS.length);
@@ -203,11 +211,9 @@ export default function SpinWheel({ username, stall, onBack }) {
   }, [phase, round]);
 
   useEffect(() => {
-    if (phase !== 'finished' || savedRef.current) return;
-    savedRef.current = true;
-    localStorage.setItem(storageKey, JSON.stringify({ score, answers, playedAt: Date.now() }));
-    saveScore(username, slug, 'spin', score);
-  }, [phase, score, answers, storageKey, slug, username]);
+    if (phase !== 'finished') return;
+    save({ answers });
+  }, [phase, answers, save]);
 
   const pick = (i) => {
     if (phase !== 'question') return;
@@ -325,8 +331,9 @@ export default function SpinWheel({ username, stall, onBack }) {
   const last = answers[answers.length - 1];
   return (
     <div style={S.page}>
+      {leaveDialog}
       <TopBar
-        onBack={onBack}
+        onBack={guardedBack}
         title="Spin Wheel"
         right={
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import TopBar from './TopBar.jsx';
-import { saveScore } from '../lib/saveScore.js';
+import { useAttempt } from '../lib/useAttempt.js';
+import { useLeaveGuard } from '../lib/useLeaveGuard.jsx';
 import { useCountUp } from '../lib/useCountUp.js';
 import { readJSON } from '../lib/storage.js';
 import { BasketballGraphic } from './BasketballGraphic.jsx';
@@ -81,7 +82,6 @@ export default function ZtpBasketball({ username, stall, onBack }) {
   const [flight, setFlight] = useState(null); // Active ball motion along parabola
 
   const courtRef = useRef(null);
-  const savedRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const resolveRef = useRef(null);
   const toastRef = useRef(null);
@@ -97,18 +97,21 @@ export default function ZtpBasketball({ username, stall, onBack }) {
   const currentAction = pool[currentIndex];
   const shotsLeft = pool.length - currentIndex;
 
+  // Playing counts as the attempt: leaving early finalises at the score so far
+  // rather than handing back a fresh set of shots. Clamped defensively — the
+  // server rejects (not clamps) anything outside [0, ZTP_MAX].
+  const inProgress = !done && gState === 'playing';
+  const save = useAttempt({
+    key, username, stall: slug, game: 'ztp',
+    score: Math.min(ZTP_MAX, score), active: inProgress,
+  });
+  const [guardedBack, leaveDialog] = useLeaveGuard(onBack, inProgress, () => save({ abandoned: true }));
+
   // Save Score
   useEffect(() => {
-    if (gState !== 'finished' || savedRef.current) return;
-    savedRef.current = true;
-    // Clamp defensively: the server rejects (not clamps) anything outside
-    // [0, ZTP_MAX], and a rejected score never reaches the leaderboard.
-    const safeScore = Math.min(ZTP_MAX, Math.max(0, score));
-    localStorage.setItem(key, JSON.stringify({
-      score: safeScore, goals, misses, penalties, playedAt: Date.now()
-    }));
-    saveScore(username, slug, 'ztp', safeScore);
-  }, [gState, score, goals, misses, penalties, key, username, slug]);
+    if (gState !== 'finished') return;
+    save({ goals, misses, penalties }, Math.min(ZTP_MAX, Math.max(0, score)));
+  }, [gState, score, goals, misses, penalties, save]);
 
   const handleMouseDown = (e) => {
     if (gState !== 'playing' || flight || !currentAction) return;
@@ -318,7 +321,8 @@ export default function ZtpBasketball({ username, stall, onBack }) {
       onMouseUp={handleMouseUp}
       onTouchEnd={handleMouseUp}
     >
-      <TopBar onBack={onBack} title="ZTP Provisioning Basketball" />
+      {leaveDialog}
+      <TopBar onBack={guardedBack} title="ZTP Provisioning Basketball" />
 
       {/* Floating Toast Notification */}
       {toast && (
